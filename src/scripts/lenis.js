@@ -9,6 +9,11 @@ const lenis = new Lenis({
   smoothTouch: false,
 })
 
+// 将lenis实例暴露到全局，以便其他脚本可以使用
+if (typeof window !== 'undefined') {
+  window.lenis = lenis;
+}
+
 function raf(time) {
   lenis.raf(time)
   requestAnimationFrame(raf)

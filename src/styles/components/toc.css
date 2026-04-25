@@ -1,0 +1,26 @@
+.toc-link {
+	display: block;
+	padding-bottom: 0.3rem;
+	color: var(--color-muted);
+	text-decoration: none;
+	transition: all 0.3s ease-in-out;
+	border-left: 2px solid transparent;
+	padding-left: 1rem;
+	margin-left: -0.125rem;
+	font-size: 0.875rem;
+}
+
+.toc-link:hover {
+	color: var(--color-accent);
+}
+
+.toc-link.active-toc-item {
+  color: var(--color-accent);
+  font-weight: 500;
+  border-left-color: var(--color-accent);
+  background-color: rgba(var(--color-accent-rgb), 0.05);
+}
+
+summary::-webkit-details-marker {
+	display: none;
+}
