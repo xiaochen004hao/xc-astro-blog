@@ -1,5 +1,5 @@
 ---
-// Heavy inspiration taken from Astro Starlight -> https://github.com/withastro/starlight/blob/main/packages/starlight/components/Search.astro
+// 深受 Astro Starlight 启发 -> https://github.com/withastro/starlight/blob/main/packages/starlight/components/Search.astro
 
 import "@/styles/blocks/search.css";
 ---
@@ -27,7 +27,7 @@ import "@/styles/blocks/search.css";
 			<path d="M0 0h24v24H0z" stroke="none"></path>
 			<path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6"></path>
 		</svg>
-		<span class="sr-only">Open Search</span>
+		<span class="sr-only">打开搜索</span>
 	</button>
 	<dialog
 		aria-label="search"
@@ -36,14 +36,14 @@ import "@/styles/blocks/search.css";
 		<div class="dialog-frame flex grow flex-col gap-4 p-6 pt-12 sm:pt-6">
 			<button
 				class="ms-auto cursor-pointer rounded-md bg-zinc-200 p-2 font-semibold dark:bg-zinc-700"
-				data-close-modal>Close</button
+				data-close-modal>关闭</button
 			>
 			{
 				import.meta.env.DEV ? (
 					<div class="mx-auto text-center">
 						<p>
-							Search is only available in production builds. <br />
-							Try building and previewing the site to test it out locally.
+							搜索功能仅在生产构建中可用。 <br />
+							请尝试构建并预览网站以在本地测试。
 						</p>
 					</div>
 				) : (
@@ -72,7 +72,7 @@ import "@/styles/blocks/search.css";
 			this.#dialogFrame = this.querySelector(".dialog-frame");
 			this.#controller = new AbortController();
 
-			// Set up events
+			// 设置事件
 			if (this.#openBtn) {
 				this.#openBtn.addEventListener("click", this.openModal);
 				this.#openBtn.disabled = false;
@@ -94,7 +94,7 @@ import "@/styles/blocks/search.css";
 				console.warn("Dialog not found");
 			}
 
-			// only add pagefind in production
+			// 仅在生产环境中添加 pagefind
 			if (import.meta.env.DEV) return;
 			const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
 			onIdle(async () => {
@@ -110,7 +110,7 @@ import "@/styles/blocks/search.css";
 		}
 
 		connectedCallback() {
-			// window events, requires cleanup
+			// 窗口事件，需要清理
 			window.addEventListener("keydown", this.onWindowKeydown, { signal: this.#controller.signal });
 		}
 
@@ -133,9 +133,9 @@ import "@/styles/blocks/search.css";
 		closeModal = () => this.#dialog?.close();
 
 		onWindowClick = (event: MouseEvent) => {
-			// check if it's a link
+			// 检查是否为链接
 			const isLink = "href" in (event.target || {});
-			// make sure the click is either a link or outside of the dialog
+			// 确保点击的是链接或对话框外部
 			if (
 				isLink ||
 				(document.body.contains(event.target as Node) &&
@@ -150,7 +150,7 @@ import "@/styles/blocks/search.css";
 				console.warn("Dialog not found");
 				return;
 			}
-			// check if it's the Control+K or ⌘+K shortcut
+			// 检查是否为 Control+K 或 ⌘+K 快捷键
 			if ((e.metaKey === true || e.ctrlKey === true) && e.key === "k") {
 				this.#dialog.open ? this.closeModal() : this.openModal();
 				e.preventDefault();

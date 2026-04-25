@@ -66,7 +66,7 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 
 	function callback(entries: IntersectionObserverEntry[]) {
 		entries.forEach((entry) => {
-			// only show the scroll to top button when the heading is out of view
+			// 仅当标题不在视图中时才显示返回顶部按钮
 			scrollBtn.dataset.show = (!entry.isIntersecting).toString();
 		});
 	}

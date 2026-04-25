@@ -1,8 +1,8 @@
 ---
-title: "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Id"
-description: "This post is purely for testing if the css is correct for the title on the page"
-publishDate: "01 Feb 2023"
-tags: ["test"]
+title: "这是一篇用于测试长标题样式的文章，它的标题非常长，用来验证CSS在不同屏幕尺寸下的显示效果"
+description: "这篇文章纯粹用于测试页面上标题的 CSS 是否正确"
+publishDate: "2023-02-01"
+tags: ["测试"]
 ---
 
-## Testing the title tag
+## 测试标题标签

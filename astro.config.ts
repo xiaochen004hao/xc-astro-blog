@@ -57,7 +57,7 @@ export default defineConfig({
 			],
 			start_url: "/",
 			background_color: "#1d1f21",
-			theme_color: "#2bbc8a",
+			theme_color: "#25eaea",
 			display: "standalone",
 			config: {
 				insertFaviconLinks: false,

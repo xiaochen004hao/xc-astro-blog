@@ -1,104 +1,104 @@
 ---
-title: "A post of Markdown elements"
-description: "This post is for testing and listing a number of different markdown elements"
-publishDate: "22 Feb 2023"
-updatedDate: 22 Jan 2024
-tags: ["test", "markdown"]
+title: "Markdown 元素示例文章"
+description: "这篇文章用于测试和列出多种不同的 Markdown 元素"
+publishDate: "2023-02-22"
+updatedDate: "2024-01-22"
+tags: ["测试", "markdown"]
 pinned: true
 ---
 
-## This is a H2 Heading
+## 这是一个二级标题
 
-### This is a H3 Heading
+### 这是一个三级标题
 
-#### This is a H4 Heading
+#### 这是一个四级标题
 
-##### This is a H5 Heading
+##### 这是一个五级标题
 
-###### This is a H6 Heading
+###### 这是一个六级标题
 
-## Horizontal Rules
-
----
+## 水平分割线
 
 ---
 
 ---
 
-## Emphasis
+---
 
-**This is bold text**
+## 强调
 
-_This is italic text_
+**这是粗体文本**
 
-~~Strikethrough~~
+_这是斜体文本_
 
-## Quotes
+~~删除线~~
 
-"Double quotes" and 'single quotes'
+## 引号
 
-## Blockquotes
+"双引号" 和 '单引号'
 
-> Blockquotes can also be nested...
+## 引用块
+
+> 引用块也可以嵌套...
 >
-> > ...by using additional greater-than signs right next to each other...
+> > ...通过在彼此旁边使用额外的大于号...
 
-## References
+## 参考文献
 
-An example containing a clickable reference[^1] with a link to the source.
+一个包含可点击参考文献[^1]并链接到来源的示例。
 
-Second example containing a reference[^2] with a link to the source.
+第二个包含参考文献[^2]并链接到来源的示例。
 
-[^1]: Reference first footnote with a return to content link.
+[^1]: 第一个参考文献，带有返回内容的链接。
 
-[^2]: Second reference with a link.
+[^2]: 第二个参考文献，带有链接。
 
-If you check out this example in `src/content/post/markdown-elements/index.md`, you'll notice that the references and the heading "Footnotes" are added to the bottom of the page via the [remark-rehype](https://github.com/remarkjs/remark-rehype#options) plugin.
+如果你查看 `src/content/post/markdown-elements/index.md` 中的这个示例，你会注意到参考文献和"脚注"标题是通过 [remark-rehype](https://github.com/remarkjs/remark-rehype#options) 插件添加到页面底部的。
 
-## Lists
+## 列表
 
-Unordered
+无序列表
 
-- Create a list by starting a line with `+`, `-`, or `*`
-- Sub-lists are made by indenting 2 spaces:
-  - Marker character change forces new list start:
-    - Ac tristique libero volutpat at
-    - Facilisis in pretium nisl aliquet
-    - Nulla volutpat aliquam velit
-- Very easy!
+- 通过以 `+`、`-` 或 `*` 开始一行来创建列表
+- 子列表通过缩进 2 个空格来创建：
+  - 标记字符更改强制开始新列表：
+    - 自由旋转的松散装饰
+    - 在价格中轻松处理黑色列表
+    - 没有旋转的装饰价值
+- 非常简单！
 
-Ordered
+有序列表
 
-1. Lorem ipsum dolor sit amet
-2. Consectetur adipiscing elit
-3. Integer molestie lorem at massa
+1. 这是有序列表的第一项
+2. 这是有序列表的第二项
+3. 这是有序列表的第三项
 
-4. You can use sequential numbers...
-5. ...or keep all the numbers as `1.`
+4. 你可以使用顺序数字...
+5. ...或者将所有数字保持为 `1.`
 
-Start numbering with offset:
+从偏移量开始编号：
 
-57. foo
-1. bar
+57. 第一个项目
+1. 第二个项目
 
-## Code
+## 代码
 
-Inline `code`
+内联 `代码`
 
-Indented code
+缩进代码
 
-    // Some comments
-    line 1 of code
-    line 2 of code
-    line 3 of code
+    // 一些注释
+    代码第 1 行
+    代码第 2 行
+    代码第 3 行
 
-Block code "fences"
+代码块 "围栏"
 
 ```
-Sample text here...
+示例文本...
 ```
 
-Syntax highlighting
+语法高亮
 
 ```js
 var foo = function (bar) {
@@ -108,67 +108,67 @@ var foo = function (bar) {
 console.log(foo(5));
 ```
 
-### Expressive code examples
+### 表达式代码示例
 
-Adding a title
+添加标题
 
 ```js title="file.js"
-console.log("Title example");
+console.log("标题示例");
 ```
 
-A bash terminal
+一个 bash 终端
 
 ```bash
-echo "A base terminal example"
+echo "基本终端示例"
 ```
 
-Highlighting code lines
+高亮代码行
 
 ```js title="line-markers.js" del={2} ins={3-4} {6}
 function demo() {
-	console.log("this line is marked as deleted");
-	// This line and the next one are marked as inserted
-	console.log("this is the second inserted line");
+	console.log("此行被标记为已删除");
+	// 此行和下一行被标记为已插入
+	console.log("这是第二行插入的行");
 
-	return "this line uses the neutral default marker type";
+	return "此行使用中性默认标记类型";
 }
 ```
 
-[Expressive Code](https://expressive-code.com/) can do a ton more than shown here, and includes a lot of [customisation](https://expressive-code.com/reference/configuration/).
+[Expressive Code](https://expressive-code.com/) 可以做比这里展示的更多事情，并包含大量[自定义选项](https://expressive-code.com/reference/configuration/)。
 
-## Tables
+## 表格
 
-| Option | Description                                                               |
+| 选项 | 描述                                                                       |
 | ------ | ------------------------------------------------------------------------- |
-| data   | path to data files to supply the data that will be passed into templates. |
-| engine | engine to be used for processing templates. Handlebars is the default.    |
-| ext    | extension to be used for dest files.                                      |
+| data   | 数据文件的路径，用于提供将传递到模板中的数据。                             |
+| engine | 用于处理模板的引擎。默认为 Handlebars。                                    |
+| ext    | 用于目标文件的扩展名。                                                     |
 
-### Table Alignment
+### 表格对齐
 
-| Item         | Price | # In stock |
+| 项目         | 价格 | 库存数量 |
 | ------------ | :---: | ---------: |
-| Juicy Apples | 1.99  |        739 |
-| Bananas      | 1.89  |          6 |
+| 多汁苹果     | 1.99  |        739 |
+| 香蕉         | 1.89  |          6 |
 
-### Keyboard elements
+### 键盘元素
 
-| Action                | Shortcut                                   |
+| 操作                 | 快捷键                                   |
 | --------------------- | ------------------------------------------ |
-| Vertical split        | <kbd>Alt+Shift++</kbd>                     |
-| Horizontal split      | <kbd>Alt+Shift+-</kbd>                     |
-| Auto split            | <kbd>Alt+Shift+d</kbd>                     |
-| Switch between splits | <kbd>Alt</kbd> + arrow keys                |
-| Resizing a split      | <kbd>Alt+Shift</kbd> + arrow keys          |
-| Close a split         | <kbd>Ctrl+Shift+W</kbd>                    |
-| Maximize a pane       | <kbd>Ctrl+Shift+P</kbd> + Toggle pane zoom |
+| 垂直分割             | <kbd>Alt+Shift++</kbd>                     |
+| 水平分割             | <kbd>Alt+Shift+-</kbd>                     |
+| 自动分割             | <kbd>Alt+Shift+d</kbd>                     |
+| 在分割之间切换       | <kbd>Alt</kbd> + 方向键                   |
+| 调整分割大小         | <kbd>Alt+Shift</kbd> + 方向键             |
+| 关闭分割             | <kbd>Ctrl+Shift+W</kbd>                    |
+| 最大化面板           | <kbd>Ctrl+Shift+P</kbd> + 切换面板缩放     |
 
-## Images
+## 图片
 
-Image in the same folder: `src/content/post/markdown-elements/logo.png`
+同一文件夹中的图片：`src/content/post/markdown-elements/logo.png`
 
-![Astro theme cactus logo](./logo.png)
+![Astro 主题 cactus logo](./logo.png)
 
-## Links
+## 链接
 
-[Content from markdown-it](https://markdown-it.github.io/)
+[来自 markdown-it 的内容](https://markdown-it.github.io/)

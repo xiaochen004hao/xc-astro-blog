@@ -5,4 +5,4 @@ publishDate: 2026-04-18
 tags: ["astro"]
 ---
 
-Hello world 🚀
+你好，世界 🚀

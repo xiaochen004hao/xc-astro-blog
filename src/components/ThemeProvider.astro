@@ -1,4 +1,4 @@
-{/* Inlined to avoid FOUC. This is a parser blocking script. */}
+{/* 内联以避免 FOUC（无样式内容闪烁）。这是一个解析器阻塞脚本。 */}
 <script is:inline>
 	const lightModePref = window.matchMedia("(prefers-color-scheme: light)");
 
@@ -16,29 +16,65 @@
 
 		const root = document.documentElement;
 
-		// root already set to newTheme, exit early
+		// 根元素已设置为新主题，提前退出
 		if (newTheme === root.getAttribute("data-theme")) {
 			return;
 		}
 
 		root.setAttribute("data-theme", newTheme);
 
+		// 更新favicon颜色
+		updateFavicon(newTheme);
+
 		if (typeof localStorage !== "undefined") {
 			localStorage.setItem("theme", newTheme);
 		}
 	}
 
-	// initial setup
+	function updateFavicon(theme) {
+		const favicon = document.querySelector('link[rel="icon"]');
+		if (!favicon) return;
+
+		const bgColor = theme === "dark" ? "oklch(0.18 0.03 195.09)" : "oklch(0.94 0.02 196.8)";
+		const iconColor = theme === "dark" ? "oklch(0.85 0.14 194.83)" : "oklch(0.47 0.08 194.77)";
+
+		// 创建SVG字符串
+		const svgString = `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28">
+    <rect x="-2" y="-2" width="28" height="28" fill="${bgColor}"/>
+    <path fill="${iconColor}" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/>
+</svg>`;
+
+		// 将SVG转换为data URL
+		const svgBlob = new Blob([svgString], { type: "image/svg+xml" });
+		const url = URL.createObjectURL(svgBlob);
+
+		// 更新favicon
+		favicon.href = url;
+
+		// 清理旧的URL对象
+		if (window.faviconUrl) {
+			URL.revokeObjectURL(window.faviconUrl);
+		}
+		window.faviconUrl = url;
+	}
+
+	// 初始设置
 	setTheme(getUserPref());
+	// 初始设置favicon
+	updateFavicon(getUserPref());
 
-	// View Transitions hook to restore theme
-	document.addEventListener("astro:after-swap", () => setTheme(getUserPref()));
+	// 视图过渡钩子，用于恢复主题
+	document.addEventListener("astro:after-swap", () => {
+		setTheme(getUserPref());
+		updateFavicon(getUserPref());
+	});
 
-	// listen for theme-change custom event, fired in src/components/ThemeToggle.astro
+	// 监听 theme-change 自定义事件，该事件在 src/components/ThemeToggle.astro 中触发
 	document.addEventListener("theme-change", (e) => {
 		setTheme(e.detail.theme);
 	});
 
-	// listen for prefers-color-scheme change.
+	// 监听 prefers-color-scheme（系统颜色偏好）变化。
 	lightModePref.addEventListener("change", (e) => setTheme(e.matches ? "light" : "dark"));
 </script>

@@ -19,5 +19,6 @@
 		"*.css": "tailwindcss"
 	},
     "tailwindCSS.experimental.configFile": "./src/styles/global.css",
-    "commentTranslate.source": "Bing"
+    "commentTranslate.source": "Bing",
+    "Codegeex.GenerationPreference": "automatic"
 }
