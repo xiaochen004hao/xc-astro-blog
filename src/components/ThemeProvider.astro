@@ -84,8 +84,8 @@
 	});
 
 	// 监听 prefers-color-scheme（系统颜色偏好）变化。
-	lightModePref.addEventListener(
+	darkModePref.addEventListener(
 		"change",
-		async (e) => await setTheme(e.matches ? "light" : "dark"),
+		async (e) => await setTheme(e.matches ? "dark" : "light"),
 	);
 </script>

@@ -8,8 +8,7 @@ interface Props {
 	title?: string;
 }
 
-const { headings } = Astro.props;
-const { title } = Astro.props;
+const { headings, title } = Astro.props;
 
 const toc = generateToc(headings);
 

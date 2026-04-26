@@ -52,37 +52,33 @@
 	</button>
 </theme-toggle>
 
-<script>
-	// 请注意，如果您在此组件之外触发 theme-change 事件，它将不会反映在按钮的 aria-checked 属性中。如果需要，您需要添加事件监听器。
+<script client:load>
 	import { rootInDarkMode } from "@/utils/domElement";
 
 	class ThemeToggle extends HTMLElement {
 		constructor() {
 			super();
+			this.init();
+		}
+
+		init() {
 			const button = this.querySelector<HTMLButtonElement>("button");
-
-			if (button) {
-				// 设置 aria 角色值
-				button.setAttribute("role", "switch");
-				button.setAttribute("aria-checked", String(rootInDarkMode()));
-
-				// 按钮事件
-				button.addEventListener("click", () => {
-					// 切换主题
-					let themeChangeEvent = new CustomEvent("theme-change", {
-						detail: {
-							theme: rootInDarkMode() ? "light" : "dark",
-						},
-					});
-					// 分发事件 -> ThemeProvider.astro
-					document.dispatchEvent(themeChangeEvent);
-
-					// 设置 aria-checked 属性
-					button.setAttribute("aria-checked", String(rootInDarkMode()));
-				});
-			} else {
+			if (!button) {
 				console.warn("Theme Toggle: No button found");
+				return;
 			}
+
+			button.setAttribute("role", "switch");
+			button.setAttribute("aria-checked", rootInDarkMode().toString());
+
+			button.addEventListener("click", () => {
+				document.dispatchEvent(
+					new CustomEvent("theme-change", {
+						detail: { theme: rootInDarkMode() ? "light" : "dark" },
+					}),
+				);
+				button.setAttribute("aria-checked", rootInDarkMode().toString());
+			});
 		}
 	}
 
