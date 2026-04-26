@@ -7,8 +7,10 @@ import tailwind from "@tailwindcss/vite";
 import { defineConfig, envField } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
+// @ts-ignore
 import robotsTxt from "astro-robots-txt";
 import webmanifest from "astro-webmanifest";
+import serviceWorker from "astrojs-service-worker";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
@@ -22,6 +24,10 @@ import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 // https://astro.build/config
 export default defineConfig({
 	site: siteConfig.url,
+	server: {
+		host: true,
+		port: 3000,
+	},
 	image: {
 		domains: ["webmention.io"],
 	},
@@ -64,7 +70,8 @@ export default defineConfig({
 				insertThemeColorMeta: false,
 				insertManifestLink: false,
 			},
-		}),
+        }),
+        serviceWorker(),
 	],
 	markdown: {
 		rehypePlugins: [
