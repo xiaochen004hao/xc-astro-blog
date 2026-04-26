@@ -13,19 +13,19 @@ interface TocOpts {
 /** Inject a ToC entry as deep in the tree as its `depth` property requires. */
 function injectChild(items: TocItem[], item: TocItem): void {
 	const lastItem = items.at(-1);
-	if (!lastItem || lastItem.depth >= item.depth) {
+	if (!lastItem) {
 		items.push(item);
-	} else {
+	} else if (lastItem.depth < item.depth) {
 		injectChild(lastItem.children, item);
-		return;
+	} else {
+		items.push(item);
 	}
 }
 
 export function generateToc(
 	headings: ReadonlyArray<MarkdownHeading>,
-	{ maxHeadingLevel = 4, minHeadingLevel = 2 }: TocOpts = {},
+	{ maxHeadingLevel = 6, minHeadingLevel = 1 }: TocOpts = {},
 ) {
-	// by default this ignores/filters out h1 and h5 heading(s)
 	const bodyHeadings = headings.filter(
 		({ depth }) => depth >= minHeadingLevel && depth <= maxHeadingLevel,
 	);

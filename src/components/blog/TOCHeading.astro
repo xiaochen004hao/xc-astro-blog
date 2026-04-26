@@ -10,11 +10,21 @@ const {
 } = Astro.props;
 ---
 
-<li class={`${depth > 2 ? "ms-2" : ""}`}>
-	<a
-		class={`toc-link line-clamp-2 hover:text-accent ${depth <= 2 ? "mt-3" : "mt-2 text-xs"}`}
-		href={`#${slug}`}><span aria-hidden="true" class="me-0.5">#</span>{text}</a
-	>
+<li class={`${depth > 1 ? "ms-2" : ""}`}>
+	<dir
+		><a
+			class={`toc-link line-clamp-2 hover:text-accent ${
+                depth === 0 ? "mt-3 text-lg" :
+				depth === 1 ? "mt-2 text-sm" :
+				depth === 2 ? "mt-2 text-sm" :
+				depth === 3 ? "mt-1 text-xs" :
+				depth === 4 ? "mt-1 text-xs" :
+				depth === 5 ? "mt-1 text-xs" :
+				"mt-1 text-xs"
+			}`}
+			href={`#${slug}`}><span aria-hidden="true" class="me-0.5">{depth > 0 ? "#" : ""}</span>{text}</a
+		>
+	</dir>
 	{
 		!!children.length && (
 			<ol>

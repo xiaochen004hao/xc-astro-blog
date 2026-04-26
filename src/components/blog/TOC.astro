@@ -5,11 +5,23 @@ import TOCHeading from "./TOCHeading.astro";
 
 interface Props {
 	headings: MarkdownHeading[];
+	title?: string;
 }
 
 const { headings } = Astro.props;
+const { title } = Astro.props;
 
 const toc = generateToc(headings);
+
+// 手动添加 h1 标题到 TOC 的开头
+if (title) {
+	toc.unshift({
+		depth: 0,
+		slug: "blog-title",
+		text: title,
+		children: [],
+	});
+}
 ---
 
 <details open class="lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64">

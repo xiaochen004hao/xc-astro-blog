@@ -1,0 +1,13 @@
+<svg
+    aria-hidden="true"
+    class="me-3 h-10 w-10 hue-rotate-180 invert transition-[filter] duration-300 ease-in-out sm:absolute sm:-start-18 sm:me-0 sm:h-15 sm:w-15 dark:hue-rotate-0 dark:invert-0"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="-2 -2 28 28"
+>
+    <title>Xiaochen004hao's Blog Logo</title>
+    <rect x="-2" y="-2" width="28" height="28" fill="#031616"></rect>
+    <path
+        fill="#25eaea"
+        d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"></path>
+</svg>

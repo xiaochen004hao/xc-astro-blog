@@ -1,13 +1,13 @@
 {/* 内联以避免 FOUC（无样式内容闪烁）。这是一个解析器阻塞脚本。 */}
 <script is:inline>
-	const lightModePref = window.matchMedia("(prefers-color-scheme: light)");
+	const darkModePref = window.matchMedia("(prefers-color-scheme: dark)");
 
 	function getUserPref() {
 		const storedTheme = typeof localStorage !== "undefined" && localStorage.getItem("theme");
-		return storedTheme || (lightModePref.matches ? "light" : "dark");
+		return storedTheme || (darkModePref.matches ? "dark" : "light");
 	}
 
-	function setTheme(newTheme) {
+	async function setTheme(newTheme) {
 		if (newTheme !== "light" && newTheme !== "dark") {
 			return console.warn(
 				`Invalid theme value '${newTheme}' received. Expected 'light' or 'dark'.`,
@@ -23,59 +23,69 @@
 
 		root.setAttribute("data-theme", newTheme);
 
-		// 更新favicon颜色
-		updateFavicon(newTheme);
+		// 更新favicon
+		await updateFavicon(newTheme);
 
 		if (typeof localStorage !== "undefined") {
 			localStorage.setItem("theme", newTheme);
 		}
 	}
 
-	function updateFavicon(theme) {
-		const favicon = document.querySelector('link[rel="icon"]');
-		if (!favicon) return;
+	async function updateFavicon(theme) {
+		const lightFavicon = document.getElementById("favicon-light");
+		const darkFavicon = document.getElementById("favicon-dark");
 
-		const bgColor = theme === "dark" ? "oklch(0.18 0.03 195.09)" : "oklch(0.94 0.02 196.8)";
-		const iconColor = theme === "dark" ? "oklch(0.85 0.14 194.83)" : "oklch(0.47 0.08 194.77)";
-
-		// 创建SVG字符串
-		const svgString = `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28">
-    <rect x="-2" y="-2" width="28" height="28" fill="${bgColor}"/>
-    <path fill="${iconColor}" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/>
-</svg>`;
-
-		// 将SVG转换为data URL，并添加时间戳参数强制刷新
-		const url = `data:image/svg+xml;base64,${btoa(svgString)}?t=${Date.now()}`;
-
-		// 移除旧的favicon元素
-		favicon.remove();
-
-		// 创建新的favicon元素
-		const newFavicon = document.createElement('link');
-		newFavicon.rel = 'icon';
-		newFavicon.href = url;
-		
-		// 添加到head中
-		document.head.appendChild(newFavicon);
+		if (theme === "dark") {
+			if (lightFavicon) lightFavicon.remove();
+			if (darkFavicon) {
+				darkFavicon.removeAttribute("media");
+				darkFavicon.setAttribute("rel", "icon");
+			} else {
+				// 如果暗色favicon不存在，创建它
+				const newFavicon = document.createElement("link");
+				newFavicon.id = "favicon-dark";
+				newFavicon.rel = "icon";
+				newFavicon.type = "image/svg+xml";
+				newFavicon.href = "/icon-dark.svg";
+				document.head.appendChild(newFavicon);
+			}
+		} else {
+			if (darkFavicon) darkFavicon.remove();
+			if (lightFavicon) {
+				lightFavicon.removeAttribute("media");
+				lightFavicon.setAttribute("rel", "icon");
+			} else {
+				// 如果亮色favicon不存在，创建它
+				const newFavicon = document.createElement("link");
+				newFavicon.id = "favicon-light";
+				newFavicon.rel = "icon";
+				newFavicon.type = "image/svg+xml";
+				newFavicon.href = "/icon-light.svg";
+				document.head.appendChild(newFavicon);
+			}
+		}
 	}
 
 	// 初始设置
-	setTheme(getUserPref());
-	// 初始设置favicon
-	updateFavicon(getUserPref());
+	(async () => {
+		await setTheme(getUserPref());
+		await updateFavicon(getUserPref());
+	})();
 
 	// 视图过渡钩子，用于恢复主题
-	document.addEventListener("astro:after-swap", () => {
-		setTheme(getUserPref());
-		updateFavicon(getUserPref());
+	document.addEventListener("astro:after-swap", async () => {
+		await setTheme(getUserPref());
+		await updateFavicon(getUserPref());
 	});
 
 	// 监听 theme-change 自定义事件，该事件在 src/components/ThemeToggle.astro 中触发
-	document.addEventListener("theme-change", (e) => {
-		setTheme(e.detail.theme);
+	document.addEventListener("theme-change", async (e) => {
+		await setTheme(e.detail.theme);
 	});
 
 	// 监听 prefers-color-scheme（系统颜色偏好）变化。
-	lightModePref.addEventListener("change", (e) => setTheme(e.matches ? "light" : "dark"));
+	lightModePref.addEventListener(
+		"change",
+		async (e) => await setTheme(e.matches ? "light" : "dark"),
+	);
 </script>
