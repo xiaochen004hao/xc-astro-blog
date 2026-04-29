@@ -1,20 +1,20 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distPath = path.join(__dirname, 'dist');
+const distPath = path.join(__dirname, "dist");
 
 try {
-  if (fs.existsSync(distPath)) {
-    console.log('正在删除 dist 目录...');
-    fs.rmSync(distPath, { recursive: true, force: true });
-    console.log('dist 目录已成功删除');
-  } else {
-    console.log('dist 目录不存在');
-  }
+	if (fs.existsSync(distPath)) {
+		console.log("正在删除 dist 目录...");
+		fs.rmSync(distPath, { recursive: true, force: true });
+		console.log("dist 目录已成功删除");
+	} else {
+		console.log("dist 目录不存在");
+	}
 } catch (error) {
-  console.error('删除 dist 目录时出错:', error);
-  process.exit(1);
+	console.warn("删除 dist 目录时出错，跳过清理:", error);
+	// 不中断构建流程：如果无法删除 dist，继续构建（可能为预览/锁定文件造成）
 }

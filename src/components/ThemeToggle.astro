@@ -52,7 +52,8 @@
 	</button>
 </theme-toggle>
 
-<script client:load>
+<!-- @ts-expect-error -->
+<script>
 	import { rootInDarkMode } from "@/utils/domElement";
 
 	class ThemeToggle extends HTMLElement {

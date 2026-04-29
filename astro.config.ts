@@ -7,10 +7,9 @@ import tailwind from "@tailwindcss/vite";
 import { defineConfig, envField } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-// @ts-ignore
+// @ts-expect-error
 import robotsTxt from "astro-robots-txt";
 import webmanifest from "astro-webmanifest";
-import serviceWorker from "astrojs-service-worker";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
@@ -70,8 +69,7 @@ export default defineConfig({
 				insertThemeColorMeta: false,
 				insertManifestLink: false,
 			},
-        }),
-        serviceWorker(),
+		}),
 	],
 	markdown: {
 		rehypePlugins: [

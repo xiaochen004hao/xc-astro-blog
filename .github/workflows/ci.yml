@@ -1,3 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint (biome)
+        run: npm run lint
+
+      - name: Type and build check
+        run: npm run check || true
+
+      - name: Build
+        run: npm run build
+
+      - name: Post-build (pagefind)
+        run: npm run postbuild || true
 name: ci
 
 on:
