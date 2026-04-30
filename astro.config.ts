@@ -19,6 +19,10 @@ import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 // https://astro.build/config
 export default defineConfig({
     site: siteConfig.url,
+    prefetch: {
+        defaultStrategy: "viewport",
+        prefetchAll: false,
+    },
     server: {
         host: true,
         port: 3000,

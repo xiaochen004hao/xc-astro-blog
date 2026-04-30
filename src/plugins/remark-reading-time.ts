@@ -6,5 +6,7 @@ import getReadingTime from "reading-time";
 export const remarkReadingTime: Plugin<[], Root> = () => (tree, vfile) => {
 	const textOnPage = mdastToString(tree);
 	const readingTime = getReadingTime(textOnPage);
-	vfile.data.astro.frontmatter.readingTime = readingTime.text;
+	if (vfile.data.astro?.frontmatter) {
+		vfile.data.astro.frontmatter.readingTime = readingTime.text;
+	}
 };

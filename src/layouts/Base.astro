@@ -61,7 +61,7 @@ const {
 		<script>
 			if (typeof window !== "undefined" && "serviceWorker" in navigator) {
 				let updatePending = false;
-				let swRegistration = null;
+				let swRegistration: ServiceWorkerRegistration | null = null;
 
 				const showUpdateBanner = () => {
 					if (updatePending) return;
@@ -128,26 +128,6 @@ const {
 					if (target.id === "sw-update-button") activateWaitingSW();
 					if (target.id === "sw-dismiss-button") hideUpdateBanner();
 				});
-			}
-		</script>
-		<script is:inline type="speculationrules">
-			{
-				"prefetch": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "moderate"
-					}
-				],
-				"prerender": [
-					{
-						"where": {
-							"href_matches": "/*"
-						},
-						"eagerness": "conservative"
-					}
-				]
 			}
 		</script>
 	</body>

@@ -1,87 +1,85 @@
 import Lenis from "lenis";
 
-declare global {
-	interface Window {
-		lenis?: Lenis;
-	}
-}
+let lenisInstance: Lenis | null = null;
 
 function initLenis() {
-	if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
 
-	if (window.lenis && typeof window.lenis.destroy === "function") {
-		try {
-			window.lenis.destroy();
-		} catch {
-			/* ignore */
-		}
-		delete window.lenis;
-	}
+    if (lenisInstance) {
+        try {
+            lenisInstance.destroy();
+        } catch {
+            /* ignore */
+        }
+        lenisInstance = null;
+    }
 
-	const prefersReduced =
-		window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-	if (prefersReduced) return;
+    const prefersReduced =
+        window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) return;
 
-	const lenis = new Lenis({
-		duration: 1.2,
-		easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
-		smoothWheel: true,
-		wheelMultiplier: 0.8,
-		smoothTouch: false,
-		autoRaf: false,
-	});
+    lenisInstance = new Lenis({
+        duration: 1.2,
+        easing: (t: number) => Math.min(1, 1.001 - 2 ** (-10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: 0.8,
+        syncTouch: false,
+        autoRaf: false,
+    });
 
-	window.lenis = lenis;
+    let rafId: number | null = null;
+    const loop = (time: number) => {
+        if (!lenisInstance) return;
+        try {
+            lenisInstance.raf(time);
+        } catch {
+            /* ignore */
+        }
+        rafId = requestAnimationFrame(loop);
+    };
 
-	let rafId: number | null = null;
-	const loop = (time: number) => {
-		try {
-			lenis.raf(time);
-		} catch {
-			/* ignore */
-		}
-		rafId = requestAnimationFrame(loop);
-	};
+    rafId = requestAnimationFrame(loop);
 
-	rafId = requestAnimationFrame(loop);
+    const onVisibility = () => {
+        if (document.hidden) {
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        } else if (!rafId) {
+            rafId = requestAnimationFrame(loop);
+        }
+    };
+    document.addEventListener("visibilitychange", onVisibility, { passive: true });
 
-	const onVisibility = () => {
-		if (document.hidden) {
-			if (rafId) {
-				cancelAnimationFrame(rafId);
-				rafId = null;
-			}
-		} else if (!rafId) {
-			rafId = requestAnimationFrame(loop);
-		}
-	};
-	document.addEventListener("visibilitychange", onVisibility, { passive: true });
+    const onResize = () => {
+        if (!lenisInstance) return;
+        try {
+            lenisInstance.resize();
+        } catch {
+            /* ignore */
+        }
+    };
+    window.addEventListener("resize", onResize, { passive: true });
 
-	const onResize = () => {
-		try {
-			lenis.resize();
-		} catch {
-			/* ignore */
-		}
-	};
-	window.addEventListener("resize", onResize, { passive: true });
+    const cleanup = () => {
+        document.removeEventListener("visibilitychange", onVisibility);
+        window.removeEventListener("resize", onResize);
+        if (rafId) cancelAnimationFrame(rafId);
+        if (lenisInstance) {
+            try {
+                lenisInstance.destroy();
+            } catch {
+                /* ignore */
+            }
+            lenisInstance = null;
+        }
+    };
 
-	const cleanup = () => {
-		document.removeEventListener("visibilitychange", onVisibility);
-		window.removeEventListener("resize", onResize);
-		if (rafId) cancelAnimationFrame(rafId);
-		try {
-			lenis.destroy();
-		} catch {
-			/* ignore */
-		}
-		delete window.lenis;
-	};
-
-	document.addEventListener("astro:before-swap", cleanup, { once: true });
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
 }
 
 initLenis();
 document.addEventListener("astro:page-load", initLenis);
 
-export {};
+export { };

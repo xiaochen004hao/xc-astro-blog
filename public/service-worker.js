@@ -1,25 +1,16 @@
-const CACHE_VERSION = "v1.1.1";
+const CACHE_VERSION = "v2.0.0";
 const CACHE_NAME = `xcblog-${CACHE_VERSION}`;
 
-const PRECACHE_ASSETS = ["/manifest.webmanifest", "/icon.svg", "/icon-light.svg", "/icon-dark.svg"];
+const PRECACHE_ASSETS = [
+    "/manifest.webmanifest",
+    "/icon.svg",
+    "/icon-light.svg",
+    "/icon-dark.svg",
+    "/favicon.ico",
+    "https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/style.css",
+];
 
-const STATIC_EXT = new Set([
-	".woff2",
-	".woff",
-	".ttf",
-	".css",
-	".js",
-	".png",
-	".jpg",
-	".jpeg",
-	".gif",
-	".svg",
-	".webp",
-	".avif",
-	".ico",
-	".webmanifest",
-	".xml",
-]);
+const PAGEFIND_CORE = __PAGEFIND_FILES__;
 
 const OFFLINE_PAGE = `
 <!DOCTYPE html>
@@ -49,145 +40,115 @@ const OFFLINE_PAGE = `
 `;
 
 self.addEventListener("install", (event) => {
-	event.waitUntil(
-		(async () => {
-			const cache = await caches.open(CACHE_NAME);
-			await Promise.allSettled(
-				PRECACHE_ASSETS.map((url) =>
-					cache.add(url).catch((e) => {
-						console.warn(`Failed to cache: ${url}`, e);
-					}),
-				),
-			);
-		})(),
-	);
-	self.skipWaiting();
+    event.waitUntil(
+        (async () => {
+            const cache = await caches.open(CACHE_NAME);
+            await Promise.allSettled(
+                [...PRECACHE_ASSETS, ...PAGEFIND_CORE].map((url) =>
+                    cache.add(url).catch(() => { }),
+                ),
+            );
+        })(),
+    );
+    self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
-	event.waitUntil(
-		(async () => {
-			const cacheNames = await caches.keys();
-			await Promise.all(
-				cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)),
-			);
-			await self.clients.claim();
-		})(),
-	);
+    event.waitUntil(
+        (async () => {
+            const cacheNames = await caches.keys();
+            await Promise.all(
+                cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)),
+            );
+            await self.clients.claim();
+        })(),
+    );
 });
 
 self.addEventListener("fetch", (event) => {
-	const { request } = event;
-	const url = new URL(request.url);
+    const { request } = event;
+    const url = new URL(request.url);
 
-	if (request.method !== "GET") return;
-	if (!url.protocol.startsWith("http")) return;
+    if (request.method !== "GET") return;
+    if (!url.protocol.startsWith("http")) return;
 
-	if (isStaticAsset(url)) {
-		event.respondWith(cacheFirst(request));
-	} else if (isHtmlPage(request)) {
-		event.respondWith(staleWhileRevalidate(request));
-	} else {
-		event.respondWith(networkFirst(request));
-	}
+    if (isHtmlPage(request)) {
+        event.respondWith(staleWhileRevalidate(request));
+    } else {
+        event.respondWith(cacheFirst(request));
+    }
 });
 
-function isStaticAsset(url) {
-	return (
-		url.pathname.startsWith("/_astro/") ||
-		url.pathname.startsWith("/icons/") ||
-		STATIC_EXT.has(url.pathname.slice(url.pathname.lastIndexOf(".")))
-	);
-}
-
 function isHtmlPage(request) {
-	const acceptHeader = request.headers.get("Accept") || "";
-	return (
-		acceptHeader.includes("text/html") ||
-		request.mode === "navigate" ||
-		request.destination === "document"
-	);
+    const acceptHeader = request.headers.get("Accept") || "";
+    return (
+        acceptHeader.includes("text/html") ||
+        request.mode === "navigate" ||
+        request.destination === "document"
+    );
 }
 
 async function cacheFirst(request) {
-	const cachedResponse = await caches.match(request);
-	if (cachedResponse) return cachedResponse;
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) return cachedResponse;
 
-	try {
-		const networkResponse = await fetch(request);
-		if (networkResponse.ok) {
-			const cache = await caches.open(CACHE_NAME);
-			cache.put(request, networkResponse.clone());
-		}
-		return networkResponse;
-	} catch {
-		if (request.mode === "navigate") {
-			const indexResponse = await caches.match("/");
-			if (indexResponse) return indexResponse;
-			return getOfflinePage();
-		}
-		return new Response("", { status: 503, statusText: "Offline" });
-	}
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch {
+        if (request.mode === "navigate") {
+            const indexResponse = await caches.match("/");
+            if (indexResponse) return indexResponse;
+            return getOfflinePage();
+        }
+        return new Response("", { status: 503, statusText: "Offline" });
+    }
 }
 
 async function staleWhileRevalidate(request) {
-	const cachedResponse = await caches.match(request);
+    const cachedResponse = await caches.match(request);
 
-	if (cachedResponse) {
-		fetch(request)
-			.then((networkResponse) => {
-				if (networkResponse.ok) {
-					caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
-				}
-			})
-			.catch(() => {});
-		return cachedResponse;
-	}
+    if (cachedResponse) {
+        fetch(request)
+            .then((networkResponse) => {
+                if (networkResponse.ok) {
+                    caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
+                }
+            })
+            .catch(() => { });
+        return cachedResponse;
+    }
 
-	try {
-		const networkResponse = await fetch(request);
-		if (networkResponse.ok) {
-			const cache = await caches.open(CACHE_NAME);
-			cache.put(request, networkResponse.clone());
-		}
-		return networkResponse;
-	} catch {
-		const fallbackResponse = await caches.match(request);
-		if (fallbackResponse) return fallbackResponse;
-
-		if (request.mode === "navigate") {
-			const indexResponse = await caches.match("/");
-			if (indexResponse) return indexResponse;
-			return getOfflinePage();
-		}
-		return new Response("", { status: 503, statusText: "Offline" });
-	}
-}
-
-async function networkFirst(request) {
-	try {
-		const networkResponse = await fetch(request);
-		if (networkResponse.ok) {
-			const cache = await caches.open(CACHE_NAME);
-			cache.put(request, networkResponse.clone());
-		}
-		return networkResponse;
-	} catch {
-		const cachedResponse = await caches.match(request);
-		if (cachedResponse) return cachedResponse;
-		return new Response("", { status: 503, statusText: "Offline" });
-	}
+    try {
+        const networkResponse = await fetch(request);
+        if (networkResponse.ok) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+    } catch {
+        if (request.mode === "navigate") {
+            const indexResponse = await caches.match("/");
+            if (indexResponse) return indexResponse;
+            return getOfflinePage();
+        }
+        return new Response("", { status: 503, statusText: "Offline" });
+    }
 }
 
 function getOfflinePage() {
-	return new Response(OFFLINE_PAGE, {
-		status: 503,
-		headers: { "Content-Type": "text/html; charset=utf-8" },
-	});
+    return new Response(OFFLINE_PAGE, {
+        status: 503,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
 }
 
 self.addEventListener("message", (event) => {
-	if (event.data && event.data.type === "SKIP_WAITING") {
-		self.skipWaiting();
-	}
+    if (event.data && event.data.type === "SKIP_WAITING") {
+        self.skipWaiting();
+    }
 });
