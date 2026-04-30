@@ -8,6 +8,7 @@ import icon from "astro-icon";
 import robotsTxt from "astro-robots-txt";
 import webmanifest from "astro-webmanifest";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
+import rehypeSlug from "rehype-slug";
 import rehypeExternalLinks from "rehype-external-links";
 import rehypeUnwrapImages from "rehype-unwrap-images";
 import remarkDirective from "remark-directive";
@@ -42,23 +43,6 @@ export default defineConfig({
             description: siteConfig.description,
             lang: siteConfig.lang,
             icon: "public/icon.svg",
-            icons: [
-                {
-                    src: "icons/apple-touch-icon.png",
-                    sizes: "180x180",
-                    type: "image/png",
-                },
-                {
-                    src: "icons/icon-192.png",
-                    sizes: "192x192",
-                    type: "image/png",
-                },
-                {
-                    src: "icons/icon-512.png",
-                    sizes: "512x512",
-                    type: "image/png",
-                },
-            ],
             start_url: "/",
             background_color: "#1d1f21",
             theme_color: "#25eaea",
@@ -72,6 +56,7 @@ export default defineConfig({
     ],
     markdown: {
         rehypePlugins: [
+            rehypeSlug,
             [rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["not-prose"] } }],
             [
                 rehypeExternalLinks,
