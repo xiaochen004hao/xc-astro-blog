@@ -1,0 +1,8 @@
+article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img) {
+	cursor: zoom-in;
+}
+
+.medium-zoom-overlay,
+.medium-zoom-image--opened {
+	z-index: 999;
+}

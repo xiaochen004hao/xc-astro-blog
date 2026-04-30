@@ -25,6 +25,13 @@ function initLenis() {
         wheelMultiplier: 0.8,
         syncTouch: false,
         autoRaf: false,
+        prevent: (node: Element) => {
+            if (!node) return false;
+            return (
+                node.hasAttribute("data-lenis-prevent") ||
+                node.closest("[data-lenis-prevent]") !== null
+            );
+        },
     });
 
     let rafId: number | null = null;
@@ -67,16 +74,14 @@ function initLenis() {
         window.removeEventListener("resize", onResize);
         if (rafId) cancelAnimationFrame(rafId);
         if (lenisInstance) {
-            try {
-                lenisInstance.destroy();
-            } catch {
-                /* ignore */
-            }
+            try { lenisInstance.destroy(); } catch { /* ignore */ }
             lenisInstance = null;
         }
     };
 
-    document.addEventListener("astro:before-swap", cleanup, { once: true });
+    document.addEventListener("astro:before-swap", () => {
+        try { cleanup(); } catch { /* ignore */ }
+    }, { once: true });
 }
 
 initLenis();

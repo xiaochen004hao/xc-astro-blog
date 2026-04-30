@@ -2,6 +2,7 @@
 import { type CollectionEntry, render } from "astro:content";
 
 import Masthead from "@/components/blog/Masthead.astro";
+import PostNav from "@/components/blog/PostNav.astro";
 import TOC from "@/components/blog/TOC.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
 
@@ -9,9 +10,11 @@ import BaseLayout from "./Base.astro";
 
 interface Props {
 	post: CollectionEntry<"post">;
+	nextPost?: CollectionEntry<"post"> | null | undefined;
+	prevPost?: CollectionEntry<"post"> | null | undefined;
 }
 
-const { post } = Astro.props;
+const { post, nextPost, prevPost } = Astro.props;
 const { ogImage, title, description, updatedDate, publishDate } = post.data;
 const socialImage = ogImage ?? `/og-image/${post.id}.png`;
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
@@ -36,6 +39,7 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 			>
 				<slot />
 				<WebMentions />
+				<PostNav {nextPost} {prevPost} />
 			</div>
 		</div>
 	</article>

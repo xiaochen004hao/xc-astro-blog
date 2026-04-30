@@ -1,13 +1,56 @@
 ---
+import { menuLinks } from "@/site.config";
 import PageLayout from "@/layouts/Base.astro";
 
 const meta = {
 	description: "哎呀！看起来这个页面迷失在太空中！",
-	title: "哎呀！你找到了一个丢失的页面！",
+	title: "页面未找到",
 };
 ---
 
 <PageLayout meta={meta}>
-	<h1 class="title mb-12">404 | 哎呀，出了点问题</h1>
-	<p class="mb-8">请使用导航栏找到回去的路</p>
+	<div class="flex flex-col items-center justify-center py-16 text-center">
+		<div class="mb-8">
+			<svg
+				aria-hidden="true"
+				class="text-accent/60 mx-auto h-32 w-32"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1"
+				viewBox="0 0 24 24"
+			>
+				<path d="M0 0h24v24H0z" stroke="none"></path>
+				<path
+					d="M12 3c-1.57 0 -3.13 .52 -4.39 1.48a9 9 0 0 0 0 14.04a9 9 0 0 0 12.78 0a9 9 0 0 0 0 -14.04a9 9 0 0 0 -8.39 -1.48"
+					stroke-linecap="round"
+					stroke-linejoin="round"></path>
+				<path d="M12 7v4l2 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+				></path>
+				<path d="M8 3h8l1 3h-10z" stroke-linecap="round" stroke-linejoin="round"></path>
+			</svg>
+		</div>
+		<h1 class="text-accent text-7xl font-bold">404</h1>
+		<p class="text-muted mt-4 text-lg">这个页面似乎去了外太空...</p>
+		<p class="text-muted mt-1 text-sm">它可能已被移动、删除，或者从未存在过。</p>
+		<div class="mt-10 flex flex-wrap justify-center gap-4">
+			<a
+				class="bg-accent text-global-bg rounded-lg px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+				href="/"
+			>
+				返回首页
+			</a>
+			{
+				menuLinks
+					.filter((l) => l.path !== "/")
+					.map((link) => (
+						<a
+							class="hover:border-accent/40 rounded-lg border border-zinc-300 px-6 py-2.5 text-sm font-medium transition-colors dark:border-zinc-600"
+							href={link.path}
+						>
+							{link.title}
+						</a>
+					))
+			}
+		</div>
+	</div>
 </PageLayout>

@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+	nextPost?: CollectionEntry<"post"> | null | undefined;
+	prevPost?: CollectionEntry<"post"> | null | undefined;
+}
+
+const { nextPost, prevPost } = Astro.props;
+---
+
+{
+	(prevPost || nextPost) && (
+		<nav class="mt-16 border-t border-zinc-200 pt-8 dark:border-zinc-700">
+			<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+				{prevPost ? (
+					<a
+						class="group hover:border-accent/30 dark:hover:border-accent/30 block w-full rounded-lg border border-zinc-200 p-4 transition-colors dark:border-zinc-700"
+						href={`/posts/${prevPost.id}/`}
+					>
+						<span class="text-muted text-xs font-medium tracking-wider uppercase">← 上一篇</span>
+						<p class="group-hover:text-accent mt-1 line-clamp-1 text-sm font-medium transition-colors">
+							{prevPost.data.title}
+						</p>
+					</a>
+				) : (
+					<div />
+				)}
+				{nextPost ? (
+					<a
+						class="group hover:border-accent/30 dark:hover:border-accent/30 block w-full rounded-lg border border-zinc-200 p-4 text-right transition-colors dark:border-zinc-700"
+						href={`/posts/${nextPost.id}/`}
+					>
+						<span class="text-muted text-xs font-medium tracking-wider uppercase">下一篇 →</span>
+						<p class="group-hover:text-accent mt-1 line-clamp-1 text-sm font-medium transition-colors">
+							{nextPost.data.title}
+						</p>
+					</a>
+				) : (
+					<div />
+				)}
+			</div>
+		</nav>
+	)
+}

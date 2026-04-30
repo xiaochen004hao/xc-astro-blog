@@ -7,7 +7,8 @@ const PRECACHE_ASSETS = [
     "/icon-light.svg",
     "/icon-dark.svg",
     "/favicon.ico",
-    "https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/style.css",
+    "https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css",
+    "https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-bold.css",
 ];
 
 const PAGEFIND_CORE = __PAGEFIND_FILES__;
@@ -40,18 +41,27 @@ const OFFLINE_PAGE = `
 `;
 
 self.addEventListener("install", (event) => {
-    event.waitUntil(
-        (async () => {
-            const cache = await caches.open(CACHE_NAME);
-            await Promise.allSettled(
-                [...PRECACHE_ASSETS, ...PAGEFIND_CORE].map((url) =>
-                    cache.add(url).catch(() => { }),
-                ),
-            );
-        })(),
-    );
-    self.skipWaiting();
+    event.waitUntil(precacheAll());
 });
+
+async function precacheAll() {
+    const cache = await caches.open(CACHE_NAME);
+    const urls = [...PRECACHE_ASSETS, ...PAGEFIND_CORE];
+    const results = await Promise.allSettled(
+        urls.map((url) =>
+            fetch(url, { credentials: "same-origin" })
+                .then((res) => {
+                    if (res.ok) return cache.put(url, res);
+                    throw new Error(`HTTP ${res.status}`);
+                })
+                .catch((err) => {
+                    console.warn(`[SW] precache failed: ${url}`, err.message);
+                }),
+        ),
+    );
+    const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    console.log(`[SW] precached ${succeeded}/${urls.length} assets`);
+}
 
 self.addEventListener("activate", (event) => {
     event.waitUntil(
@@ -60,7 +70,6 @@ self.addEventListener("activate", (event) => {
             await Promise.all(
                 cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name)),
             );
-            await self.clients.claim();
         })(),
     );
 });
@@ -73,7 +82,7 @@ self.addEventListener("fetch", (event) => {
     if (!url.protocol.startsWith("http")) return;
 
     if (isHtmlPage(request)) {
-        event.respondWith(staleWhileRevalidate(request));
+        event.respondWith(networkFirst(request));
     } else {
         event.respondWith(cacheFirst(request));
     }
@@ -105,24 +114,11 @@ async function cacheFirst(request) {
             if (indexResponse) return indexResponse;
             return getOfflinePage();
         }
-        return new Response("", { status: 503, statusText: "Offline" });
+        return Response.error();
     }
 }
 
-async function staleWhileRevalidate(request) {
-    const cachedResponse = await caches.match(request);
-
-    if (cachedResponse) {
-        fetch(request)
-            .then((networkResponse) => {
-                if (networkResponse.ok) {
-                    caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
-                }
-            })
-            .catch(() => { });
-        return cachedResponse;
-    }
-
+async function networkFirst(request) {
     try {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
@@ -131,12 +127,14 @@ async function staleWhileRevalidate(request) {
         }
         return networkResponse;
     } catch {
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) return cachedResponse;
         if (request.mode === "navigate") {
             const indexResponse = await caches.match("/");
             if (indexResponse) return indexResponse;
             return getOfflinePage();
         }
-        return new Response("", { status: 503, statusText: "Offline" });
+        return Response.error();
     }
 }
 

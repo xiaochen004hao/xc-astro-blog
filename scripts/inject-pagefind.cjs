@@ -32,15 +32,15 @@ function walkDir(dir, base = "") {
 
 const pagefindFiles = walkDir(PAGEFIND_DIR);
 const fileListJson = JSON.stringify(pagefindFiles, null, "\t");
+const buildTimestamp = Date.now().toString(36);
 
 let swContent = fs.readFileSync(SW_SRC, "utf-8");
 
-const placeholder = "__PAGEFIND_FILES__";
+swContent = swContent.replace(
+	/const CACHE_VERSION = "[^"]*"/,
+	`const CACHE_VERSION = "v3.0.0-${buildTimestamp}"`,
+);
+swContent = swContent.replace("__PAGEFIND_FILES__", fileListJson);
 
-if (swContent.includes(placeholder)) {
-	swContent = swContent.replace(placeholder, fileListJson);
-	fs.writeFileSync(SW_SRC, swContent);
-	console.log(`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files into service-worker.js`);
-} else {
-	console.warn("[inject-pagefind] Placeholder not found in service-worker.js, skipping injection");
-}
+fs.writeFileSync(SW_SRC, swContent);
+console.log(`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files, cache v3.0.0-${buildTimestamp}`);

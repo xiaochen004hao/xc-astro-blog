@@ -35,5 +35,6 @@
     "Codegeex.GenerationPreference": "automatic",
     "[jsonc]": {
         "editor.defaultFormatter": "vscode.json-language-features"
-    }
+    },
+    "Codegeex.RepoIndex": true
 }

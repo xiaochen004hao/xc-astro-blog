@@ -37,10 +37,14 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 {/* DNS 预读取和预连接以加速字体加载 */}
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-{/* LXGW WenKai LITE font */}
+{/* LXGW WenKai LITE 仅加载正文常规+粗体 */}
 <link
 	rel="stylesheet"
-	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/style.css"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css"
+/>
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-bold.css"
 />
 {
 	import.meta.env.PROD && (

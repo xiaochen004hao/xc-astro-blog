@@ -12,7 +12,6 @@ const { headings, title } = Astro.props;
 
 const toc = generateToc(headings);
 
-// 手动添加 h1 标题到 TOC 的开头
 if (title) {
 	toc.unshift({
 		depth: 0,
@@ -23,7 +22,10 @@ if (title) {
 }
 ---
 
-<details open class="lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64">
+<details
+	class="toc-details group lg:sticky lg:top-12 lg:order-2 lg:-me-32 lg:basis-64"
+	id="toc-details"
+>
 	<summary class="title hover:marker:text-accent cursor-pointer text-lg">目录</summary>
 	<nav class="ms-4 lg:w-full">
 		<ol class="mt-4">
@@ -31,3 +33,13 @@ if (title) {
 		</ol>
 	</nav>
 </details>
+<script>
+	function tocEnsureOpen() {
+		const el = document.getElementById("toc-details") as HTMLDetailsElement | null;
+		if (el && window.matchMedia("(min-width: 1024px)").matches) {
+			el.open = true;
+		}
+	}
+	tocEnsureOpen();
+	document.addEventListener("astro:page-load", tocEnsureOpen);
+</script>

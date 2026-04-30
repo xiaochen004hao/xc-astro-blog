@@ -26,6 +26,11 @@ const {
 	<body
 		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-sans text-sm font-normal antialiased sm:px-8"
 	>
+		<div
+			id="reading-progress"
+			class="bg-accent fixed top-0 left-0 z-100 h-[2px] w-0 transition-[width] duration-150 ease-out"
+		>
+		</div>
 		<SkipLink />
 		<Header />
 
@@ -59,36 +64,79 @@ const {
 		</script>
 
 		<script>
+			import "@/scripts/progress-bar.ts";
+		</script>
+
+		<script>
+			import "@/scripts/medium-zoom.ts";
+		</script>
+
+		<script>
+			// 首次访问加载特效（JS 动态创建，避免 ClientRouter 交换时重复渲染）
+			(function initLoading() {
+				const KEY = "xc-loaded";
+				if (sessionStorage.getItem(KEY)) return;
+
+				const SITE_TITLE = "{siteConfig.title}";
+
+				const style = document.createElement("style");
+				style.textContent = `@keyframes xc-pulse{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}`;
+				document.head.appendChild(style);
+
+				const el = document.createElement("div");
+				el.id = "xc-loading";
+				Object.assign(el.style, {
+					position: "fixed",
+					inset: "0",
+					zIndex: "10000",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					flexDirection: "column",
+					background: "var(--color-global-bg)",
+					transition: "opacity 0.4s ease-out",
+				});
+				el.innerHTML = `<svg aria-hidden="true" style="width:88px;height:88px;animation:xc-pulse 1.6s ease-in-out infinite" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28"><rect x="-2" y="-2" width="28" height="28" fill="var(--color-logo-bg)"/><path fill="var(--color-logo-text)" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/></svg><p style="margin-top:1.25rem;font-size:1.25rem;font-weight:600;color:var(--color-accent);letter-spacing:.05em">${SITE_TITLE}</p>`;
+				document.body.prepend(el);
+
+				let done = false;
+				const minMs = 1400;
+				const maxMs = 6000;
+				const started = Date.now();
+
+				function hide() {
+					if (done) return;
+					done = true;
+					const elapsed = Date.now() - started;
+					const wait = Math.max(0, minMs - elapsed);
+					setTimeout(() => {
+						el.style.opacity = "0";
+						setTimeout(() => {
+							el.remove();
+							style.remove();
+							sessionStorage.setItem(KEY, "1");
+						}, 420);
+					}, wait);
+				}
+
+				window.addEventListener("load", hide);
+				setTimeout(hide, maxMs);
+			})();
+		</script>
+
+		<script>
 			if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-				let updatePending = false;
 				let swRegistration: ServiceWorkerRegistration | null = null;
+				let userRequestedUpdate = false;
 
 				const showUpdateBanner = () => {
-					if (updatePending) return;
-					updatePending = true;
 					const banner = document.getElementById("sw-update-banner");
 					if (banner) banner.classList.remove("hidden");
 				};
 
 				const hideUpdateBanner = () => {
-					updatePending = false;
 					const banner = document.getElementById("sw-update-banner");
 					if (banner) banner.classList.add("hidden");
-				};
-
-				const activateWaitingSW = () => {
-					if (swRegistration?.waiting) {
-						swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
-					}
-					hideUpdateBanner();
-				};
-
-				const checkForUpdates = () => {
-					if (!swRegistration) return;
-					swRegistration.update().catch(() => {});
-					if (swRegistration.waiting && updatePending === false) {
-						showUpdateBanner();
-					}
 				};
 
 				navigator.serviceWorker
@@ -107,26 +155,29 @@ const {
 						});
 
 						navigator.serviceWorker.addEventListener("controllerchange", () => {
-							if (updatePending) {
+							if (userRequestedUpdate) {
 								window.location.reload();
 							}
 						});
 
-						if (reg.waiting) {
+						if (reg.waiting && navigator.serviceWorker.controller) {
 							showUpdateBanner();
 						}
-
-						setTimeout(() => {
-							checkForUpdates();
-							setInterval(checkForUpdates, 60000);
-						}, 3000);
 					})
 					.catch(() => {});
 
 				document.addEventListener("click", (e) => {
 					const target = e.target as HTMLElement;
-					if (target.id === "sw-update-button") activateWaitingSW();
-					if (target.id === "sw-dismiss-button") hideUpdateBanner();
+					if (target.id === "sw-update-button") {
+						if (swRegistration?.waiting) {
+							userRequestedUpdate = true;
+							swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
+						}
+						hideUpdateBanner();
+					}
+					if (target.id === "sw-dismiss-button") {
+						hideUpdateBanner();
+					}
 				});
 			}
 		</script>

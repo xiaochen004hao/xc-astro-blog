@@ -1,10 +1,8 @@
 ---
-// 深受 Astro Starlight 启发 -> https://github.com/withastro/starlight/blob/main/packages/starlight/components/Search.astro
-
 import "@/styles/blocks/search.css";
 ---
 
-<site-search class="ms-auto" id="search">
+<site-search class="ms-auto">
 	<button
 		class="hover:text-accent flex h-9 w-9 cursor-pointer items-center justify-center rounded-md"
 		aria-keyshortcuts="Control+K Meta+K"
@@ -31,7 +29,8 @@ import "@/styles/blocks/search.css";
 	</button>
 	<dialog
 		aria-label="search"
-		class="bg-global-bg h-full max-h-full w-full max-w-full border border-zinc-400 shadow-sm backdrop:backdrop-blur-sm open:flex sm:mx-auto sm:mt-16 sm:mb-auto sm:h-max sm:max-h-[calc(100%-8rem)] sm:min-h-60 sm:w-5/6 sm:max-w-3xl sm:rounded-md"
+		class="bg-global-bg fixed inset-0 m-0 max-h-full max-w-full border border-zinc-400 shadow-sm backdrop:backdrop-blur-sm open:flex sm:relative sm:mx-auto sm:mt-16 sm:mb-auto sm:h-max sm:max-h-[calc(100%-8rem)] sm:min-h-60 sm:w-5/6 sm:max-w-3xl sm:rounded-md"
+		data-lenis-prevent
 	>
 		<div class="dialog-frame flex grow flex-col gap-4 p-6 pt-12 sm:pt-6">
 			<button
@@ -42,7 +41,8 @@ import "@/styles/blocks/search.css";
 				import.meta.env.DEV ? (
 					<div class="mx-auto text-center">
 						<p>
-							搜索功能仅在生产构建中可用。 <br />
+							搜索功能仅在生产构建中可用。
+							<br />
 							请尝试构建并预览网站以在本地测试。
 						</p>
 					</div>
@@ -57,103 +57,106 @@ import "@/styles/blocks/search.css";
 </site-search>
 
 <script>
+	const FALLBACK_HTML = `<div class="text-center py-8"><svg aria-hidden="true" class="mx-auto h-12 w-12 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" stroke="none"/><path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="text-lg font-medium mt-4">搜索功能暂时不可用</p><p class="text-sm text-zinc-500 mt-2">请检查网络连接后 <a href="javascript:location.reload()" class="underline text-accent">刷新页面</a> 重试</p></div>`;
+
+	let pagefindCrashed = false;
+
+	window.addEventListener("unhandledrejection", (event) => {
+		const msg = String(event.reason?.message ?? event.reason ?? "");
+		if (!pagefindCrashed && (msg.includes("Pagefind") || msg.includes("pagefind"))) {
+			event.preventDefault();
+			pagefindCrashed = true;
+			const el = document.getElementById("cactus__search");
+			if (el) el.innerHTML = FALLBACK_HTML;
+		}
+	});
+
 	class SiteSearch extends HTMLElement {
-		#closeBtn: HTMLButtonElement | null;
-		#dialog: HTMLDialogElement | null;
-		#dialogFrame: HTMLDivElement | null;
-		#openBtn: HTMLButtonElement | null;
-		#controller: AbortController;
+		#closeBtn = null as HTMLButtonElement | null;
+		#dialog = null as HTMLDialogElement | null;
+		#dialogFrame = null as HTMLDivElement | null;
+		#openBtn = null as HTMLButtonElement | null;
+		#controller = new AbortController();
 
 		constructor() {
 			super();
-			this.#openBtn = this.querySelector<HTMLButtonElement>("button[data-open-modal]");
-			this.#closeBtn = this.querySelector<HTMLButtonElement>("button[data-close-modal]");
-			this.#dialog = this.querySelector<HTMLDialogElement>("dialog");
+			this.#openBtn = this.querySelector("button[data-open-modal]");
+			this.#closeBtn = this.querySelector("button[data-close-modal]");
+			this.#dialog = this.querySelector("dialog");
 			this.#dialogFrame = this.querySelector(".dialog-frame");
-			this.#controller = new AbortController();
 
-			// 设置事件
 			if (this.#openBtn) {
-				this.#openBtn.addEventListener("click", this.openModal, { signal: this.#controller.signal });
+				this.#openBtn.addEventListener("click", this.#open, { signal: this.#controller.signal });
 				this.#openBtn.disabled = false;
-			} else {
-				console.warn("Search button not found");
 			}
 
 			if (this.#closeBtn) {
-				this.#closeBtn.addEventListener("click", this.closeModal, { signal: this.#controller.signal });
-			} else {
-				console.warn("Close button not found");
+				this.#closeBtn.addEventListener("click", this.#close, { signal: this.#controller.signal });
 			}
 
-			if (this.#dialog) {
-				this.#dialog.addEventListener("close", () => {
-					window.removeEventListener("click", this.onWindowClick);
-				}, { signal: this.#controller.signal });
-			} else {
-				console.warn("Dialog not found");
-			}
-
-			// 仅在生产环境中添加 pagefind
-			if (import.meta.env.DEV) return;
-			const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
-			onIdle(async () => {
-				const { PagefindUI } = await import("@pagefind/default-ui");
-				new PagefindUI({
-					baseUrl: import.meta.env.BASE_URL,
-					bundlePath: import.meta.env.BASE_URL.replace(/\/$/, "") + "/pagefind/",
-					element: "#cactus__search",
-					showImages: false,
-					showSubResults: true,
+			if (!import.meta.env.DEV) {
+				const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+				onIdle(() => {
+					if (pagefindCrashed) return;
+					import("@pagefind/default-ui")
+						.then(({ PagefindUI }) => {
+							if (pagefindCrashed) return;
+							new PagefindUI({
+								baseUrl: import.meta.env.BASE_URL,
+								bundlePath: import.meta.env.BASE_URL.replace(/\/$/, "") + "/pagefind/",
+								element: "#cactus__search",
+								showImages: false,
+								showSubResults: true,
+							});
+						})
+						.catch(() => {});
 				});
-			});
+			}
 		}
 
 		connectedCallback() {
-			// 窗口事件，需要清理
-			window.addEventListener("keydown", this.onWindowKeydown, { signal: this.#controller.signal });
+			window.addEventListener("keydown", this.#onKeydown, { signal: this.#controller.signal });
 		}
 
 		disconnectedCallback() {
-			this.#controller.abort();
+			try {
+				this.#controller.abort();
+			} catch {
+				/* nav away */
+			}
 		}
 
-		openModal = (event?: MouseEvent) => {
+		#open = (event?: MouseEvent) => {
 			if (!this.#dialog || this.#dialog.open) return;
-
 			this.#dialog.showModal();
 			this.querySelector("input")?.focus();
 			event?.stopPropagation();
-			window.addEventListener("click", this.onWindowClick, { signal: this.#controller.signal });
+			window.addEventListener("click", this.#onClickOutside, { signal: this.#controller.signal });
 		};
 
-		closeModal = () => this.#dialog?.close();
+		#close = () => this.#dialog?.close();
 
-		onWindowClick = (event: MouseEvent) => {
-			// 检查是否为链接
+		#onClickOutside = (event: MouseEvent) => {
 			const isLink = "href" in (event.target || {});
-			// 确保点击的是链接或对话框外部
 			if (
 				isLink ||
 				(document.body.contains(event.target as Node) &&
 					!this.#dialogFrame?.contains(event.target as Node))
 			) {
-				this.closeModal();
+				this.#close();
 			}
 		};
 
-		onWindowKeydown = (e: KeyboardEvent) => {
-			if (!this.#dialog) {
-				console.warn("Dialog not found");
-				return;
-			}
-			// 检查是否为 Control+K 或 ⌘+K 快捷键
-			if ((e.metaKey === true || e.ctrlKey === true) && e.key === "k") {
-				this.#dialog.open ? this.closeModal() : this.openModal();
+		#onKeydown = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+				if (!this.#dialog) return;
+				this.#dialog.open ? this.#close() : this.#open();
 				e.preventDefault();
 			}
 		};
 	}
 
-	customElements.define("site-search", SiteSearch);
+	if (!customElements.get("site-search")) {
+		customElements.define("site-search", SiteSearch);
+	}
 </script>
