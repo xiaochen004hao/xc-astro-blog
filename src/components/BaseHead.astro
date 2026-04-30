@@ -19,15 +19,33 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 <title>{siteTitle}</title>
 
-{/* 图标 */}
-<link href="/icon.svg" rel="icon" type="image/svg+xml" />
+{/* 图标 - 明暗主题切换 */}
+<link
+	id="favicon-light"
+	href="/icon-light.svg"
+	rel="icon"
+	type="image/svg+xml"
+	media="(prefers-color-scheme: light)"
+/>
+<link
+	id="favicon-dark"
+	href="/icon-dark.svg"
+	rel="icon"
+	type="image/svg+xml"
+	media="(prefers-color-scheme: dark)"
+/>
+{/* DNS 预读取和预连接以加速字体加载 */}
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+{/* LXGW WenKai LITE font */}
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/style.css"
+/>
 {
 	import.meta.env.PROD && (
 		<>
-			{/* 网站图标 & Apple 图标 */}
 			<link href="/icons/apple-touch-icon.png" rel="apple-touch-icon" />
-			{/* Web 应用清单 */}
-			<link href="/manifest.webmanifest" rel="manifest" />
 		</>
 	)
 }

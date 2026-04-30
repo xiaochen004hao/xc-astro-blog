@@ -60,9 +60,9 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 	</button>
 </BaseLayout>
 
-<script src="../scripts/toc-highlight.ts"></script>
-
 <script>
+	import "@/scripts/toc-highlight.ts";
+
 	const scrollBtn = document.getElementById("to-top-btn") as HTMLButtonElement;
 	const targetHeader = document.getElementById("blog-hero") as HTMLDivElement;
 

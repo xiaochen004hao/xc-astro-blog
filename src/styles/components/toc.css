@@ -10,14 +10,14 @@
 	color: var(--color-accent);
 }
 
-dir.active-toc-item a.toc-link {
+div.active-toc-item a.toc-link {
 	font-weight: 500;
 }
 
-dir.active-toc-item {
+div.active-toc-item {
 	color: var(--color-accent);
 	border-left: 2px solid var(--color-accent);
-	background-color: rgba(var(--color-accent-rgb), 0.05);
+	background-color: oklch(from var(--color-accent) l c h / 0.05);
 }
 
 summary::-webkit-details-marker {

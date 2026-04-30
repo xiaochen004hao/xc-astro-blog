@@ -22,21 +22,31 @@ const {
 		<BaseHead articleDate={articleDate} description={description} ogImage={ogImage} title={title} />
 		<ClientRouter />
 		<ThemeProvider />
-		<script type="module" src="../scripts/lenis.js"></script>
-		<script type="module" src="../scripts/sw-update.js"></script>
 	</head>
 	<body
-		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-mono text-sm font-normal antialiased sm:px-8"
+		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-sans text-sm font-normal antialiased sm:px-8"
 	>
 		<SkipLink />
 		<Header />
 
 		<!-- SW 更新提示（默认隐藏） -->
-		<div id="sw-update-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-			<div class="flex items-center gap-3 rounded-lg bg-zinc-200 px-3 py-2 shadow dark:bg-zinc-800">
-				<span class="text-sm">检测到新版本可用</span>
-				<button id="sw-update-button" class="ml-2 rounded bg-accent px-3 py-1 text-sm text-white">更新</button>
-				<button id="sw-dismiss-button" class="ml-2 text-sm text-muted">稍后</button>
+		<div
+			id="sw-update-banner"
+			class="border-global-bg/20 fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm"
+			style="background-color: color-mix(in oklch, var(--color-global-bg) 95%, transparent);"
+		>
+			<div class="flex items-center gap-3">
+				<span class="text-sm" style="color: var(--color-global-text);">检测到新版本可用</span>
+				<button
+					id="sw-update-button"
+					class="rounded px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
+					style="background-color: var(--color-accent); color: var(--color-global-bg);">更新</button
+				>
+				<button
+					id="sw-dismiss-button"
+					class="text-sm transition-colors hover:opacity-70"
+					style="color: var(--color-muted);">稍后</button
+				>
 			</div>
 		</div>
 		<main id="main">
@@ -44,31 +54,81 @@ const {
 		</main>
 		<Footer />
 
-		<script is:inline>
-			(() => {
-				const banner = document.getElementById('sw-update-banner');
-				const updateBtn = document.getElementById('sw-update-button');
-				const dismissBtn = document.getElementById('sw-dismiss-button');
-				const show = () => banner?.classList.remove('hidden');
-				const hide = () => banner?.classList.add('hidden');
+		<script>
+			import "@/scripts/lenis.ts";
+		</script>
 
-				window.addEventListener('sw:updateAvailable', () => {
-					show();
-				});
+		<script>
+			if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+				let updatePending = false;
+				let swRegistration = null;
 
-				// 如果 sw-update 已在 head 中设置了全局标志，立即显示
-				if ((window).__sw_update_available) show();
+				const showUpdateBanner = () => {
+					if (updatePending) return;
+					updatePending = true;
+					const banner = document.getElementById("sw-update-banner");
+					if (banner) banner.classList.remove("hidden");
+				};
 
-				updateBtn?.addEventListener('click', () => {
-					if (typeof window.__sw_update_activate === 'function') {
-						window.__sw_update_activate();
-					} else {
-						navigator.serviceWorker.getRegistration().then((reg) => reg?.waiting?.postMessage({ type: 'SKIP_WAITING' }));
+				const hideUpdateBanner = () => {
+					updatePending = false;
+					const banner = document.getElementById("sw-update-banner");
+					if (banner) banner.classList.add("hidden");
+				};
+
+				const activateWaitingSW = () => {
+					if (swRegistration?.waiting) {
+						swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
 					}
-				});
+					hideUpdateBanner();
+				};
 
-				dismissBtn?.addEventListener('click', hide);
-			})();
+				const checkForUpdates = () => {
+					if (!swRegistration) return;
+					swRegistration.update().catch(() => {});
+					if (swRegistration.waiting && updatePending === false) {
+						showUpdateBanner();
+					}
+				};
+
+				navigator.serviceWorker
+					.register("/service-worker.js")
+					.then((reg) => {
+						swRegistration = reg;
+
+						reg.addEventListener("updatefound", () => {
+							const newWorker = reg.installing;
+							if (!newWorker) return;
+							newWorker.addEventListener("statechange", () => {
+								if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+									showUpdateBanner();
+								}
+							});
+						});
+
+						navigator.serviceWorker.addEventListener("controllerchange", () => {
+							if (updatePending) {
+								window.location.reload();
+							}
+						});
+
+						if (reg.waiting) {
+							showUpdateBanner();
+						}
+
+						setTimeout(() => {
+							checkForUpdates();
+							setInterval(checkForUpdates, 60000);
+						}, 3000);
+					})
+					.catch(() => {});
+
+				document.addEventListener("click", (e) => {
+					const target = e.target as HTMLElement;
+					if (target.id === "sw-update-button") activateWaitingSW();
+					if (target.id === "sw-dismiss-button") hideUpdateBanner();
+				});
+			}
 		</script>
 		<script is:inline type="speculationrules">
 			{
@@ -77,7 +137,7 @@ const {
 						"where": {
 							"href_matches": "/*"
 						},
-						"eagerness": "immediate"
+						"eagerness": "moderate"
 					}
 				],
 				"prerender": [
@@ -85,7 +145,7 @@ const {
 						"where": {
 							"href_matches": "/*"
 						},
-						"eagerness": "moderate"
+						"eagerness": "conservative"
 					}
 				]
 			}

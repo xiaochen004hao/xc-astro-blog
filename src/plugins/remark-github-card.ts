@@ -5,59 +5,62 @@ import { h, isNodeDirective } from "../utils/remark";
 
 const DIRECTIVE_NAME = "github";
 
+function escapeJs(str: string): string {
+	return str.replace(/[\\'"/]/g, "\\$&").replace(/<\/script/gi, "<\\/script");
+}
+
+function isValidRepoName(name: string): boolean {
+	return /^[a-zA-Z0-9_.\-/]+$/.test(name);
+}
+
 export const remarkGithubCard: Plugin<[], Root> = () => (tree) => {
 	visit(tree, (node, index, parent) => {
 		if (!parent || index === undefined || !isNodeDirective(node)) return;
 
-		// We only want a leaf directive named DIRECTIVE_NAME
 		if (node.type !== "leafDirective" || node.name !== DIRECTIVE_NAME) return;
 
 		let repoName = node.attributes?.repo ?? node.attributes?.user ?? null;
-		if (!repoName) return; // Leave the directive as-is if no repo is provided
+		if (!repoName) return;
 
-		repoName = repoName.endsWith("/") ? repoName.slice(0, -1) : repoName; // Remove trailing slash
+		repoName = repoName.endsWith("/") ? repoName.slice(0, -1) : repoName;
 		repoName = repoName.startsWith("https://github.com/")
 			? repoName.replace("https://github.com/", "")
-			: repoName; // Remove leading URL
+			: repoName;
+
+		if (!isValidRepoName(repoName)) return;
 
 		const repoParts = repoName.split("/");
 		const SimpleUUID = `GC-${crypto.randomUUID()}`;
 		const realUrl = `https://github.com/${repoName}`;
+		const safeRepoName = escapeJs(repoName);
 
-		// If its a repo link
 		if (repoParts.length > 1) {
 			const script = h("script", {}, [
 				{
 					type: "text",
 					value: `
-				fetch('https://api.github.com/repos/${repoName}', { referrerPolicy: "no-referrer" })
-					.then(response => response.json())
-					.then(data => {
-						const t = document.getElementById('${SimpleUUID}');
-						t.classList.remove("gh-loading");
-
-						if (data.description) {
-							t.querySelector('.gh-description').innerText = data.description.replace(/:[a-zA-Z0-9_]+:/g, '');
-						} else {
-							t.querySelector('.gh-description').style.display = 'none';
-						}
-						if (data.language) t.querySelector('.gh-language').innerText = data.language;
-        		t.querySelector('.gh-forks').innerText = Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(data.forks).replaceAll("\u202f", '');
-        		t.querySelector('.gh-stars').innerText = Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(data.stargazers_count).replaceAll("\u202f", '');
-						const avatarEl = t.querySelector('.gh-avatar');
-        		avatarEl.style.backgroundImage = 'url(' + data.owner.avatar_url + ')';
-
-						if (data.license?.spdx_id) {
-							t.querySelector('.gh-license').innerText = data.license?.spdx_id
-						} else {
-							t.querySelector('.gh-license').style.display = 'none';
-						};
+				(function(){
+					var el=document.getElementById('${SimpleUUID}');
+					if(!el)return;
+					var ctrl=new AbortController();
+					var tid=setTimeout(function(){ctrl.abort()},8000);
+					fetch('https://api.github.com/repos/${safeRepoName}',{referrerPolicy:"no-referrer",signal:ctrl.signal})
+					.then(function(r){clearTimeout(tid);return r.json()})
+					.then(function(data){
+						el.classList.remove("gh-loading");
+						if(data.message){el.classList.add("gh-error");return}
+						var d=el.querySelector('.gh-description');
+						if(data.description){d.innerText=data.description.replace(/:[a-zA-Z0-9_]+:/g,'')}else{d.style.display='none'}
+						if(data.language)el.querySelector('.gh-language').innerText=data.language;
+						el.querySelector('.gh-forks').innerText=Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1}).format(data.forks).replaceAll("\\u202f",'');
+						el.querySelector('.gh-stars').innerText=Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1}).format(data.stargazers_count).replaceAll("\\u202f",'');
+						var av=el.querySelector('.gh-avatar');
+						if(data.owner&&data.owner.avatar_url&&/^https:/.test(data.owner.avatar_url)){av.style.backgroundImage='url('+data.owner.avatar_url+')'}
+						var lc=el.querySelector('.gh-license');
+						if(data.license&&data.license.spdx_id){lc.innerText=data.license.spdx_id}else{lc.style.display='none'}
 					})
-				.catch(err => {
-        	document.getElementById('${SimpleUUID}').classList.add("gh-error")
-         	console.warn("[GITHUB-CARD] Error loading card for ${repoName} | ${SimpleUUID}.", err)
-      	})
-			`,
+					.catch(function(e){clearTimeout(tid);el.classList.add("gh-error");console.warn("[GITHUB-CARD] Error:",e)})
+				})()`,
 				},
 			]);
 
@@ -93,32 +96,29 @@ export const remarkGithubCard: Plugin<[], Root> = () => (tree) => {
 					script,
 				]),
 			);
-		}
-
-		// If its a user link
-		else if (repoParts.length === 1) {
+		} else if (repoParts.length === 1) {
 			const script = h("script", {}, [
 				{
 					type: "text",
 					value: `
-				fetch('https://api.github.com/users/${repoName}', { referrerPolicy: "no-referrer" })
-					.then(response => response.json())
-					.then(data => {
-						const t = document.getElementById('${SimpleUUID}');
-						t.classList.remove("gh-loading");
-
-						const avatarEl = t.querySelector('.gh-avatar');
-        		avatarEl.style.backgroundImage = 'url(' + data.avatar_url + ')';
-						t.querySelector('.gh-followers').innerText = Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(data.followers).replaceAll("\u202f", '');
-						t.querySelector('.gh-repositories').innerText = Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(data.public_repos).replaceAll("\u202f", '');
-						if (data.location) t.querySelector('.gh-region').innerText = data.location;
-
+				(function(){
+					var el=document.getElementById('${SimpleUUID}');
+					if(!el)return;
+					var ctrl=new AbortController();
+					var tid=setTimeout(function(){ctrl.abort()},8000);
+					fetch('https://api.github.com/users/${safeRepoName}',{referrerPolicy:"no-referrer",signal:ctrl.signal})
+					.then(function(r){clearTimeout(tid);return r.json()})
+					.then(function(data){
+						el.classList.remove("gh-loading");
+						if(data.message){el.classList.add("gh-error");return}
+						var av=el.querySelector('.gh-avatar');
+						if(data.avatar_url&&/^https:/.test(data.avatar_url)){av.style.backgroundImage='url('+data.avatar_url+')'}
+						el.querySelector('.gh-followers').innerText=Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1}).format(data.followers).replaceAll("\\u202f",'');
+						el.querySelector('.gh-repositories').innerText=Intl.NumberFormat(undefined,{notation:"compact",maximumFractionDigits:1}).format(data.public_repos).replaceAll("\\u202f",'');
+						if(data.location)el.querySelector('.gh-region').innerText=data.location;
 					})
-				.catch(err => {
-        	const c = document.getElementById('${SimpleUUID}').classList.add("gh-error")
-         	console.warn("[GITHUB-CARD] Error loading card for ${repoName} | ${SimpleUUID}.", err)
-      	})
-			`,
+					.catch(function(e){clearTimeout(tid);el.classList.add("gh-error");console.warn("[GITHUB-CARD] Error:",e)})
+				})()`,
 				},
 			]);
 

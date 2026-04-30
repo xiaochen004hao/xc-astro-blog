@@ -23,9 +23,9 @@ export const siteConfig: SiteConfig = {
 	date: {
 		locale: "zh-CN",
 		options: {
-			day: "numeric",
-			month: "short",
-			year: "numeric",
+			day: "numeric" as const,
+			month: "short" as const,
+			year: "numeric" as const,
 		},
 	},
 };

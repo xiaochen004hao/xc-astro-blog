@@ -1,5 +1,3 @@
-// src/scripts/toc-highlight.ts
-
 function initTOC(): void {
 	const tocLinks = document.querySelectorAll<HTMLAnchorElement>(".toc-link");
 	const headings = Array.from(
@@ -22,8 +20,6 @@ function initTOC(): void {
 			const parentDir = link.parentElement;
 			if (href === id) {
 				parentDir?.classList.add("active-toc-item");
-				// 仅在桌面 (lg) 视口或当 TOC 可滚动时触发 scrollIntoView，
-				// 避免在移动端与 Lenis 平滑滚动产生冲突导致回弹。
 				const isLargeViewport =
 					window.matchMedia && window.matchMedia("(min-width: 1024px)").matches;
 				const tocContainer = link.closest("nav");
@@ -33,7 +29,7 @@ function initTOC(): void {
 				if (isLargeViewport || containerScrollable) {
 					try {
 						link.scrollIntoView({ behavior: "smooth", block: "nearest" });
-					} catch (e) {
+					} catch {
 						/* ignore */
 					}
 				}
@@ -42,6 +38,9 @@ function initTOC(): void {
 			}
 		});
 	}
+
+	let observer: IntersectionObserver | null = null;
+	let resizeTimeout: number | undefined;
 
 	function createObserver(): void {
 		observer?.disconnect();
@@ -77,21 +76,24 @@ function initTOC(): void {
 		headings.forEach((heading): void => observer?.observe(heading));
 	}
 
-	let observer: IntersectionObserver | null = null;
 	createObserver();
 
-	// 窗口大小变化时重新创建 observer
-	let resizeTimeout: number;
-	window.addEventListener("resize", (): void => {
+	const onResize = (): void => {
 		clearTimeout(resizeTimeout);
 		resizeTimeout = window.setTimeout(createObserver, 250);
-	});
+	};
+	window.addEventListener("resize", onResize, { passive: true });
+
+	document.addEventListener(
+		"astro:before-swap",
+		() => {
+			observer?.disconnect();
+			observer = null;
+			clearTimeout(resizeTimeout);
+			window.removeEventListener("resize", onResize);
+		},
+		{ once: true },
+	);
 }
 
-// Astro 事件监听
 document.addEventListener("astro:page-load", initTOC);
-if (document.readyState === "loading") {
-	document.addEventListener("DOMContentLoaded", initTOC);
-} else {
-	initTOC();
-}

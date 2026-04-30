@@ -73,12 +73,13 @@
 			button.setAttribute("aria-checked", rootInDarkMode().toString());
 
 			button.addEventListener("click", () => {
+				const newTheme = rootInDarkMode() ? "light" : "dark";
 				document.dispatchEvent(
 					new CustomEvent("theme-change", {
-						detail: { theme: rootInDarkMode() ? "light" : "dark" },
+						detail: { theme: newTheme },
 					}),
 				);
-				button.setAttribute("aria-checked", rootInDarkMode().toString());
+				button.setAttribute("aria-checked", (newTheme === "dark").toString());
 			});
 		}
 	}

@@ -58,13 +58,13 @@ const comments = mentions.filter(
 									{mention.author?.name}
 								</p>
 								<a
-									aria-labelledby="cmt-source"
+									aria-labelledby={`cmt-source-${mention["wm-id"]}`}
 									class="u-url not-prose hover:text-link"
 									href={mention.url}
 									rel="noreferrer"
 									target="_blank"
 								>
-									<span class="hidden" id="cmt-source">
+									<span class="hidden" id={`cmt-source-${mention["wm-id"]}`}>
 										Visit the source of this webmention
 									</span>
 									<Icon

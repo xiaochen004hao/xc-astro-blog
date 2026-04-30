@@ -1,0 +1,78 @@
+﻿
+> xcblog@7.0.0 build
+> astro build
+
+[2m16:26:50[22m [34m[content][39m Syncing content
+[2m16:26:50[22m [34m[content][39m Synced content
+[2m16:26:50[22m [34m[types][39m Generated [2m443ms[22m
+[2m16:26:50[22m [34m[build][39m output: [34m"static"[39m
+[2m16:26:50[22m [34m[build][39m mode: [34m"static"[39m
+[2m16:26:50[22m [34m[build][39m directory: [34mF:\XCBlog\xcblog\dist\[39m
+[2m16:26:50[22m [34m[build][39m Collecting build info...
+[2m16:26:50[22m [34m[build][39m [32m✓ Completed in 554ms.[39m
+[2m16:27:03[22m [34m[build][39m Building static entrypoints...
+[2m16:27:06[22m [34m[vite][39m [32m✓ built in 3.75s[39m
+[2m16:27:07[22m [34m[vite][39m [32m✓ built in 273ms[39m
+[2m16:27:07[22m [34m[build][39m Rearranging server assets...
+
+[42m[30m generating static routes [39m[49m
+[2m16:27:07[22m   [34m├─[39m [2m/404.html[22m [2m(+16ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/about/index.html[22m [2m(+21ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/notes/rss.xml[22m [2m(+72ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/notes/index.html[22m [2m(+6ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/notes/welcome/index.html[22m [2m(+27ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/og-image/hello.png[22m [2m(+305ms)[22m 
+[2m16:27:07[22m   [34m├─[39m [2m/og-image/markdown-elements.png[22m [2m(+254ms)[22m 
+[2m16:27:08[22m   [34m├─[39m [2m/og-image/markdown-elements/admonitions.png[22m [2m(+275ms)[22m 
+[2m16:27:08[22m   [34m├─[39m [2m/og-image/testing/cover-image.png[22m [2m(+280ms)[22m 
+[2m16:27:08[22m   [34m├─[39m [2m/og-image/testing/long-title.png[22m [2m(+275ms)[22m 
+[2m16:27:08[22m   [34m├─[39m [2m/og-image/webmentions.png[22m [2m(+245ms)[22m 
+[2m16:27:09[22m   [34m├─[39m [2m/posts/index.html[22m [2m(+25ms)[22m 
+node.exe : No webmention api token specified in .env
+At line:1 char:1
++ & "D:\nodejs/node.exe" "D:\nodejs/node_modules/npm/bin/npm-cli.js" ru ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (No webmention a...ecified in .env 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[2m16:27:09[22m   [34m├─[39m [2m/posts/hello/index.html[22m [2m(+22ms)[22m 
+[2m16:27:09[22m   [34m├─[39m [2m/posts/markdown-elements/index.html[22m [2m(+31ms)[22m 
+[2m16:27:09[22m   [34m├─[39m [2m/posts/markdown-elements/admonitions/index.html[22m [2m(+20ms)[22m 
+[31m[1m16:27:09[22m [ERROR][39m LocalImageUsedWrongly: `Image`'s and `getIm
+age`'s `src` parameter must be an imported image or an URL, it cannot be a stri
+ng filepath. Received `./cover.png`.
+    at verifyOptions (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/determini
+stic-string_B9THaNOT.mjs:1210:13)
+    at Object.validateOptions (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/
+deterministic-string_B9THaNOT.mjs:1250:5)
+    at getImage (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/deterministic-
+string_B9THaNOT.mjs:1542:68)
+    at async getImage (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/_.._zlpI
+EZC4.mjs:183:44)
+    at async file:///F:/XCBlog/xcblog/dist/.prerender/chunks/_.._zlpIEZC4.mjs:3
+8:17
+[31m[1m16:27:09[22m [ERROR] [build][39m Caught error rendering /posts/testi
+ng/cover-image: LocalImageUsedWrongly: `Image`'s and `getImage`'s `src` paramet
+er must be an imported image or an URL, it cannot be a string filepath. Receive
+d `./cover.png`.
+[31m[LocalImageUsedWrongly][39m `Image`'s and `getImage`'s `src` parameter mu
+st be an imported image or an URL, it cannot be a string filepath. Received `./
+cover.png`.
+  [1mHint:[22m
+[33m    If you want to use an image from your `src` folder, you need to either
+ import it or if the image is coming from a content collection, use the [1mima
+ge() schema helper[22m [4mhttps://docs.astro.build/en/guides/images/#images-i
+n-content-collections[24m. See [4mhttps://docs.astro.build/en/guides/images/#
+src-required[24m for more information on the `src` property.[39m
+  [1mError reference:[22m
+    [36m[4mhttps://docs.astro.build/en/reference/errors/local-image-used-wron
+gly/[24m[39m
+  [1mStack trace:[22m
+[2m    at verifyOptions (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/deter
+ministic-string_B9THaNOT.mjs:1210:13)
+    at getImage (file:///F:/XCBlog/xcblog/dist/.prerender/chunks/deterministic-
+string_B9THaNOT.mjs:1542:68)
+    at async file:///F:/XCBlog/xcblog/dist/.prerender/chunks/_.._zlpIEZC4.mjs:3
+8:17[22m
+[2m16:27:09[22m   [34m├─[39m [2m/posts/testing/cover-image/index.html[22m

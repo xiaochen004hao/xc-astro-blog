@@ -11,7 +11,7 @@ const {
 ---
 
 <li class={`${depth > 1 ? "ms-2" : ""}`}>
-	<dir
+	<div
 		><a
 			class={`toc-link line-clamp-2 hover:text-accent ${
                 depth === 0 ? "mt-3 text-lg" :
@@ -24,7 +24,7 @@ const {
 			}`}
 			href={`#${slug}`}><span aria-hidden="true" class="me-0.5">{depth > 0 ? "#" : ""}</span>{text}</a
 		>
-	</dir>
+	</div>
 	{
 		!!children.length && (
 			<ol>

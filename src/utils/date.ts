@@ -2,15 +2,15 @@ import type { CollectionEntry } from "astro:content";
 import { siteConfig } from "@/site.config";
 
 export function getFormattedDate(
-	date: Date | undefined,
+	date: Date | undefined | null,
 	options?: Intl.DateTimeFormatOptions,
 ): string {
-	if (date === undefined) {
+	if (!date) {
 		return "Invalid Date";
 	}
 
 	return new Intl.DateTimeFormat(siteConfig.date.locale, {
-		...(siteConfig.date.options as Intl.DateTimeFormatOptions),
+		...siteConfig.date.options,
 		...options,
 	}).format(date);
 }

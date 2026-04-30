@@ -3,7 +3,9 @@ import rss from "@astrojs/rss";
 import { siteConfig } from "@/site.config";
 
 export const GET = async () => {
-	const notes = await getCollection("note");
+	const notes = await getCollection("note", ({ data }) => {
+		return import.meta.env.PROD ? !data.draft : true;
+	});
 
 	return rss({
 		title: siteConfig.title,

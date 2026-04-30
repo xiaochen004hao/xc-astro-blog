@@ -1,7 +1,8 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
 
 export default {
-	plugins: [require("@tailwindcss/typography")],
+	plugins: [typography],
 	theme: {
 		extend: {
 			typography: () => ({
@@ -20,7 +21,7 @@ export default {
 							borderLeftWidth: "0",
 						},
 						code: {
-							border: "1px dotted #666",
+							border: "1px dotted var(--color-muted)",
 							borderRadius: "2px",
 						},
 						kbd: {
@@ -50,18 +51,17 @@ export default {
 								},
 							},
 						},
-						/* Table */
 						"tbody tr": {
-							borderBottomWidth: "none",
+							borderBottomWidth: "0",
 						},
 						tfoot: {
-							borderTop: "1px dashed #666",
+							borderTop: "1px dashed var(--color-muted)",
 						},
 						thead: {
-							borderBottomWidth: "none",
+							borderBottomWidth: "0",
 						},
 						"thead th": {
-							borderBottom: "1px dashed #666",
+							borderBottom: "1px dashed var(--color-muted)",
 							fontWeight: "700",
 						},
 						'th[align="center"], td[align="center"]': {

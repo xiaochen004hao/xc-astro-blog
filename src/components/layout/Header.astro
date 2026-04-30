@@ -74,7 +74,6 @@ import { siteConfig } from "../../site.config";
 			<svg
 				aria-hidden="true"
 				class="text-accent absolute start-1/2 top-1/2 h-full w-full -translate-x-1/2 -translate-y-1/2 scale-0 opacity-0 transition-all group-aria-expanded:scale-100 group-aria-expanded:opacity-100"
-				class="text-accent"
 				fill="none"
 				focusable="false"
 				id="cross-svg"
@@ -90,8 +89,6 @@ import { siteConfig } from "../../site.config";
 </header>
 
 <script>
-	import { toggleClass } from "@/utils/domElement";
-
 	class MobileNavBtn extends HTMLElement {
 		#menuOpen: boolean = false;
 
@@ -100,7 +97,7 @@ import { siteConfig } from "../../site.config";
 			const mobileButtonEl = this.querySelector<HTMLButtonElement>("button");
 
 			mobileButtonEl?.addEventListener("click", () => {
-				if (headerEl) toggleClass(headerEl, "menu-open");
+				if (headerEl) headerEl.classList.toggle("menu-open");
 				this.#menuOpen = !this.#menuOpen;
 				mobileButtonEl.setAttribute("aria-expanded", this.#menuOpen.toString());
 			});

@@ -74,14 +74,14 @@ import "@/styles/blocks/search.css";
 
 			// 设置事件
 			if (this.#openBtn) {
-				this.#openBtn.addEventListener("click", this.openModal);
+				this.#openBtn.addEventListener("click", this.openModal, { signal: this.#controller.signal });
 				this.#openBtn.disabled = false;
 			} else {
 				console.warn("Search button not found");
 			}
 
 			if (this.#closeBtn) {
-				this.#closeBtn.addEventListener("click", this.closeModal);
+				this.#closeBtn.addEventListener("click", this.closeModal, { signal: this.#controller.signal });
 			} else {
 				console.warn("Close button not found");
 			}
@@ -89,7 +89,7 @@ import "@/styles/blocks/search.css";
 			if (this.#dialog) {
 				this.#dialog.addEventListener("close", () => {
 					window.removeEventListener("click", this.onWindowClick);
-				});
+				}, { signal: this.#controller.signal });
 			} else {
 				console.warn("Dialog not found");
 			}
@@ -119,10 +119,7 @@ import "@/styles/blocks/search.css";
 		}
 
 		openModal = (event?: MouseEvent) => {
-			if (!this.#dialog) {
-				console.warn("Dialog not found");
-				return;
-			}
+			if (!this.#dialog || this.#dialog.open) return;
 
 			this.#dialog.showModal();
 			this.querySelector("input")?.focus();

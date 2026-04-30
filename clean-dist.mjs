@@ -16,5 +16,4 @@ try {
 	}
 } catch (error) {
 	console.warn("删除 dist 目录时出错，跳过清理:", error);
-	// 不中断构建流程：如果无法删除 dist，继续构建（可能为预览/锁定文件造成）
 }

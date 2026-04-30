@@ -7,11 +7,15 @@ const CACHE_DIR = ".data";
 const filePath = `${CACHE_DIR}/webmentions.json`;
 const validWebmentionTypes = ["like-of", "mention-of", "in-reply-to"];
 
-const hostName = new URL(DOMAIN).hostname;
+let hostName = "";
+try {
+	hostName = new URL(DOMAIN.startsWith("http") ? DOMAIN : `https://${DOMAIN}`).hostname;
+} catch {
+	console.warn(`Invalid SITE domain: ${DOMAIN}`);
+}
 
-// Calls webmention.io api.
 async function fetchWebmentions(timeFrom: string | null, perPage = 1000) {
-	if (!DOMAIN) {
+	if (!DOMAIN || !hostName) {
 		console.warn("No domain specified. Please set in astro.config.ts");
 		return null;
 	}
@@ -23,7 +27,7 @@ async function fetchWebmentions(timeFrom: string | null, perPage = 1000) {
 
 	let url = `https://webmention.io/api/mentions.jf2?domain=${hostName}&token=${WEBMENTION_API_KEY}&sort-dir=up&per-page=${perPage}`;
 
-	if (timeFrom) url += `&since${timeFrom}`;
+	if (timeFrom) url += `&since=${timeFrom}`;
 
 	const res = await fetch(url);
 
@@ -35,7 +39,6 @@ async function fetchWebmentions(timeFrom: string | null, perPage = 1000) {
 	return null;
 }
 
-// Merge cached entries [a] with fresh webmentions [b], merge by wm-id
 function mergeWebmentions(a: WebmentionsCache, b: WebmentionsFeed): WebmentionsChildren[] {
 	return Array.from(
 		[...a.children, ...b.children]
@@ -44,13 +47,10 @@ function mergeWebmentions(a: WebmentionsCache, b: WebmentionsFeed): WebmentionsC
 	);
 }
 
-// filter out WebmentionChildren
 export function filterWebmentions(webmentions: WebmentionsChildren[]) {
 	return webmentions.filter((webmention) => {
-		// make sure the mention has a property so we can sort them later
 		if (!validWebmentionTypes.includes(webmention["wm-property"])) return false;
 
-		// make sure 'mention-of' or 'in-reply-to' has text content.
 		if (webmention["wm-property"] === "mention-of" || webmention["wm-property"] === "in-reply-to") {
 			return webmention.content && webmention.content.text !== "";
 		}
@@ -59,57 +59,66 @@ export function filterWebmentions(webmentions: WebmentionsChildren[]) {
 	});
 }
 
-// save combined webmentions in cache file
-function writeToCache(data: WebmentionsCache) {
+async function writeToCache(data: WebmentionsCache) {
 	const fileContent = JSON.stringify(data, null, 2);
 
-	// create cache folder if it doesn't exist already
-	if (!fs.existsSync(CACHE_DIR)) {
-		fs.mkdirSync(CACHE_DIR);
-	}
-
-	// write data to cache json file
-	fs.writeFile(filePath, fileContent, (err) => {
-		if (err) throw err;
+	try {
+		if (!fs.existsSync(CACHE_DIR)) {
+			fs.mkdirSync(CACHE_DIR, { recursive: true });
+		}
+		await fs.promises.writeFile(filePath, fileContent);
 		console.log(`Webmentions saved to ${filePath}`);
-	});
+	} catch (err) {
+		console.error("Failed to write webmentions cache:", err);
+	}
 }
 
-function getFromCache(): WebmentionsCache {
-	if (fs.existsSync(filePath)) {
-		const data = fs.readFileSync(filePath, "utf-8");
+async function getFromCache(): Promise<WebmentionsCache> {
+	try {
+		const data = await fs.promises.readFile(filePath, "utf-8");
 		return JSON.parse(data);
+	} catch {
+		return { lastFetched: null, children: [] };
 	}
-	// no cache found
-	return {
-		lastFetched: null,
-		children: [],
-	};
 }
 
 async function getAndCacheWebmentions() {
-	const cache = getFromCache();
+	const cache = await getFromCache();
 	const mentions = await fetchWebmentions(cache.lastFetched);
 
 	if (mentions) {
 		mentions.children = filterWebmentions(mentions.children);
 		const webmentions: WebmentionsCache = {
 			lastFetched: new Date().toISOString(),
-			// Make sure the first arg is the cache
 			children: mergeWebmentions(cache, mentions),
 		};
 
-		writeToCache(webmentions);
+		await writeToCache(webmentions);
 		return webmentions;
 	}
 
 	return cache;
 }
 
-let webMentions: WebmentionsCache;
+let webMentionsPromise: Promise<WebmentionsCache> | null = null;
 
 export async function getWebmentionsForUrl(url: string) {
-	if (!webMentions) webMentions = await getAndCacheWebmentions();
+	if (!webMentionsPromise) {
+		webMentionsPromise = getAndCacheWebmentions().catch((err) => {
+			console.error("Failed to fetch webmentions:", err);
+			webMentionsPromise = null;
+			return { lastFetched: null, children: [] } as WebmentionsCache;
+		});
+	}
 
-	return webMentions.children.filter((entry) => entry["wm-target"] === url);
+	const webMentions = await webMentionsPromise;
+
+	const normalizedUrl = url.replace(/\/$/, "");
+	return webMentions.children.filter((entry) => {
+		try {
+			return entry["wm-target"]?.replace(/\/$/, "") === normalizedUrl;
+		} catch {
+			return false;
+		}
+	});
 }
