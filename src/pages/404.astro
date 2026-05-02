@@ -34,7 +34,7 @@ const meta = {
 		<p class="text-muted mt-1 text-sm">它可能已被移动、删除，或者从未存在过。</p>
 		<div class="mt-10 flex flex-wrap justify-center gap-4">
 			<a
-				class="bg-accent text-global-bg rounded-lg px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
+				class="bg-accent text-global-bg px-6 py-2.5 text-sm font-medium transition-opacity hover:opacity-85"
 				href="/"
 			>
 				返回首页
@@ -44,7 +44,7 @@ const meta = {
 					.filter((l) => l.path !== "/")
 					.map((link) => (
 						<a
-							class="hover:border-accent/40 rounded-lg border border-zinc-300 px-6 py-2.5 text-sm font-medium transition-colors dark:border-zinc-600"
+							class="hover:border-accent/40 border border-zinc-300 px-6 py-2.5 text-sm font-medium transition-colors dark:border-zinc-600"
 							href={link.path}
 						>
 							{link.title}

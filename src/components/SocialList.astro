@@ -21,13 +21,13 @@ const socialLinks: {
 ---
 
 <div class="flex flex-wrap items-end gap-x-2">
-	<p>发现我的足迹: </p>
+	<p>发现我的足迹:</p>
 	<ul class="flex flex-1 items-center gap-x-2 sm:flex-initial">
 		{
 			socialLinks.map(({ friendlyName, isWebmention, link, name }) => (
 				<li class="flex">
 					<a
-						class="hover:text-link inline-block"
+						class="no-external-icon hover:text-link inline-block"
 						href={link}
 						rel={`noreferrer ${isWebmention ? "me authn" : ""}`}
 						target="_blank"

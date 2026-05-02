@@ -1,0 +1,71 @@
+---
+const { title, url } = Astro.props as {
+    title: string;
+    url: string;
+};
+
+const encodedTitle = encodeURIComponent(title);
+const encodedUrl = encodeURIComponent(url);
+
+const shareLinks = [
+    {
+        label: "Twitter / X",
+        href: `https://x.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
+        icon: "X",
+    },
+    {
+        label: "Facebook",
+        href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+        icon: "F",
+    },
+    {
+        label: "复制链接",
+        href: "#",
+        icon: "🔗",
+        isCopy: true,
+    },
+];
+---
+
+<div class="mt-10 flex items-center gap-3">
+    <span class="text-muted text-sm font-medium">分享：</span>
+    {
+        shareLinks.map((link) => (
+            <a
+                href={link.href}
+                class="text-muted hover:text-accent inline-block border px-3 py-1.5 text-xs font-medium transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+                {...(link.isCopy
+                    ? { "data-copy-url": encodedUrl }
+                    : {})}
+            >
+                {link.icon}
+            </a>
+        ))
+    }
+</div>
+
+<script>
+    document.querySelectorAll<HTMLAnchorElement>("a[data-copy-url]").forEach((a) => {
+        a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const url = decodeURIComponent(a.dataset.copyUrl!);
+            navigator.clipboard.writeText(url).then(() => {
+                const orig = a.textContent;
+                a.textContent = "✓";
+                setTimeout(() => {
+                    a.textContent = orig;
+                }, 1500);
+            }).catch(() => {
+                const textarea = document.createElement("textarea");
+                textarea.value = url;
+                textarea.style.position = "fixed";
+                textarea.style.opacity = "0";
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.body.removeChild(textarea);
+            });
+        });
+    });
+</script>

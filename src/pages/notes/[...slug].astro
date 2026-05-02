@@ -2,6 +2,8 @@
 import { getCollection } from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import Note from "@/components/note/Note.astro";
+import TwikooComments from "@/components/blog/TwikooComments.astro";
+import ShareButtons from "@/components/blog/ShareButtons.astro";
 import PageLayout from "@/layouts/Base.astro";
 
 // if you're using an adaptor in SSR mode, getStaticPaths wont work -> https://docs.astro.build/en/guides/routing/#modifying-the-slug-example-for-ssr
@@ -27,4 +29,6 @@ const meta = {
 
 <PageLayout meta={meta}>
 	<Note as="h1" note={note} />
+	<ShareButtons title={note.data.title} url={Astro.url.href} />
+	<TwikooComments />
 </PageLayout>

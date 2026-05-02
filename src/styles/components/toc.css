@@ -3,21 +3,29 @@
 	padding-bottom: 0.3rem;
 	text-decoration: none;
 	padding-left: 1rem;
-	margin-left: -0.125rem;
 }
 
 .toc-link:hover {
 	color: var(--color-accent);
 }
 
-div.active-toc-item a.toc-link {
-	font-weight: 500;
+.toc-nav {
+	border-left: 1px solid var(--color-muted);
 }
 
-div.active-toc-item {
-	color: var(--color-accent);
-	border-left: 2px solid var(--color-accent);
+.toc-item {
+	border-left: 2px solid transparent;
+	margin-left: -1px;
+	transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+div.toc-item.active-toc-item {
+	border-left-color: var(--color-accent);
 	background-color: oklch(from var(--color-accent) l c h / 0.05);
+}
+
+div.active-toc-item a.toc-link {
+	font-weight: 500;
 }
 
 summary::-webkit-details-marker {

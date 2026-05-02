@@ -34,6 +34,8 @@ function initLenis() {
         },
     });
 
+    (window as any).__lenis = lenisInstance;
+
     let rafId: number | null = null;
     const loop = (time: number) => {
         if (!lenisInstance) return;
@@ -76,12 +78,13 @@ function initLenis() {
         if (lenisInstance) {
             try { lenisInstance.destroy(); } catch { /* ignore */ }
             lenisInstance = null;
+            (window as any).__lenis = null;
         }
     };
 
     document.addEventListener("astro:before-swap", () => {
         try { cleanup(); } catch { /* ignore */ }
-    }, { once: true });
+    });
 }
 
 initLenis();

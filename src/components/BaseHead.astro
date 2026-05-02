@@ -39,6 +39,18 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 {/* LXGW WenKai LITE 仅加载正文常规+粗体 */}
 <link
+	rel="preload"
+	as="style"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css"
+	crossorigin="anonymous"
+/>
+<link
+	rel="preload"
+	as="style"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-bold.css"
+	crossorigin="anonymous"
+/>
+<link
 	rel="stylesheet"
 	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css"
 />

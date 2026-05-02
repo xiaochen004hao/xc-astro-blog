@@ -28,7 +28,7 @@ const {
 	>
 		<div
 			id="reading-progress"
-			class="bg-accent fixed top-0 left-0 z-100 h-[2px] w-0 transition-[width] duration-150 ease-out"
+			class="bg-accent pointer-events-none fixed top-0 left-0 z-100 h-[2px] w-0 transition-[width] duration-150 ease-out"
 		>
 		</div>
 		<SkipLink />
@@ -37,14 +37,14 @@ const {
 		<!-- SW 更新提示（默认隐藏） -->
 		<div
 			id="sw-update-banner"
-			class="border-global-bg/20 fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm"
+			class="border-global-bg/20 fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 border px-4 py-3 shadow-lg backdrop-blur-sm"
 			style="background-color: color-mix(in oklch, var(--color-global-bg) 95%, transparent);"
 		>
 			<div class="flex items-center gap-3">
 				<span class="text-sm" style="color: var(--color-global-text);">检测到新版本可用</span>
 				<button
 					id="sw-update-button"
-					class="rounded px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
+					class="px-3 py-1 text-sm font-medium transition-colors hover:opacity-80"
 					style="background-color: var(--color-accent); color: var(--color-global-bg);">更新</button
 				>
 				<button
@@ -71,8 +71,7 @@ const {
 			import "@/scripts/medium-zoom.ts";
 		</script>
 
-		<script is:inline define:vars={{ siteTitle: siteConfig.title }}>
-			// 首次访问加载特效（JS 动态创建，避免 ClientRouter 交换时重复渲染）
+		<script is:inline>
 			(function initLoading() {
 				const KEY = "xc-loaded";
 				if (sessionStorage.getItem(KEY)) return;
@@ -94,8 +93,9 @@ const {
 					background: "var(--color-global-bg)",
 					transition: "opacity 0.4s ease-out",
 				});
-				el.innerHTML = `<svg aria-hidden="true" style="width:88px;height:88px;animation:xc-pulse 1.6s ease-in-out infinite" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28"><rect x="-2" y="-2" width="28" height="28" fill="var(--color-logo-bg)"/><path fill="var(--color-logo-text)" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/></svg><p style="margin-top:1.25rem;font-size:1.25rem;font-weight:600;color:var(--color-accent);letter-spacing:.05em">${siteTitle}</p>`;
+				el.innerHTML = `<svg aria-hidden="true" style="width:88px;height:88px;animation:xc-pulse 1.6s ease-in-out infinite" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28"><rect x="-2" y="-2" width="28" height="28" fill="var(--color-logo-bg)"/><path fill="var(--color-logo-text)" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/></svg>`;
 				document.body.prepend(el);
+				document.body.style.overflow = "hidden";
 
 				let done = false;
 				const minMs = 1400;
@@ -112,6 +112,7 @@ const {
 						setTimeout(() => {
 							el.remove();
 							style.remove();
+							document.body.style.overflow = "";
 							sessionStorage.setItem(KEY, "1");
 						}, 420);
 					}, wait);
@@ -120,6 +121,15 @@ const {
 				window.addEventListener("load", hide);
 				setTimeout(hide, maxMs);
 			})();
+		</script>
+
+		<script is:inline>
+			document.addEventListener("astro:before-swap", () => {
+				document.documentElement.style.overflow = "hidden";
+			});
+			document.addEventListener("astro:page-load", () => {
+				document.documentElement.style.overflow = "";
+			});
 		</script>
 
 		<script>

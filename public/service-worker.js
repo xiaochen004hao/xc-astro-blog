@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v2.0.0";
+const CACHE_VERSION = "v3.0.0";
 const CACHE_NAME = `xcblog-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -21,21 +21,28 @@ const OFFLINE_PAGE = `
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>离线 - XCBlog</title>
 	<style>
-		body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: oklch(0.18 0 0); color: oklch(83.54% 0 264); }
-		.container { text-align: center; padding: 2rem; }
-		h1 { font-size: 2rem; margin-bottom: 0.5rem; color: oklch(85.06% 0.141 194.84); }
-		p { color: oklch(70.7% 0.022 261.325); }
-		button { margin-top: 1rem; padding: 0.5rem 1.5rem; border: 1px solid oklch(85.06% 0.141 194.84); background: transparent; color: oklch(85.06% 0.141 194.84); border-radius: 4px; cursor: pointer; }
-		button:hover { background: oklch(85.06% 0.141 194.84 / 0.1); }
+		*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+		body{font-family:system-ui,-apple-system,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#fafafa;color:#2c2c2c}
+		@media(prefers-color-scheme:dark){body{background:#18181b;color:#e4e4e7}}
+		main{text-align:center;padding:2rem;max-width:30rem}
+		.status{font-size:5rem;font-weight:200;line-height:1;margin-bottom:.75rem;color:#a1a1aa}
+		@media(prefers-color-scheme:dark){.status{color:#52525b}}
+		h1{font-size:1.25rem;font-weight:500;margin-bottom:.75rem;letter-spacing:.02em}
+		p{font-size:.875rem;color:#71717a;line-height:1.7}
+		@media(prefers-color-scheme:dark){p{color:#a1a1aa}}
+		button{display:inline-block;margin-top:1.5rem;padding:.6rem 1.5rem;border:1px solid #d4d4d8;background:transparent;color:#52525b;font-size:.875rem;cursor:pointer;transition:background .15s}
+		@media(prefers-color-scheme:dark){button{border-color:#3f3f46;color:#a1a1aa}}
+		button:hover{background:rgba(0,0,0,.03)}
+		@media(prefers-color-scheme:dark){button:hover{background:rgba(255,255,255,.03)}}
 	</style>
 </head>
 <body>
-	<div class="container">
-		<h1>📡</h1>
+	<main>
+		<div class="status">503</div>
 		<h1>离线模式</h1>
 		<p>当前没有网络连接，请检查网络后重试。</p>
-		<p><button onclick="location.reload()">重新加载</button></p>
-	</div>
+		<button onclick="location.reload()">重新加载</button>
+	</main>
 </body>
 </html>
 `;
@@ -89,12 +96,17 @@ self.addEventListener("fetch", (event) => {
 });
 
 function isHtmlPage(request) {
+    const url = new URL(request.url);
+    if (url.origin !== self.location.origin) return false;
+
     const acceptHeader = request.headers.get("Accept") || "";
-    return (
-        acceptHeader.includes("text/html") ||
-        request.mode === "navigate" ||
-        request.destination === "document"
-    );
+    if (acceptHeader.includes("text/html")) return true;
+    if (request.mode === "navigate") return true;
+    if (request.destination === "document") return true;
+
+    if (!/\.[\w-]{2,6}(\?|#|$)/.test(url.pathname)) return true;
+
+    return false;
 }
 
 async function cacheFirst(request) {
@@ -110,8 +122,6 @@ async function cacheFirst(request) {
         return networkResponse;
     } catch {
         if (request.mode === "navigate") {
-            const indexResponse = await caches.match("/");
-            if (indexResponse) return indexResponse;
             return getOfflinePage();
         }
         return Response.error();
@@ -130,8 +140,6 @@ async function networkFirst(request) {
         const cachedResponse = await caches.match(request);
         if (cachedResponse) return cachedResponse;
         if (request.mode === "navigate") {
-            const indexResponse = await caches.match("/");
-            if (indexResponse) return indexResponse;
             return getOfflinePage();
         }
         return Response.error();

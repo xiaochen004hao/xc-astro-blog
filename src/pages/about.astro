@@ -2,37 +2,43 @@
 import PageLayout from "@/layouts/Base.astro";
 
 const meta = {
-	description: "我是一个正在学习一切新鲜事物的小萌新。",
-	title: "关于",
-};
+		description: "关于 xiaochen004hao - 一個正在學習一切新鮮事物的小萌新。",
+		title: "关于",
+	};
 ---
 
 <PageLayout meta={meta}>
 	<h1 class="title mb-12">关于</h1>
 	<div class="prose prose-sm prose-cactus max-w-none">
-		<p>嗨，我是 xiaochen004hao，一个正在学习一切新鲜事物的小萌新。</p>
-		<p>其他内容？：</p>
-		<ul class="list-inside list-disc" role="list">
-			<li>没写</li>
-			<li>我没写</li>
-			<li>我没有写</li>
-			<li>我没有去写</li>
-			<li>我就是没有写</li>
-			<li>我不知道怎么写</li>
-			<li>我不知应该怎么写</li>
-		</ul>
+		<p class="lead">嗨，我是 <strong>xiaochen004hao</strong>，一個正在學習一切新鮮事物的小萌新。</p>
+
+		<h2>关于我</h2>
 		<p>
-			都去 <a
-				class="cactus-link inline-block"
-				href="https://space.bilibili.com/3546624408160947"
-				rel="noreferrer"
-				target="_blank">哔哩哔哩</a
-			> 和 <a
-				class="cactus-link inline-block"
-				href="https://github.com/xiaochen004hao/"
-				rel="noreferrer"
-				target="_blank">Github</a
-			> 关注我!
+			我對編程、開源和一切有趣的技術都充滿好奇心。
+			喜歡折騰各種工具和框架，從 Web 開發到 Scratch 擴展都有涉獵。
+			目前主要活躍在 GitHub 和 Bilibili 上，偶爾也會寫一些博客文章記錄學習過程。
+		</p>
+		<p>
+			写过一些小项目，比如 <a href="https://github.com/xiaochen004hao/XChatGPT" class="cactus-link" target="_blank" rel="noreferrer">XChatGPT</a>。
+			也在 <a href="https://www.pythonanywhere.com/" class="cactus-link" target="_blank" rel="noreferrer">PythonAnywhere</a> 上搭建過個人站點。
+		</p>
+
+		<h2>找到我</h2>
+		<ul role="list">
+			<li>
+				GitHub: <a class="cactus-link" href="https://github.com/xiaochen004hao/" rel="noreferrer" target="_blank">@xiaochen004hao</a>
+			</li>
+			<li>
+				Bilibili: <a class="cactus-link" href="https://space.bilibili.com/3546624408160947" rel="noreferrer" target="_blank">xiaochen004hao</a>
+			</li>
+		</ul>
+
+		<h2>关于本站</h2>
+		<p>
+			本站基於 <a href="https://astro.build/" class="cactus-link" target="_blank" rel="noreferrer">Astro</a> 構建，
+			使用 <a href="https://github.com/christianhans/chris-blog-cactus" class="cactus-link" target="_blank" rel="noreferrer">Astro Cactus</a>
+			主題並進行了大量定製。
+			部署在 <a href="https://vercel.com/" class="cactus-link" target="_blank" rel="noreferrer">Vercel</a> 上。
 		</p>
 	</div>
 </PageLayout>

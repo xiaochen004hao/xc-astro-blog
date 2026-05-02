@@ -101,7 +101,9 @@
 			--color-accent-2 var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-quote var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-logo-bg var(--color-mode-transition-duration) var(--color-mode-transition-easing),
-			--color-logo-text var(--color-mode-transition-duration) var(--color-mode-transition-easing);
+			--color-logo-text var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+
+            --color-zinc-700 var(--color-mode-transition-duration) var(--color-mode-transition-easing);
 	}
 
 	::selection {
@@ -140,8 +142,8 @@
 }
 
 /* 外部链接图标 */
-.prose a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not(.no-external-icon)::after,
-a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not(.no-external-icon):not([class*="pagefind-ui"]):not(nav a):not(.cactus-link)::after {
+.prose a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not([class*="no-external-icon"])::after,
+a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not([class*="no-external-icon"]):not([class*="pagefind-ui"]):not(nav a):not(.cactus-link)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
