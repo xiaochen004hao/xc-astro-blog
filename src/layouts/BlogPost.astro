@@ -3,8 +3,8 @@ import { type CollectionEntry, render } from "astro:content";
 
 import Masthead from "@/components/blog/Masthead.astro";
 import PostNav from "@/components/blog/PostNav.astro";
-import TwikooComments from "@/components/blog/TwikooComments.astro";
 import ShareButtons from "@/components/blog/ShareButtons.astro";
+import WalineComments from "@/components/blog/WalineComments.astro";
 import TOC from "@/components/blog/TOC.astro";
 
 import BaseLayout from "./Base.astro";
@@ -31,22 +31,23 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 		title,
 	}}
 >
-	<article class="grow break-words" data-pagefind-body>
+	<article class="grow wrap-break-word" data-pagefind-body>
 		<div id="blog-hero" class="mb-12"><Masthead content={post} readingTime={readingTime} /></div>
 		<div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-			{!!headings.length && <TOC headings={headings} title={title} />}
+			{!!headings.length && <TOC headings={headings} />}
 			<div
+				id="content"
 				class="prose prose-sm prose-headings:font-semibold prose-headings:text-accent-2 prose-headings:before:absolute prose-headings:before:-ms-4 prose-headings:before:text-muted prose-headings:hover:before:text-accent sm:prose-headings:before:content-['#'] sm:prose-th:before:content-none"
 			>
 				<slot />
-				<ShareButtons title={title} url={Astro.url.href} />
-				<PostNav {nextPost} {prevPost} />
-				<TwikooComments />
 			</div>
 		</div>
+		<PostNav {nextPost} {prevPost} />
+		<ShareButtons title={title} url={Astro.url.href} />
+		<WalineComments />
 	</article>
 	<button
-		class="hover:border-link fixed end-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:end-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
+		class="hover:border-link fixed inset-e-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:inset-e-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
 		data-show="false"
 		id="to-top-btn"
 	>
@@ -67,6 +68,5 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 </BaseLayout>
 
 <script>
-	import "@/scripts/toc-highlight.ts";
 	import "@/scripts/back-to-top.ts";
 </script>

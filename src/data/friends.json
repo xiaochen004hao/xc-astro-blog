@@ -1,0 +1,30 @@
+{
+    "categories": [
+        {
+            "id": "common-links",
+            "title": "朋友们",
+            "description": "随机排列，每次刷新都会看到不同的顺序。",
+            "links": [
+                {
+                    "name": "Xiaochen004hao 的 博客",
+                    "description": "一个小萌新（也许是苦力怕）",
+                    "url": "https://blog.qoslzm.dpdns.org/",
+                    "avatar": "https://blog.qoslzm.dpdns.org/icon.svg"
+                }
+            ]
+        }
+    ],
+    "siteInfo": {
+        "name": "Xiaochen004hao 的 博客",
+        "description": "一个小萌新（也许是苦力怕）",
+        "url": "https://blog.qoslzm.dpdns.org/",
+        "avatar": "https://blog.qoslzm.dpdns.org/icon.svg"
+    },
+    "changeLog": [],
+    "requirements": [
+        "已在你的网站中添加本站友链",
+        "网站拥有独立域名，非免费子域名",
+        "至少五篇原创文章，且最近一年持续更新",
+        "内容健康向上，不违反法律法规"
+    ]
+}

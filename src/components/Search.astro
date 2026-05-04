@@ -59,17 +59,21 @@ import "@/styles/blocks/search.css";
 <script>
 	const FALLBACK_HTML = `<div class="text-center py-8"><svg aria-hidden="true" class="mx-auto h-12 w-12 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" stroke="none"/><path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="text-lg font-medium mt-4">搜索功能暂时不可用</p><p class="text-sm text-zinc-500 mt-2">请检查网络连接后 <a href="javascript:location.reload()" class="underline text-accent">刷新页面</a> 重试</p></div>`;
 
-	let pagefindCrashed = false;
-
-	window.addEventListener("unhandledrejection", (event) => {
-		const msg = String(event.reason?.message ?? event.reason ?? "");
-		if (!pagefindCrashed && (msg.includes("Pagefind") || msg.includes("pagefind"))) {
-			event.preventDefault();
-			pagefindCrashed = true;
-			const el = document.getElementById("cactus__search");
-			if (el) el.innerHTML = FALLBACK_HTML;
-		}
-	});
+	if (!(window as any).__searchCrashReady) {
+		(window as any).__searchCrashReady = true;
+		window.addEventListener("unhandledrejection", (event) => {
+			const msg = String(event.reason?.message ?? event.reason ?? "");
+			if (
+				!(window as any).__searchCrashed &&
+				(msg.includes("Pagefind") || msg.includes("pagefind"))
+			) {
+				event.preventDefault();
+				(window as any).__searchCrashed = true;
+				const el = document.getElementById("cactus__search");
+				if (el) el.innerHTML = FALLBACK_HTML;
+			}
+		});
+	}
 
 	class SiteSearch extends HTMLElement {
 		#closeBtn = null as HTMLButtonElement | null;
@@ -97,10 +101,10 @@ import "@/styles/blocks/search.css";
 			if (!import.meta.env.DEV) {
 				const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
 				onIdle(() => {
-					if (pagefindCrashed) return;
+					if ((window as any).__searchCrashed) return;
 					import("@pagefind/default-ui")
 						.then(({ PagefindUI }) => {
-							if (pagefindCrashed) return;
+							if ((window as any).__searchCrashed) return;
 							new PagefindUI({
 								baseUrl: import.meta.env.BASE_URL,
 								bundlePath: import.meta.env.BASE_URL.replace(/\/$/, "") + "/pagefind/",

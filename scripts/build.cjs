@@ -31,7 +31,7 @@ if (!fs.existsSync(path.join(distDir, "service-worker.js"))) {
 }
 
 try {
-    execSync("npx pagefind --site dist", { stdio: "inherit" });
+    execSync("npx pagefind --site dist --force-language zh-CN", { stdio: "inherit" });
 } catch (e) {
     console.warn("[build] pagefind failed");
     process.exit(1);

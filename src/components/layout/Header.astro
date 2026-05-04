@@ -91,18 +91,33 @@ import { siteConfig } from "../../site.config";
 <script>
 	class MobileNavBtn extends HTMLElement {
 		#menuOpen: boolean = false;
+		#controller = new AbortController();
 
 		connectedCallback() {
 			const headerEl = document.getElementById("main-header")!;
 			const mobileButtonEl = this.querySelector<HTMLButtonElement>("button");
 
-			mobileButtonEl?.addEventListener("click", () => {
-				if (headerEl) headerEl.classList.toggle("menu-open");
-				this.#menuOpen = !this.#menuOpen;
-				mobileButtonEl.setAttribute("aria-expanded", this.#menuOpen.toString());
-			});
+			mobileButtonEl?.addEventListener(
+				"click",
+				() => {
+					if (headerEl) headerEl.classList.toggle("menu-open");
+					this.#menuOpen = !this.#menuOpen;
+					mobileButtonEl.setAttribute("aria-expanded", this.#menuOpen.toString());
+				},
+				{ signal: this.#controller.signal },
+			);
+		}
+
+		disconnectedCallback() {
+			try {
+				this.#controller.abort();
+			} catch {
+				/* nav away */
+			}
 		}
 	}
 
-	customElements.define("mobile-button", MobileNavBtn);
+	if (!customElements.get("mobile-button")) {
+		customElements.define("mobile-button", MobileNavBtn);
+	}
 </script>

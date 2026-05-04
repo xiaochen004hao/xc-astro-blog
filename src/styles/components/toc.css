@@ -1,33 +1,67 @@
 .toc-link {
-	display: block;
-	padding-bottom: 0.3rem;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
+	overflow: hidden;
+	padding: 0.25rem 0;
+	line-height: 1.6;
+	font-size: 0.8125rem;
+	color: oklch(from var(--color-global-text) l c h / 0.75);
 	text-decoration: none;
-	padding-left: 1rem;
 }
 
 .toc-link:hover {
-	color: var(--color-accent);
+	color: var(--color-global-text);
 }
 
-.toc-nav {
-	border-left: 1px solid var(--color-muted);
-}
+toc-heading ol .toc-link      { padding-left: 0.7rem; }
+toc-heading ol ol .toc-link   { padding-left: 1.4rem; }
+toc-heading ol ol ol .toc-link { padding-left: 2.1rem; }
+toc-heading ol ol ol ol .toc-link { padding-left: 2.8rem; }
+toc-heading ol ol ol ol ol .toc-link { padding-left: 3.5rem; }
+toc-heading ol ol ol ol ol ol .toc-link { padding-left: 4.2rem; }
 
-.toc-item {
-	border-left: 2px solid transparent;
-	margin-left: -1px;
-	transition: border-color 0.2s ease, background-color 0.2s ease;
-}
+@media (width >= 1024px) {
+	.toc-link {
+		padding: 0.25rem 0.75rem;
+		margin-left: 0.5rem;
+		transition: all 0.15s;
+	}
 
-div.toc-item.active-toc-item {
-	border-left-color: var(--color-accent);
-	background-color: oklch(from var(--color-accent) l c h / 0.05);
-}
+	.toc-bar {
+		position: absolute;
+		top: 5%;
+		width: 2px;
+		height: 0;
+		border-radius: 0.25rem;
+		transition: background-color 0.3s;
+	}
 
-div.active-toc-item a.toc-link {
-	font-weight: 500;
-}
+	.toc-bar.highlight-bg {
+		background-color: var(--color-accent);
+	}
 
-summary::-webkit-details-marker {
-	display: none;
+	.toc-bar.is-read {
+		background-color: oklch(from var(--color-accent) l c h / .25);
+	}
+
+	.toc-link.highlight {
+		font-weight: 500;
+		color: var(--color-accent);
+	}
+
+	.toc-link.highlight-bg-translucent {
+		background-color: oklch(from var(--color-accent) l c h / .1);
+	}
+
+	.toc-link.highlight.rounded-t-lg {
+		border-top-left-radius: var(--radius-md);
+		border-top-right-radius: var(--radius-md);
+	}
+
+	.toc-link.highlight.rounded-b-lg {
+		border-bottom-left-radius: var(--radius-md);
+		border-bottom-right-radius: var(--radius-md);
+	}
 }

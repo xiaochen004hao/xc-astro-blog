@@ -26,9 +26,14 @@ const {
 	<body
 		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-sans text-sm font-normal antialiased sm:px-8"
 	>
+		<script is:inline>
+			document.querySelectorAll(":root > *:not(head):not(body)").forEach(function (el) {
+				el.style.display = "none";
+			});
+		</script>
 		<div
 			id="reading-progress"
-			class="bg-accent pointer-events-none fixed top-0 left-0 z-100 h-[2px] w-0 transition-[width] duration-150 ease-out"
+			class="bg-accent pointer-events-none fixed top-0 left-0 z-100 h-0.5 w-0 transition-[width] duration-150 ease-out"
 		>
 		</div>
 		<SkipLink />
@@ -124,34 +129,54 @@ const {
 		</script>
 
 		<script is:inline>
-			document.addEventListener("astro:before-swap", () => {
-				document.documentElement.style.overflow = "hidden";
-			});
-			document.addEventListener("astro:page-load", () => {
-				document.documentElement.style.overflow = "";
-			});
+			if (!document.documentElement.dataset.swapEvents) {
+				document.documentElement.dataset.swapEvents = "1";
+				document.addEventListener("astro:before-swap", () => {
+					document.documentElement.style.overflow = "hidden";
+				});
+				document.addEventListener("astro:page-load", () => {
+					document.documentElement.style.overflow = "";
+				});
+			}
 		</script>
 
 		<script>
-			if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-				let swRegistration: ServiceWorkerRegistration | null = null;
-				let userRequestedUpdate = false;
+			if (typeof window !== "undefined" && "serviceWorker" in navigator && !window.__swReady) {
+				window.__swReady = true;
+
+				const BANNER_KEY = "xc-sw-dismissed";
 
 				const showUpdateBanner = () => {
-					const banner = document.getElementById("sw-update-banner");
-					if (banner) banner.classList.remove("hidden");
+					if (sessionStorage.getItem(BANNER_KEY)) return;
+					document.getElementById("sw-update-banner")?.classList.remove("hidden");
 				};
 
 				const hideUpdateBanner = () => {
-					const banner = document.getElementById("sw-update-banner");
-					if (banner) banner.classList.add("hidden");
+					sessionStorage.setItem(BANNER_KEY, "1");
+					document.getElementById("sw-update-banner")?.classList.add("hidden");
+				};
+
+				const updateAndReload = () => {
+					hideUpdateBanner();
+					navigator.serviceWorker
+						.getRegistration()
+						.then((reg) => {
+							if (reg) {
+								reg.unregister();
+							}
+						})
+						.then(() => {
+							sessionStorage.removeItem(BANNER_KEY);
+							window.location.reload();
+						})
+						.catch(() => {
+							window.location.reload();
+						});
 				};
 
 				navigator.serviceWorker
 					.register("/service-worker.js")
 					.then((reg) => {
-						swRegistration = reg;
-
 						reg.addEventListener("updatefound", () => {
 							const newWorker = reg.installing;
 							if (!newWorker) return;
@@ -162,12 +187,6 @@ const {
 							});
 						});
 
-						navigator.serviceWorker.addEventListener("controllerchange", () => {
-							if (userRequestedUpdate) {
-								window.location.reload();
-							}
-						});
-
 						if (reg.waiting && navigator.serviceWorker.controller) {
 							showUpdateBanner();
 						}
@@ -176,16 +195,8 @@ const {
 
 				document.addEventListener("click", (e) => {
 					const target = e.target as HTMLElement;
-					if (target.id === "sw-update-button") {
-						if (swRegistration?.waiting) {
-							userRequestedUpdate = true;
-							swRegistration.waiting.postMessage({ type: "SKIP_WAITING" });
-						}
-						hideUpdateBanner();
-					}
-					if (target.id === "sw-dismiss-button") {
-						hideUpdateBanner();
-					}
+					if (target.id === "sw-update-button") updateAndReload();
+					if (target.id === "sw-dismiss-button") hideUpdateBanner();
 				});
 			}
 		</script>

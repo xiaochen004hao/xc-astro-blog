@@ -54,7 +54,7 @@
 
 <!-- @ts-expect-error -->
 <script>
-	import { rootInDarkMode } from "@/utils/domElement";
+	const rootInDarkMode = () => document.documentElement.dataset.theme === "dark";
 
 	class ThemeToggle extends HTMLElement {
 		constructor() {
@@ -84,5 +84,7 @@
 		}
 	}
 
-	customElements.define("theme-toggle", ThemeToggle);
+	if (!customElements.get("theme-toggle")) {
+		customElements.define("theme-toggle", ThemeToggle);
+	}
 </script>

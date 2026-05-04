@@ -79,10 +79,18 @@ export default defineConfig({
             exclude: ["@resvg/resvg-js"],
             include: ["lenis"],
         },
-        plugins: [tailwind(), rawFonts([".ttf", ".woff"])],
+        plugins: [tailwind(), rawFonts([".ttf", ".woff"]), swVersionBust()],
         ssr: {
             noExternal: ["lenis"],
         },
+        build: {
+			rollupOptions: {
+				onwarn(warning, warn) {
+					if (warning.id?.includes("node_modules")) return;
+					warn(warning);
+				},
+			},
+		},
     },
     env: {
         schema: {
@@ -105,6 +113,23 @@ function rawFonts(ext: string[]) {
                     map: null,
                 };
             }
+        },
+    };
+}
+
+function swVersionBust() {
+    return {
+        name: "sw-version-bust",
+        closeBundle() {
+            const swPath = new URL("public/service-worker.js", import.meta.url);
+            if (!fs.existsSync(swPath)) return;
+            let code = fs.readFileSync(swPath, "utf-8");
+            const ts = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
+            code = code.replace(
+                /const CACHE_VERSION = ".*?";/,
+                `const CACHE_VERSION = "v3.0.0-${ts}"`,
+            );
+            fs.writeFileSync(swPath, code, "utf-8");
         },
     };
 }

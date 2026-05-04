@@ -6,31 +6,26 @@ interface Props {
 }
 
 const {
-	heading: { children, depth, slug, text },
+	heading: { slug, text: rawText, children },
 } = Astro.props;
+const text = rawText.endsWith("#") ? rawText.slice(0, -1) : rawText;
 ---
 
-<li class={`${depth > 1 ? "ms-2" : ""}`}>
-	<div class="toc-item"
-		><a
-			class={`toc-link line-clamp-2 hover:text-accent ${
-                depth === 0 ? "mt-3 text-lg" :
-				depth === 1 ? "mt-2 text-sm" :
-				depth === 2 ? "mt-2 text-sm" :
-				depth === 3 ? "mt-1 text-xs" :
-				depth === 4 ? "mt-1 text-xs" :
-				depth === 5 ? "mt-1 text-xs" :
-				"mt-1 text-xs"
-			}`}
-			href={`#${slug}`}><span aria-hidden="true" class="me-0.5">{depth > 0 ? "#" : ""}</span>{text}</a
+<li>
+	<div class="relative">
+		<span class="toc-bar"></span>
+		<a
+			aria-label={`Scroll to section: ${text}`}
+			class="toc-link"
+			href={`#${slug}`}
 		>
+			{text}
+		</a>
 	</div>
 	{
 		!!children.length && (
 			<ol>
-				{children.map((subheading) => (
-					<Astro.self heading={subheading} />
-				))}
+				{children.map((subheading) => <Astro.self heading={subheading} />)}
 			</ol>
 		)
 	}

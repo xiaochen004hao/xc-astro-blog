@@ -1,70 +1,307 @@
 ---
 import PageLayout from "@/layouts/Base.astro";
+import WalineComments from "@/components/blog/WalineComments.astro";
+import friendsJson from "@/data/friends.json";
 
-interface Friend {
-    name: string;
-    url: string;
-    description: string;
-    avatar?: string;
+interface FriendLink {
+	name: string;
+	url: string;
+	description: string;
+	avatar?: string;
 }
 
-const friends: Friend[] = [
-];
+interface FriendCategory {
+	id: string;
+	title: string;
+	description?: string;
+	links: FriendLink[];
+}
+
+interface FriendsData {
+	categories: FriendCategory[];
+	siteInfo: Record<string, string>;
+	changeLog: { date: string; content: string }[];
+	requirements: string[];
+}
+
+const friendsData = friendsJson as FriendsData;
 
 const meta = {
-    title: "友人",
-    description: "友情链接 - 朋友们",
+	title: "友人",
+	description: "友情链接 - 人生海海，山山而川，不过尔尔",
 };
 ---
 
 <PageLayout meta={meta}>
-    <article class="prose prose-sm prose-cactus max-w-none">
-        <h1>友人</h1>
-        <p class="lead">
-            这里是一些朋友们的博客和网站。欢迎交换友链。
-        </p>
-        {
-            friends.length > 0 ? (
-                <div class="not-prose mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {friends.map((friend) => (
-                        <a
-                            href={friend.url}
-                            target="_blank"
-                            rel="noopener noreferrer me"
-                            class="group hover:border-accent flex items-center gap-4 border p-4 transition-colors"
-                        >
-                            <div class="bg-muted/20 flex h-12 w-12 shrink-0 items-center justify-center text-lg font-bold">
-                                {friend.avatar ?? friend.name.charAt(0)}
-                            </div>
-                            <div class="min-w-0">
-                                <p class="group-hover:text-accent truncate text-sm font-medium transition-colors">
-                                    {friend.name}
-                                </p>
-                                <p class="text-muted truncate text-xs">
-                                    {friend.description}
-                                </p>
-                            </div>
-                        </a>
-                    ))}
-                </div>
-            ) : (
-                <div class="text-muted mt-8 py-16 text-center">
-                    <p class="text-lg">暂时还没有添加友链</p>
-                    <p class="mt-2 text-sm">如果你有博客想要交换，欢迎联系我！</p>
-                </div>
-            )
-        }
-        {
-            friends.length > 0 && (
-                <div class="text-muted mt-12 border-t pt-6 text-sm">
-                    <h2 class="text-global-text text-base font-semibold">交换友链</h2>
-                    <p class="mt-2">
-                        想要交换友链？请确保你的网站内容质量良好、长期更新，然后通过
-                        <a href="https://github.com/xiaochen004hao/xc-astro-blog/issues" class="cactus-link">GitHub Issues</a>
-                        联系我，附上你的网站名称、链接和简介。
-                    </p>
-                </div>
-            )
-        }
-    </article>
+	<article class="prose prose-sm prose-cactus max-w-none">
+		<h1>友人</h1>
+		<p class="lead text-muted">
+			<span class="text-accent">人生海海，山山而川，不过尔尔。</span>
+			这里收录了一些朋友们的博客与网站。如果你也有博客想加入，欢迎在页面底部查看申请方式。
+		</p>
+	</article>
+
+	{
+		friendsData.categories.map((category) => (
+			<section class="mt-12" id={category.id}>
+				<div class="mb-6">
+					<h2 class="text-accent-2 text-xl font-semibold">{category.title}</h2>
+					{category.description && <p class="text-muted mt-1 text-sm">{category.description}</p>}
+				</div>
+				{category.links.length > 0 ? (
+					<div
+						class="friend-grid grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+						data-friend-category={category.id}
+					>
+						{category.links.map((friend) => (
+							<a
+								href={friend.url}
+								target="_blank"
+								rel="noopener noreferrer me"
+								class="group friend-card block overflow-hidden border transition-all duration-200"
+								data-url={friend.url}
+							>
+								<div class="screenshot-wrap bg-muted/10 relative aspect-video w-full overflow-hidden">
+									<img
+										src={`https://s0.wp.com/mshots/v1/${friend.url}`}
+										alt={`${friend.name} 网站预览`}
+										class="screenshot-img h-full w-full object-cover"
+										loading="lazy"
+										data-no-zoom
+										onerror="this.classList.add('error');"
+									/>
+									<div class="screenshot-fallback bg-muted/15 absolute inset-0 flex hidden items-center justify-center">
+										<span class="text-muted/40 text-3xl font-bold select-none">
+											{friend.name.charAt(0)}
+										</span>
+									</div>
+									<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/50 to-transparent p-3 pt-8">
+										<p class="truncate text-xs font-medium text-white drop-shadow">
+											{friend.url.replace(/^https?:\/\//, "")}
+										</p>
+									</div>
+								</div>
+								<div class="flex items-start gap-3 p-4">
+									<img
+										src={
+											friend.avatar ||
+											`https://unavatar.io/${new URL(friend.url).hostname}?fallback=false`
+										}
+										alt={friend.name}
+										class="friend-avatar h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-black/5"
+										loading="lazy"
+										data-no-zoom
+										onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%23a855f7%22>${friend.name.charAt(0)}</text></svg>'"
+									/>
+									<div class="min-w-0 flex-1">
+										<p class="group-hover:text-accent truncate text-sm font-semibold transition-colors duration-200">
+											{friend.name}
+										</p>
+										<p class="text-muted mt-0.5 line-clamp-2 text-xs leading-relaxed">
+											{friend.description}
+										</p>
+									</div>
+								</div>
+							</a>
+						))}
+					</div>
+				) : (
+					<div class="border-global-bg/20 text-muted border border-dashed py-16 text-center">
+						<svg
+							aria-hidden="true"
+							class="mx-auto mb-4 h-12 w-12 opacity-30"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.5"
+							viewBox="0 0 24 24"
+						>
+							<path
+								d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
+						</svg>
+						<p class="text-base">暂无友链</p>
+						<p class="mt-2 text-sm">期待你的加入 ✨</p>
+					</div>
+				)}
+			</section>
+		))
+	}
+
+	{
+		friendsData.changeLog.length > 0 && (
+			<section class="mt-16">
+				<details class="group cursor-pointer">
+					<summary class="text-muted hover:text-accent text-sm font-medium transition-colors">
+						友链变更记录
+					</summary>
+					<div class="text-muted mt-4 space-y-2 border-s-2 border-zinc-200 ps-4 text-xs dark:border-zinc-700">
+						{friendsData.changeLog.map((entry) => (
+							<div class="flex gap-3">
+								<span class="text-muted/70 shrink-0">{entry.date}</span>
+								<span>{entry.content}</span>
+							</div>
+						))}
+					</div>
+				</details>
+			</section>
+		)
+	}
+
+	<section class="mt-16 border-t pt-10" id="apply-links">
+		<h2 class="text-accent-2 text-xl font-semibold">申请友链</h2>
+
+		<p class="text-muted mt-2 text-sm">想和我交换友链？太好了！请先确认你的站点满足以下条件：</p>
+
+		<ul class="text-muted mt-4 space-y-2 text-sm">
+			{
+				friendsData.requirements.map((req) => (
+					<li class="flex items-start gap-2">
+						<svg
+							aria-hidden="true"
+							class="text-accent mt-0.5 h-4 w-4 shrink-0"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							viewBox="0 0 24 24"
+						>
+							<path d="m4.5 12.75 6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						<span>{req}</span>
+					</li>
+				))
+			}
+		</ul>
+
+		<div class="mt-8">
+			<p class="text-muted mb-3 text-sm">
+				本站信息 <span class="text-xs opacity-60">（点击即可复制）</span>：
+			</p>
+			<div class="border-global-bg/20 flex flex-col gap-y-1.5 border p-4">
+				{
+					Object.entries(friendsData.siteInfo).map(([key, value]) => (
+						<div class="grid grid-cols-[auto_1fr] items-center gap-x-3 text-sm">
+							<span class="text-muted shrink-0 font-medium capitalize">
+								{key === "url" ? "link" : key}:
+							</span>
+							<code
+								class="cursor-pointer truncate text-xs transition-colors hover:text-(--color-accent)"
+								data-copy-value={value}
+								data-copy-label={
+									key === "url"
+										? "链接"
+										: key === "description"
+											? "描述"
+											: key === "avatar"
+												? "头像"
+												: "名称"
+								}
+							>
+								{value}
+							</code>
+						</div>
+					))
+				}
+			</div>
+		</div>
+
+		<p class="text-muted mt-6 text-sm leading-relaxed">
+			满足条件后，你可以直接
+			<span class="text-accent font-medium">在下方评论区留言</span>
+			提交你的站点信息（推荐），格式参考上方本站信息； 也可以通过
+			<a
+				href="https://github.com/xiaochen004hao/xc-astro-blog/issues"
+				class="cactus-link"
+				target="_blank"
+				rel="noopener noreferrer">GitHub Issues</a
+			>
+			提交。我会在看到后尽快添加。
+		</p>
+	</section>
+	<WalineComments />
 </PageLayout>
+
+<style is:inline>
+	.friend-card {
+		border-color: var(--color-global-bg);
+		background: transparent;
+		border-radius: var(--radius-md);
+	}
+	.friend-card:hover {
+		border-color: var(--color-accent);
+		box-shadow: 0 8px 24px oklch(from var(--color-accent) l c h / 0.08);
+		transform: translateY(-2px);
+	}
+	.screenshot-img {
+		filter: blur(6px) brightness(0.95);
+		transform: scale(1.05);
+		transition:
+			filter 0.5s ease,
+			transform 0.5s ease;
+	}
+	.group:hover .screenshot-img:not(.error) {
+		filter: blur(0) brightness(1);
+		transform: scale(1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.friend-card:hover {
+			transform: none;
+		}
+		.screenshot-img {
+			transition: none !important;
+		}
+	}
+</style>
+
+<script is:inline>
+	if (!window.__friendsReady) {
+		window.__friendsReady = true;
+
+		function shuffleGrid(grid) {
+			var children = Array.from(grid.children);
+			for (var i = children.length - 1; i > 0; i--) {
+				var j = Math.floor(Math.random() * (i + 1));
+				grid.insertBefore(children[j], children[i]);
+			}
+		}
+
+		function initFriends() {
+			document.querySelectorAll(".friend-grid").forEach(shuffleGrid);
+
+			document.querySelectorAll("[data-copy-value]").forEach(function (el) {
+				el.dataset.copyOrig = el.textContent;
+				el.addEventListener("click", function () {
+					var val = el.dataset.copyValue;
+					var label = el.dataset.copyLabel || val;
+					var orig = el.dataset.copyOrig || val;
+					el.style.opacity = "0.5";
+					el.textContent = "\u2713 \u5df2\u590d\u5236 " + label;
+					navigator.clipboard
+						.writeText(val)
+						.then(function () {
+							setTimeout(function () {
+								el.textContent = orig;
+								el.style.opacity = "1";
+							}, 1800);
+						})
+						.catch(function () {
+							var ta = document.createElement("textarea");
+							ta.value = val;
+							ta.style.position = "fixed";
+							ta.style.opacity = "0";
+							document.body.appendChild(ta);
+							ta.select();
+							document.execCommand("copy");
+							document.body.removeChild(ta);
+							el.textContent = orig;
+							el.style.opacity = "1";
+						});
+				});
+			});
+		}
+
+		initFriends();
+		document.addEventListener("astro:page-load", initFriends);
+	}
+</script>

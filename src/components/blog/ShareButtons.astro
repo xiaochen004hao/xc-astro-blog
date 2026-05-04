@@ -1,71 +1,62 @@
 ---
 const { title, url } = Astro.props as {
-    title: string;
-    url: string;
+	title: string;
+	url: string;
 };
-
-const encodedTitle = encodeURIComponent(title);
-const encodedUrl = encodeURIComponent(url);
-
-const shareLinks = [
-    {
-        label: "Twitter / X",
-        href: `https://x.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
-        icon: "X",
-    },
-    {
-        label: "Facebook",
-        href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
-        icon: "F",
-    },
-    {
-        label: "复制链接",
-        href: "#",
-        icon: "🔗",
-        isCopy: true,
-    },
-];
 ---
 
 <div class="mt-10 flex items-center gap-3">
-    <span class="text-muted text-sm font-medium">分享：</span>
-    {
-        shareLinks.map((link) => (
-            <a
-                href={link.href}
-                class="text-muted hover:text-accent inline-block border px-3 py-1.5 text-xs font-medium transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
-                {...(link.isCopy
-                    ? { "data-copy-url": encodedUrl }
-                    : {})}
-            >
-                {link.icon}
-            </a>
-        ))
-    }
+	<button
+		type="button"
+		class="text-muted hover:text-accent inline-flex items-center gap-1.5 border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer"
+		data-share
+		data-title={title}
+		data-url={url}
+	>
+		<svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+			<path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+		</svg>
+		<span class="share-text">分享</span>
+	</button>
 </div>
 
 <script>
-    document.querySelectorAll<HTMLAnchorElement>("a[data-copy-url]").forEach((a) => {
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            const url = decodeURIComponent(a.dataset.copyUrl!);
-            navigator.clipboard.writeText(url).then(() => {
-                const orig = a.textContent;
-                a.textContent = "✓";
-                setTimeout(() => {
-                    a.textContent = orig;
-                }, 1500);
-            }).catch(() => {
-                const textarea = document.createElement("textarea");
-                textarea.value = url;
-                textarea.style.position = "fixed";
-                textarea.style.opacity = "0";
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.body.removeChild(textarea);
-            });
-        });
-    });
+	function bindShareButtons() {
+		document.querySelectorAll<HTMLButtonElement>("button[data-share]").forEach((btn) => {
+			btn.addEventListener("click", async () => {
+				const title = btn.dataset.title || document.title;
+				const pageUrl = btn.dataset.url || window.location.href;
+
+				if (navigator.share) {
+					try {
+						await navigator.share({
+							title,
+							url: pageUrl,
+						});
+						return;
+					} catch {
+						// User cancelled or error, do nothing
+					}
+				}
+
+				// Fallback: copy to clipboard
+				try {
+					await navigator.clipboard.writeText(pageUrl);
+					const textEl = btn.querySelector(".share-text");
+					const orig = textEl?.textContent;
+					if (textEl) {
+						textEl.textContent = "已复制!";
+						setTimeout(() => {
+							textEl.textContent = orig || "分享";
+						}, 1500);
+					}
+				} catch {
+					// Silent fail
+				}
+			});
+		});
+	}
+
+	bindShareButtons();
+	document.addEventListener("astro:page-load", bindShareButtons);
 </script>

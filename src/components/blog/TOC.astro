@@ -5,21 +5,10 @@ import TOCHeading from "./TOCHeading.astro";
 
 interface Props {
 	headings: MarkdownHeading[];
-	title?: string;
 }
 
-const { headings, title } = Astro.props;
-
+const { headings } = Astro.props;
 const toc = generateToc(headings);
-
-if (title) {
-	toc.unshift({
-		depth: 0,
-		slug: "blog-title",
-		text: title,
-		children: [],
-	});
-}
 ---
 
 <details
@@ -27,19 +16,129 @@ if (title) {
 	id="toc-details"
 >
 	<summary class="title hover:marker:text-accent cursor-pointer text-lg">目录</summary>
-	<nav class="toc-nav ms-4 lg:w-full">
+	<toc-heading class="lg:w-full">
 		<ol class="mt-4">
 			{toc.map((heading) => <TOCHeading heading={heading} />)}
 		</ol>
-	</nav>
+	</toc-heading>
 </details>
+
 <script>
-	function tocEnsureOpen() {
-		const el = document.getElementById("toc-details") as HTMLDetailsElement | null;
-		if (el && window.matchMedia("(min-width: 1024px)").matches) {
-			el.open = true;
+	try {
+		if (typeof window !== "undefined") {
+			class TOC extends HTMLElement {
+				headings: HTMLElement[] = [];
+				tocLinks: {
+					element: HTMLAnchorElement;
+					progressBar: HTMLElement;
+					slug: string;
+				}[] = [];
+				headingProgress: Record<string, { inView: boolean; progress: number }> = {};
+				#intervalId: ReturnType<typeof setInterval> | null = null;
+				#onScroll: (() => void) | null = null;
+
+				constructor() {
+					super();
+					this.tocLinks = Array.from(this.querySelectorAll('a[href^="#"]')).map((link) => ({
+						element: link as HTMLAnchorElement,
+						progressBar: link.previousElementSibling as HTMLElement,
+						slug: (link.getAttribute("href") || "").substring(1),
+					}));
+
+					const allHeadings = Array.from(
+						document.querySelectorAll("article :is(h1, h2, h3, h4, h5, h6)"),
+					);
+
+					this.headings = this.tocLinks
+						.map((t) => allHeadings.find((h) => h.id === t.slug) as HTMLElement | undefined)
+						.filter((h): h is HTMLElement => !!h);
+				}
+
+				updatePositionAndStyle = () => {
+					const wh = window.innerHeight;
+
+					this.headings.forEach((el, i) => {
+						const rect = el.getBoundingClientRect();
+						const nextEl = this.headings[i + 1];
+						const bottom = nextEl
+							? nextEl.getBoundingClientRect().top
+							: rect.top + el.offsetHeight + wh;
+						const progress = (wh - rect.top) / (bottom - rect.top - el.offsetHeight);
+
+						this.headingProgress[el.id] = {
+							inView: rect.top < wh && bottom - el.offsetHeight > 0,
+							progress: Math.max(0, Math.min(1, progress)),
+						};
+					});
+
+					this.tocLinks.forEach(({ element: el, progressBar: bar, slug }, i) => {
+						const state = this.headingProgress[slug];
+						if (!state) return;
+
+						const prevSlug = this.tocLinks[i - 1]?.slug;
+						const nextSlug = this.tocLinks[i + 1]?.slug;
+
+						el.classList.toggle("highlight", state.inView);
+						el.classList.toggle("highlight-bg-translucent", state.inView);
+						el.classList.toggle(
+							"rounded-t-lg",
+							state.inView &&
+								(i === 0 || (prevSlug ? !this.headingProgress[prevSlug]?.inView : true)),
+						);
+						el.classList.toggle(
+							"rounded-b-lg",
+							state.inView &&
+								(i === this.tocLinks.length - 1 ||
+									(nextSlug ? !this.headingProgress[nextSlug]?.inView : true)),
+						);
+						bar.classList.toggle("is-read", !state.inView && state.progress === 1);
+						bar.classList.toggle("highlight-bg", state.inView);
+						bar.style.setProperty("height", `${state.progress * 90}%`);
+					});
+				};
+
+				connectedCallback() {
+					this.addEventListener("click", (e) => {
+						const link = (e.target as HTMLElement).closest("a[href^='#']");
+						if (!link) return;
+						e.preventDefault();
+						const slug = (link.getAttribute("href") || "").substring(1);
+						const heading = this.headings.find((h) => h.id === slug);
+						if (heading) {
+							history.pushState(null, heading.textContent || "", `#${slug}`);
+							heading.scrollIntoView({ behavior: "smooth" });
+						}
+					});
+
+					this.#intervalId = setInterval(this.updatePositionAndStyle, 100);
+					this.#onScroll = this.updatePositionAndStyle;
+					window.addEventListener("scroll", this.#onScroll);
+				}
+
+				disconnectedCallback() {
+					if (this.#intervalId) {
+						clearInterval(this.#intervalId);
+						this.#intervalId = null;
+					}
+					if (this.#onScroll) {
+						window.removeEventListener("scroll", this.#onScroll);
+						this.#onScroll = null;
+					}
+				}
+			}
+
+			if (!customElements.get("toc-heading")) {
+				customElements.define("toc-heading", TOC);
+			}
+
+			function tocEnsureOpen() {
+				const el = document.getElementById("toc-details") as HTMLDetailsElement | null;
+				if (el && window.matchMedia("(min-width: 1024px)").matches) {
+					el.open = true;
+				}
+			}
+			tocEnsureOpen();
+			document.addEventListener("astro:page-load", tocEnsureOpen);
 		}
-	}
-	tocEnsureOpen();
-	document.addEventListener("astro:page-load", tocEnsureOpen);
+	} catch {}
 </script>

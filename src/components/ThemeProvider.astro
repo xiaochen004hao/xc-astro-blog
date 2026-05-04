@@ -1,5 +1,6 @@
 {/* 内联以避免 FOUC（无样式内容闪烁）。这是一个解析器阻塞脚本。 */}
 <script is:inline>
+	const root = document.documentElement;
 	const darkModePref = window.matchMedia("(prefers-color-scheme: dark)");
 
 	function getUserPref() {
@@ -14,16 +15,11 @@
 			);
 		}
 
-		const root = document.documentElement;
-
-		// 根元素已设置为新主题，提前退出
 		if (newTheme === root.getAttribute("data-theme")) {
 			return;
 		}
 
 		root.setAttribute("data-theme", newTheme);
-
-		// 更新favicon
 		await updateFavicon(newTheme);
 
 		if (typeof localStorage !== "undefined") {
@@ -41,7 +37,6 @@
 				darkFavicon.removeAttribute("media");
 				darkFavicon.setAttribute("rel", "icon");
 			} else {
-				// 如果暗色favicon不存在，创建它
 				const newFavicon = document.createElement("link");
 				newFavicon.id = "favicon-dark";
 				newFavicon.rel = "icon";
@@ -55,7 +50,6 @@
 				lightFavicon.removeAttribute("media");
 				lightFavicon.setAttribute("rel", "icon");
 			} else {
-				// 如果亮色favicon不存在，创建它
 				const newFavicon = document.createElement("link");
 				newFavicon.id = "favicon-light";
 				newFavicon.rel = "icon";
@@ -66,24 +60,26 @@
 		}
 	}
 
-	// 初始设置
+	// 初始设置 — 每次页面加载都执行
 	(async () => {
 		await setTheme(getUserPref());
 	})();
 
-	// 视图过渡钩子，用于恢复主题
-	document.addEventListener("astro:after-swap", async () => {
-		await setTheme(getUserPref());
-	});
+	// is:inline 在 ClientRouter 切换时会重执行，用标记避免监听器累积
+	if (!root.dataset.themeEvents) {
+		root.dataset.themeEvents = "1";
 
-	// 监听 theme-change 自定义事件，该事件在 src/components/ThemeToggle.astro 中触发
-	document.addEventListener("theme-change", async (e) => {
-		await setTheme(e.detail.theme);
-	});
+		document.addEventListener("astro:after-swap", async () => {
+			await setTheme(getUserPref());
+		});
 
-	// 监听 prefers-color-scheme（系统颜色偏好）变化。
-	darkModePref.addEventListener(
-		"change",
-		async (e) => await setTheme(e.matches ? "dark" : "light"),
-	);
+		document.addEventListener("theme-change", async (e) => {
+			await setTheme(e.detail.theme);
+		});
+
+		darkModePref.addEventListener(
+			"change",
+			async (e) => await setTheme(e.matches ? "dark" : "light"),
+		);
+	}
 </script>
