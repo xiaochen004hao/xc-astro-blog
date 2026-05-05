@@ -1,85 +1,99 @@
-{/* 内联以避免 FOUC（无样式内容闪烁）。这是一个解析器阻塞脚本。 */}
+---
+
+---
+
 <script is:inline>
-	const root = document.documentElement;
-	const darkModePref = window.matchMedia("(prefers-color-scheme: dark)");
+	(function () {
+		const storageKey = "xcblog-theme";
 
-	function getUserPref() {
-		const storedTheme = typeof localStorage !== "undefined" && localStorage.getItem("theme");
-		return storedTheme || (darkModePref.matches ? "dark" : "light");
-	}
-
-	async function setTheme(newTheme) {
-		if (newTheme !== "light" && newTheme !== "dark") {
-			return console.warn(
-				`Invalid theme value '${newTheme}' received. Expected 'light' or 'dark'.`,
-			);
+		function resolveTheme(value) {
+			return value === "auto" || value === "dark" ? "dark" : "light";
 		}
 
-		if (newTheme === root.getAttribute("data-theme")) {
-			return;
+		function getCookie(name) {
+			const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+			return match ? decodeURIComponent(match[1]) : null;
 		}
 
-		root.setAttribute("data-theme", newTheme);
-		await updateFavicon(newTheme);
-
-		if (typeof localStorage !== "undefined") {
-			localStorage.setItem("theme", newTheme);
+		function getTheme() {
+			const stored = localStorage.getItem(storageKey);
+			if (stored) return stored;
+			const cookie = getCookie(storageKey);
+			if (cookie) return cookie;
+			return "auto";
 		}
-	}
 
-	async function updateFavicon(theme) {
-		const lightFavicon = document.getElementById("favicon-light");
-		const darkFavicon = document.getElementById("favicon-dark");
-
-		if (theme === "dark") {
-			if (lightFavicon) lightFavicon.remove();
-			if (darkFavicon) {
-				darkFavicon.removeAttribute("media");
-				darkFavicon.setAttribute("rel", "icon");
-			} else {
-				const newFavicon = document.createElement("link");
-				newFavicon.id = "favicon-dark";
-				newFavicon.rel = "icon";
-				newFavicon.type = "image/svg+xml";
-				newFavicon.href = "/icon-dark.svg";
-				document.head.appendChild(newFavicon);
-			}
-		} else {
-			if (darkFavicon) darkFavicon.remove();
-			if (lightFavicon) {
-				lightFavicon.removeAttribute("media");
-				lightFavicon.setAttribute("rel", "icon");
-			} else {
-				const newFavicon = document.createElement("link");
-				newFavicon.id = "favicon-light";
-				newFavicon.rel = "icon";
-				newFavicon.type = "image/svg+xml";
-				newFavicon.href = "/icon-light.svg";
-				document.head.appendChild(newFavicon);
-			}
+		function getResolvedTheme() {
+			return resolveTheme(getTheme());
 		}
-	}
 
-	// 初始设置 — 每次页面加载都执行
-	(async () => {
-		await setTheme(getUserPref());
+		function applyTheme(theme) {
+			document.documentElement.setAttribute("data-theme", theme);
+			document.documentElement.style.colorScheme = theme;
+			document.documentElement.setAttribute("data-theme-mode", getTheme());
+		}
+
+		function setTheme(value) {
+			try {
+				localStorage.setItem(storageKey, value);
+			} catch {}
+			try {
+				document.cookie = `${storageKey}=${value};path=/;max-age=31536000;SameSite=Lax`;
+			} catch {}
+			applyTheme(resolveTheme(value));
+			return value;
+		}
+
+		function initTheme() {
+			applyTheme(getResolvedTheme());
+		}
+
+		initTheme();
+
+		window.__theme = {
+			get: getTheme,
+			getResolved: getResolvedTheme,
+			set: setTheme,
+		};
 	})();
+</script>
 
-	// is:inline 在 ClientRouter 切换时会重执行，用标记避免监听器累积
-	if (!root.dataset.themeEvents) {
-		root.dataset.themeEvents = "1";
+<style is:global>
+	.toggle-item {
+		cursor:
+			url("/w11-cursor-concept-free/link.cur") 4 0,
+			pointer;
+	}
+	.theme-toggle:focus-visible {
+		outline: 2px solid oklch(from var(--color-accent) l c h / 0.6);
+		outline-offset: 2px;
+		border-radius: 0.375rem;
+	}
+</style>
 
-		document.addEventListener("astro:after-swap", async () => {
-			await setTheme(getUserPref());
-		});
+<script>
+	function syncThemeAndToggle() {
+		const mode = window.__theme?.get();
+		const theme = window.__theme?.getResolved();
+		if (!theme) return;
 
-		document.addEventListener("theme-change", async (e) => {
-			await setTheme(e.detail.theme);
-		});
+		// 确保文档主题属性在
+		document.documentElement.setAttribute("data-theme", theme);
+		document.documentElement.style.colorScheme = theme;
+		if (mode) {
+			document.documentElement.setAttribute("data-theme-mode", mode);
+		}
 
-		darkModePref.addEventListener(
-			"change",
-			async (e) => await setTheme(e.matches ? "dark" : "light"),
-		);
+		// 同步按钮
+		const button = document.querySelector(".theme-toggle button");
+		if (!button) return;
+		button.setAttribute("aria-checked", theme === "dark" ? "true" : "false");
+		button.setAttribute("aria-label", theme === "dark" ? "深色模式" : "浅色模式");
+	}
+
+	document.addEventListener("astro:page-load", syncThemeAndToggle);
+	document.addEventListener("astro:after-swap", syncThemeAndToggle);
+	if (document.readyState === "complete" || document.readyState === "interactive") {
+		syncThemeAndToggle();
 	}
 </script>

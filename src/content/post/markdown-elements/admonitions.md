@@ -4,7 +4,7 @@ description: "这篇文章展示了在 Astro Cactus 中使用 markdown 提示框
 publishDate: "2024-08-25"
 updatedDate: "2025-07-04"
 tags: ["markdown", "admonitions"]
-aiSummary: 这篇文章详细介绍Astro主题中提示框组件的使用方法。提示框又称旁注，是用于补充和强调内容的重要排版元素。文章详细说明了note、tip、important、warning、caution等五种提示框类型的语法格式，并演示了自定义标题和GitHub仓库卡片链接等进阶功能，帮助读者丰富博客内容的表达能力。
+aiSummary: 这篇文章详细介绍了Astro主题中提示框组件的使用方法。提示框又称旁注，是用于补充和强调文章内容的重要排版元素，通过将Markdown内容包裹在三重冒号中即可创建。文章系统讲解了note笔记、tip提示、important重要、warning警告和caution注意等五种提示框类型的语法格式和适用场景，每种类型配有不同图标和配色方案以区分信息层级。此外还演示了如何通过方括号标记自定义提示框标题，以及使用GitHub指令插入动态仓库卡片来展示项目信息或用户资料等进阶功能。
 aiModel: DeepSeek-V4-Pro
 ---
 

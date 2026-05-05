@@ -1,7 +1,9 @@
-const fs = require("node:fs");
-const path = require("node:path");
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const DIST = "dist";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DIST = path.resolve(__dirname, "..", "dist");
 const SW_SRC = path.join(DIST, "service-worker.js");
 const PAGEFIND_DIR = path.join(DIST, "pagefind");
 
@@ -38,9 +40,9 @@ let swContent = fs.readFileSync(SW_SRC, "utf-8");
 
 swContent = swContent.replace(
 	/const CACHE_VERSION = "[^"]*"/,
-	`const CACHE_VERSION = "v3.0.0-${buildTimestamp}"`,
+	`const CACHE_VERSION = "v4.0.0-${buildTimestamp}"`,
 );
 swContent = swContent.replace("__PAGEFIND_FILES__", fileListJson);
 
 fs.writeFileSync(SW_SRC, swContent);
-console.log(`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files, cache v3.0.0-${buildTimestamp}`);
+console.log(`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files, cache v4.0.0-${buildTimestamp}`);

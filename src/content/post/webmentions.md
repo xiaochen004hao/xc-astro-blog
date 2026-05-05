@@ -5,7 +5,7 @@ publishDate: "2023-10-11"
 tags: ["webmentions", "astro", "社交"]
 updatedDate: "2024-12-06"
 pinned: true
-aiSummary: 这篇文章详细介绍如何为Astro博客添加Webmentions功能，实现社交媒体上的点赞、评论和转发等互动信息展示。文章涵盖了IndieLogin身份验证、Webmention.io账户注册以及Brid.gy社交平台链接等关键步骤，并提供了完整的环境变量配置指导，帮助博主建立与社交媒体的互动桥梁。
+aiSummary: 这篇文章详细介绍了为Astro博客添加Webmentions功能的完整流程。Webmentions是一种通过社交媒体展示网站页面上用户点赞、评论和转发等互动行为的技术方案。文章从原理入手讲解概念，随后提供了分步骤的实操指南，包括通过IndieLogin添加身份验证链接以证明所有权，在Webmention.io创建账户获取API密钥和Feed链接，配置环境变量，以及使用Bridgy将网站连接到各社交媒体账户。文章还提供了通过Webmentions Rocks发送测试提及的验证方法。
 aiModel: DeepSeek-V4-Pro
 ---
 

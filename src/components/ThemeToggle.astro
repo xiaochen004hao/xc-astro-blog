@@ -1,4 +1,4 @@
-<theme-toggle class="ms-2 sm:ms-4">
+<theme-toggle class="theme-toggle ms-2 sm:ms-4">
 	<button class="hover:text-accent relative h-9 w-9 rounded-md p-2" type="button">
 		<span class="sr-only">切换主题</span>
 		<svg
@@ -58,27 +58,20 @@
 	class ThemeToggle extends HTMLElement {
 		constructor() {
 			super();
-			this.init();
 		}
 
-		init() {
-			const button = this.querySelector<HTMLButtonElement>("button");
+		connectedCallback() {
+			const button = this.querySelector("button");
 			if (!button) {
 				console.warn("Theme Toggle: No button found");
 				return;
 			}
 
 			button.setAttribute("role", "switch");
-			button.setAttribute("aria-checked", rootInDarkMode().toString());
 
 			button.addEventListener("click", () => {
-				const newTheme = rootInDarkMode() ? "light" : "dark";
-				document.dispatchEvent(
-					new CustomEvent("theme-change", {
-						detail: { theme: newTheme },
-					}),
-				);
-				button.setAttribute("aria-checked", (newTheme === "dark").toString());
+				const newMode = rootInDarkMode() ? "light" : "dark";
+				window.__theme?.set(newMode);
 			});
 		}
 	}

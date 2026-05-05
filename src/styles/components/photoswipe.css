@@ -1,10 +1,5 @@
 /* ==========================================================================
    PhotoSwipe 图片缩放组件样式
-   依赖: photoswipe (src/scripts/medium-zoom.ts)
-   说明: 文章内图片点击放大预览（支持缩放/拖拽/手势/键盘）
-         排除: 代码块(.expressive-code)、提示框(.admonition)、GitHub卡片、
-               Waline评论区、标注 data-no-zoom 的图片
-   光标: crosshair.cur(可放大) / sizeall.cur(已放大/可拖拽)
    ========================================================================== */
 
 article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img, #waline img) {

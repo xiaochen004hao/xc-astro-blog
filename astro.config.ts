@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import tailwind from "@tailwindcss/vite";
@@ -15,6 +14,7 @@ import remarkDirective from "remark-directive";
 import { remarkAdmonitions } from "./src/plugins/remark-admonitions";
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
+import { rawFonts, swVersionBust } from "./src/plugins/vite-plugins";
 import { expressiveCodeOptions, siteConfig } from "./src/site.config";
 
 // https://astro.build/config
@@ -100,36 +100,3 @@ export default defineConfig({
         },
     },
 });
-
-function rawFonts(ext: string[]) {
-    return {
-        name: "vite-plugin-raw-fonts",
-        // @ts-expect-error:next-line
-        transform(_, id) {
-            if (ext.some((e) => id.endsWith(e))) {
-                const buffer = fs.readFileSync(id);
-                return {
-                    code: `export default ${JSON.stringify(buffer)}`,
-                    map: null,
-                };
-            }
-        },
-    };
-}
-
-function swVersionBust() {
-    return {
-        name: "sw-version-bust",
-        closeBundle() {
-            const swPath = new URL("public/service-worker.js", import.meta.url);
-            if (!fs.existsSync(swPath)) return;
-            let code = fs.readFileSync(swPath, "utf-8");
-            const ts = new Date().toISOString().replace(/[:.]/g, "").slice(0, 15);
-            code = code.replace(
-                /const CACHE_VERSION = ".*?";/,
-                `const CACHE_VERSION = "v3.0.0-${ts}"`,
-            );
-            fs.writeFileSync(swPath, code, "utf-8");
-        },
-    };
-}

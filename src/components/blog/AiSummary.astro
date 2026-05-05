@@ -25,27 +25,30 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 			{model}
 		</span>
 	</div>
-	<p id={`${id}-content`} class="text-sm leading-relaxed">
-		<span class="typewriter-cursor"></span>
-	</p>
+	<p id={`${id}-content`} class="ai-explanation text-sm leading-relaxed"></p>
 </div>
 
-<style>
-	.typewriter-cursor {
-		display: inline;
-		text-decoration: underline;
-		text-decoration-thickness: 2px;
-		text-underline-offset: 4px;
-		animation: breathe 1.5s ease-in-out infinite;
+<style is:global>
+	.ai-summary .ai-explanation::after {
+		content: "";
+		display: inline-block;
+		width: 8px;
+		height: 2px;
+		margin-left: 2px;
+		background: var(--color-accent-2);
+		vertical-align: bottom;
+		animation: blink-underline 1s ease-in-out infinite;
+		position: relative;
+		bottom: 3px;
 	}
 
-	@keyframes breathe {
+	@keyframes blink-underline {
 		0%,
 		100% {
 			opacity: 1;
 		}
 		50% {
-			opacity: 0.3;
+			opacity: 0;
 		}
 	}
 </style>
@@ -61,17 +64,17 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 				const contentEl = container.querySelector<HTMLElement>(`#${id}-content`);
 				if (!contentEl) return;
 
-				const cursor = contentEl.querySelector(".typewriter-cursor");
 				let index = 0;
 
 				if (contentEl.dataset.typed === "true") return;
 				contentEl.dataset.typed = "true";
 
+				const textNode = document.createTextNode("");
+				contentEl.appendChild(textNode);
+
 				function typeNext() {
-					if (index < text.length) {
-						const char = text[index++];
-						const textNode = document.createTextNode(char);
-						contentEl.insertBefore(textNode, cursor);
+					if (text && index < text.length && textNode.nodeValue != null) {
+						textNode.nodeValue += text[index++];
 						setTimeout(typeNext, 50);
 					}
 				}

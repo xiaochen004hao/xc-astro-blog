@@ -10,9 +10,16 @@ declare module "@waline/client" {
 
 declare module "@waline/client/style" {}
 
+interface ThemeAPI {
+	get: () => string;
+	getResolved: () => "light" | "dark";
+	set: (value: string) => string;
+}
+
 interface Window {
 	__swReady?: boolean;
 	__searchCrashed?: boolean;
 	__searchCrashReady?: boolean;
 	__lenis?: unknown;
+	__theme?: ThemeAPI;
 }

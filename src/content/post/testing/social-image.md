@@ -4,7 +4,7 @@ publishDate: "2023-01-27"
 description: "Astro Cactus 的示例文章，详细介绍如何在 frontmatter 中添加自定义社交图片卡片"
 tags: ["示例", "博客", "图片"]
 ogImage: "/social-card.png"
-aiSummary: 这篇文章是Astro主题中关于Open Graph社交图片的配置教程。作者通过示例演示了如何在文章frontmatter中通过ogImage属性自定义社交分享图片，替代主题默认的自动生成机制，帮助读者打造更具品牌特色的社交分享卡片。
+aiSummary: 这篇文章介绍了Astro主题中Open Graph社交图片的自定义配置方法。文章通过具体示例演示了如何在文章frontmatter中添加ogImage属性来手动指定社交分享图片，从而替代主题默认的自动生成机制。当文章被分享到社交媒体平台时，OG图片会作为预览卡片的核心视觉元素展示，直接影响内容的点击率和传播效果。文章以public目录下的social-card.png为例说明了图片路径的配置方式，并指出图片可以存放在项目内任意位置，帮助读者为每篇文章打造更具品牌辨识度的社交分享体验。
 aiModel: DeepSeek-V4-Pro
 ---
 

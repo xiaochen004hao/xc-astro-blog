@@ -278,10 +278,18 @@ html > *:not(head):not(body) {
 /* ------------------------------------------------------------------
    3. 外部链接图标
    为站外链接自动添加 ↗ 图标（通过 mask 实现）
-   排除: 站内链接、导航栏、Waline、友链、Pagefind 等
+   使用 CSS :not() 列表语法排除站内和特定组件
    ------------------------------------------------------------------ */
-.prose a[href^="http"]:not([href*="weblog.xc4h.qzz.io"]):not([href*="localhost"]):not([class*="no-external-icon"])::after,
-a[href^="http"]:not([href*="weblog.xc4h.qzz.io"]):not([href*="localhost"]):not([class*="no-external-icon"]):not([class*="pagefind-ui"]):not(nav a):not(.cactus-link):not(#waline a):not(.friend-card)::after {
+a[href^="http"]:not(
+	[href*="weblog.xc4h.qzz.io"],
+	[href*="localhost"],
+	[class*="no-external-icon"],
+	[class*="pagefind-ui"] a,
+	nav a,
+	.cactus-link,
+	#waline a,
+	.friend-card
+)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
@@ -299,14 +307,12 @@ a[href^="http"]:not([href*="weblog.xc4h.qzz.io"]):not([href*="localhost"]):not([
    ------------------------------------------------------------------ */
 @import "./components/admonition.css" layer(components);
 @import "./components/github-card.css" layer(components);
-@import "./components/medium-zoom.css" layer(components);
+@import "./components/photoswipe.css" layer(components);
 @import "./print.css";
 
 /* ------------------------------------------------------------------
    5. Waline 评论区光标覆盖
-   waline-custom.css 中有 15+ 处原生 cursor 值会覆盖全局光标
-   此处通过 ID 选择器 + !important 强制统一为自定义光标
-   不修改第三方样式文件，避免升级冲突
+   通过 ID 选择器 + !important 强制统一为自定义光标
    ------------------------------------------------------------------ */
 #waline {
 	cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
