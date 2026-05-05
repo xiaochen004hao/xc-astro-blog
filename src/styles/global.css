@@ -281,7 +281,7 @@ html > *:not(head):not(body) {
    使用 CSS :not() 列表语法排除站内和特定组件
    ------------------------------------------------------------------ */
 a[href^="http"]:not(
-	[href*="weblog.xc4h.qzz.io"],
+	[href*="blog.xc4h.qzz.io"],
 	[href*="localhost"],
 	[class*="no-external-icon"],
 	[class*="pagefind-ui"] a,

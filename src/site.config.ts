@@ -3,7 +3,7 @@ import type { SiteConfig } from "@/types";
 
 export const siteConfig: SiteConfig = {
     // ! 请记得将下面的网站属性替换为您自己的域名，该域名在 astro.config.ts 中使用
-    url: "https://weblog.xc4h.qzz.io/",
+    url: "https://blog.xc4h.qzz.io/",
     /*
         - 用于构建在 src/components/BaseHead.astro L:11 中找到的 meta title 属性
         - 在 astro.config.ts L:42 中找到的 webmanifest 名称

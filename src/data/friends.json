@@ -8,9 +8,9 @@
                 {
                     "name": "Xiaochen004hao",
                     "description": "一个小萌新（也许是苦力怕）",
-                    "url": "https://weblog.xc4h.qzz.io/",
-                    "avatar": "https://weblog.xc4h.qzz.io/icon.svg",
-                    "siteshot": "https://weblog.xc4h.qzz.io/siteshot.png"
+                    "url": "https://blog.xc4h.qzz.io/",
+                    "avatar": "https://blog.xc4h.qzz.io/icon.svg",
+                    "siteshot": "https://blog.xc4h.qzz.io/siteshot.png"
                 }
             ]
         }
@@ -18,9 +18,9 @@
     "siteInfo": {
         "name": "Xiaochen004hao",
         "description": "一个小萌新（也许是苦力怕）",
-        "url": "https://weblog.xc4h.qzz.io/",
-        "avatar": "https://weblog.xc4h.qzz.io/icon.svg",
-        "siteshot": "https://weblog.xc4h.qzz.io/siteshot.png"
+        "url": "https://blog.xc4h.qzz.io/",
+        "avatar": "https://blog.xc4h.qzz.io/icon.svg",
+        "siteshot": "https://blog.xc4h.qzz.io/siteshot.png"
     },
     "changeLog": [],
     "requirements": [
