@@ -65,7 +65,7 @@ const {
 		<Footer />
 
 		<script>
-			import "@/scripts/lenis.ts";
+			import "@/scripts/smooth-scroll.ts";
 		</script>
 
 		<script>
@@ -161,18 +161,28 @@ const {
 					navigator.serviceWorker
 						.getRegistration()
 						.then((reg) => {
-							if (reg) {
-								reg.unregister();
+							if (reg?.waiting) {
+								reg.waiting.postMessage({ type: "SKIP_WAITING" });
+							} else if (reg?.installing) {
+								reg.installing.addEventListener("statechange", () => {
+									if (reg.waiting) {
+										reg.waiting.postMessage({ type: "SKIP_WAITING" });
+									}
+								});
+							} else {
+								sessionStorage.removeItem(BANNER_KEY);
+								window.location.reload();
 							}
-						})
-						.then(() => {
-							sessionStorage.removeItem(BANNER_KEY);
-							window.location.reload();
 						})
 						.catch(() => {
 							window.location.reload();
 						});
 				};
+
+				navigator.serviceWorker.addEventListener("controllerchange", () => {
+					sessionStorage.removeItem(BANNER_KEY);
+					window.location.reload();
+				});
 
 				navigator.serviceWorker
 					.register("/service-worker.js")

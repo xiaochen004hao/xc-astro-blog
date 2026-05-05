@@ -5,6 +5,8 @@ publishDate: "2023-02-22"
 updatedDate: "2024-01-22"
 tags: ["测试", "markdown"]
 pinned: true
+aiSummary: 这篇文章是Astro主题的Markdown语法展示页，全面演示了主题支持的各类Markdown元素用法。内容涵盖从标题层级、文本强调、引用块、列表结构到代码高亮、表格对齐、图片插入等常用语法，并包含键盘快捷键提示和脚注引用等进阶功能，是博主编写文章的重要参考手册。
+aiModel: DeepSeek-V4-Pro
 ---
 
 # 这是一个一级标题

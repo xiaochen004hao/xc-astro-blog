@@ -1,3 +1,9 @@
+/* ==========================================================================
+   GitHub Card 组件样式
+   来源: remark-github-card.ts 插件动态注入的 <div class="github-card">
+   功能: 展示 GitHub 仓库/用户信息（头像、描述、Star/Fork/License 等）
+   状态: 正常 / 加载中(gh-loading) / 错误(gh-error)
+   ========================================================================== */
 .github-card {
 	@apply bg-global-text/5 rounded-md px-4 py-3;
 

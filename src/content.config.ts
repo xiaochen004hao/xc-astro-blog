@@ -14,6 +14,8 @@ const post = defineCollection({
             pinned: z.boolean().default(false),
             tags: z.array(z.string()).default([]),
             draft: z.boolean().default(false),
+            aiSummary: z.string().optional(),
+            aiModel: z.string().optional(),
             ogImage: z.string().optional(),
             coverImage: z
                 .object({

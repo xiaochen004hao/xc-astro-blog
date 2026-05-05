@@ -4,7 +4,7 @@ import { Icon } from "astro-icon/components";
 /** 
 	Uses https://www.astroicon.dev/getting-started/
 	Find icons via guide: https://www.astroicon.dev/guides/customization/#open-source-icon-sets
-	Only installed pack is: @iconify-json/mdi
+	Installed packs: @iconify-json/simple-icons (brands), @iconify-json/lucide (UI)
 */
 const socialLinks: {
 	friendlyName: string;
@@ -14,8 +14,14 @@ const socialLinks: {
 }[] = [
 	{
 		friendlyName: "Github",
+		isWebmention: true,
 		link: "https://github.com/xiaochen004hao",
-		name: "mdi:github",
+		name: "simple-icons:github",
+	},
+	{
+		friendlyName: "Bilibili",
+		link: "https://space.bilibili.com/3546624408160947",
+		name: "simple-icons:bilibili",
 	},
 ];
 ---

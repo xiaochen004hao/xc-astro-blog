@@ -11,9 +11,9 @@ const { nextPost, prevPost } = Astro.props;
 
 {
 	(prevPost || nextPost) && (
-		<nav class="mt-16 grid grid-cols-1 gap-3 sm:grid-cols-2">
+		<nav class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
 			{prevPost ? (
-				<div class="group hover:border-accent dark:hover:border-accent border p-4 transition-colors">
+				<div class="group hover:border-accent rounded-lg border p-4 transition-colors">
 					<a href={`/posts/${prevPost.id}/`} class="block w-full">
 						<span class="text-muted text-xs font-medium tracking-wider uppercase">← 上一篇</span>
 						<p class="group-hover:text-accent mt-1 line-clamp-1 text-sm font-medium transition-colors">
@@ -25,7 +25,7 @@ const { nextPost, prevPost } = Astro.props;
 				<div />
 			)}
 			{nextPost ? (
-				<div class="group hover:border-accent dark:hover:border-accent border p-4 text-right transition-colors">
+				<div class="group hover:border-accent rounded-lg border p-4 text-right transition-colors">
 					<a href={`/posts/${nextPost.id}/`} class="block w-full">
 						<span class="text-muted text-xs font-medium tracking-wider uppercase">下一篇 →</span>
 						<p class="group-hover:text-accent mt-1 line-clamp-1 text-sm font-medium transition-colors">

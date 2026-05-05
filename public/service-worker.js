@@ -1,4 +1,4 @@
-const CACHE_VERSION = "v3.0.0-2026-05-03T2219"
+const CACHE_VERSION = "v4.0.0-2026-05-06"
 const CACHE_NAME = `xcblog-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
@@ -89,9 +89,9 @@ self.addEventListener("fetch", (event) => {
     if (!url.protocol.startsWith("http")) return;
 
     if (isHtmlPage(request)) {
-        event.respondWith(networkFirst(request));
+        event.respondWith(handleHtmlRequest(request));
     } else {
-        event.respondWith(cacheFirst(request));
+        event.respondWith(handleStaticRequest(request));
     }
 });
 
@@ -104,45 +104,49 @@ function isHtmlPage(request) {
     if (request.mode === "navigate") return true;
     if (request.destination === "document") return true;
 
-    if (!/\.[\w-]{2,6}(\?|#|$)/.test(url.pathname)) return true;
-
     return false;
 }
 
-async function cacheFirst(request) {
+async function handleHtmlRequest(request) {
     const cachedResponse = await caches.match(request);
-    if (cachedResponse) return cachedResponse;
+    const cache = await caches.open(CACHE_NAME);
 
     try {
         const networkResponse = await fetch(request);
+
         if (networkResponse.ok) {
-            const cache = await caches.open(CACHE_NAME);
-            cache.put(request, networkResponse.clone());
+            const clonedResponse = networkResponse.clone();
+            cache.put(request, clonedResponse).catch(() => {});
         }
+
         return networkResponse;
-    } catch {
-        if (request.mode === "navigate") {
-            return getOfflinePage();
+    } catch (error) {
+        if (cachedResponse) {
+            console.log(`[SW] serving from cache: ${request.url}`);
+            return cachedResponse;
         }
-        return Response.error();
+
+        console.log(`[SW] offline, no cache for: ${request.url}, showing offline page`);
+        return getOfflinePage();
     }
 }
 
-async function networkFirst(request) {
+async function handleStaticRequest(request) {
+    const cachedResponse = await caches.match(request);
+
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+
     try {
         const networkResponse = await fetch(request);
         if (networkResponse.ok) {
             const cache = await caches.open(CACHE_NAME);
-            cache.put(request, networkResponse.clone());
+            cache.put(request, networkResponse.clone()).catch(() => {});
         }
         return networkResponse;
     } catch {
-        const cachedResponse = await caches.match(request);
-        if (cachedResponse) return cachedResponse;
-        if (request.mode === "navigate") {
-            return getOfflinePage();
-        }
-        return Response.error();
+        return new Response("", { status: 408, statusText: "Request Timeout" });
     }
 }
 

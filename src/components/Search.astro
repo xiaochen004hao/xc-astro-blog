@@ -4,7 +4,7 @@ import "@/styles/blocks/search.css";
 
 <site-search class="ms-auto">
 	<button
-		class="hover:text-accent flex h-9 w-9 cursor-pointer items-center justify-center rounded-md"
+		class="hover:text-accent flex h-9 w-9 items-center justify-center rounded-md"
 		aria-keyshortcuts="Control+K Meta+K"
 		data-open-modal
 		disabled
@@ -13,30 +13,32 @@ import "@/styles/blocks/search.css";
 			aria-hidden="true"
 			class="h-7 w-7"
 			fill="none"
-			height="16"
 			stroke="currentColor"
 			stroke-linecap="round"
 			stroke-linejoin="round"
 			stroke-width="1.5"
 			viewBox="0 0 24 24"
-			width="16"
 			xmlns="http://www.w3.org/2000/svg"
 		>
-			<path d="M0 0h24v24H0z" stroke="none"></path>
-			<path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6"></path>
+			<path
+				d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
 		</svg>
 		<span class="sr-only">打开搜索</span>
 	</button>
 	<dialog
-		aria-label="search"
+		aria-label="搜索"
 		class="bg-global-bg fixed inset-0 m-0 max-h-full max-w-full border-0 shadow-sm backdrop:backdrop-blur-sm open:flex sm:relative sm:mx-auto sm:mt-16 sm:mb-auto sm:h-max sm:max-h-[calc(100%-8rem)] sm:min-h-60 sm:w-5/6 sm:max-w-3xl sm:rounded-md sm:border sm:border-zinc-400"
-		data-lenis-prevent
 	>
 		<div class="dialog-frame flex grow flex-col gap-4 p-6 pt-12 sm:pt-6">
 			<button
-				class="ms-auto cursor-pointer rounded-md bg-zinc-200 p-2 font-semibold dark:bg-zinc-700"
-				data-close-modal>关闭</button
+				class="ms-auto rounded-md bg-zinc-200 p-2 font-semibold dark:bg-zinc-700"
+				data-close-modal
+				aria-label="关闭搜索对话框"
 			>
+				关闭
+			</button>
 			{
 				import.meta.env.DEV ? (
 					<div class="mx-auto text-center">
@@ -57,7 +59,7 @@ import "@/styles/blocks/search.css";
 </site-search>
 
 <script>
-	const FALLBACK_HTML = `<div class="text-center py-8"><svg aria-hidden="true" class="mx-auto h-12 w-12 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" stroke="none"/><path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="text-lg font-medium mt-4">搜索功能暂时不可用</p><p class="text-sm text-zinc-500 mt-2">请检查网络连接后 <a href="javascript:location.reload()" class="underline text-accent">刷新页面</a> 重试</p></div>`;
+	const FALLBACK_HTML = `<div class="text-center py-8"><svg aria-hidden="true" class="mx-auto h-12 w-12 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="text-lg font-medium mt-4">搜索功能暂时不可用</p><p class="text-sm text-zinc-500 mt-2">请检查网络连接后 <a href="javascript:location.reload()" class="underline text-accent">刷新页面</a> 重试</p></div>`;
 
 	if (!(window as any).__searchCrashReady) {
 		(window as any).__searchCrashReady = true;
@@ -133,12 +135,24 @@ import "@/styles/blocks/search.css";
 		#open = (event?: MouseEvent) => {
 			if (!this.#dialog || this.#dialog.open) return;
 			this.#dialog.showModal();
+			document.body.style.overflow = "hidden";
+			const lenis = (window as unknown as Record<string, unknown>).__lenis as {
+				stop?: () => void;
+			} | null;
+			lenis?.stop?.();
 			this.querySelector("input")?.focus();
 			event?.stopPropagation();
 			window.addEventListener("click", this.#onClickOutside, { signal: this.#controller.signal });
 		};
 
-		#close = () => this.#dialog?.close();
+		#close = () => {
+			document.body.style.overflow = "";
+			const lenis = (window as unknown as Record<string, unknown>).__lenis as {
+				start?: () => void;
+			} | null;
+			lenis?.start?.();
+			this.#dialog?.close();
+		};
 
 		#onClickOutside = (event: MouseEvent) => {
 			const isLink = "href" in (event.target || {});

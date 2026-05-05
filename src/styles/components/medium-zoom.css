@@ -1,8 +1,30 @@
-article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img) {
-	cursor: zoom-in;
+/* ==========================================================================
+   PhotoSwipe 图片缩放组件样式
+   依赖: photoswipe (src/scripts/medium-zoom.ts)
+   说明: 文章内图片点击放大预览（支持缩放/拖拽/手势/键盘）
+         排除: 代码块(.expressive-code)、提示框(.admonition)、GitHub卡片、
+               Waline评论区、标注 data-no-zoom 的图片
+   光标: crosshair.cur(可放大) / sizeall.cur(已放大/可拖拽)
+   ========================================================================== */
+
+article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img, #waline img) {
+    cursor: url("/w11-cursor-concept-free/crosshair.cur") 16 16, crosshair;
 }
 
-.medium-zoom-overlay,
-.medium-zoom-image--opened {
-	z-index: 999;
+.pswp-active {
+    cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, zoom-out !important;
+}
+
+.pswp,
+.pswp__bg,
+.pswp__scroll-wrap {
+    cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, zoom-out !important;
+}
+
+.pswp__img {
+    cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grab !important;
+}
+
+.pswp--dragging .pswp__img {
+    cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grabbing !important;
 }

@@ -1,11 +1,13 @@
 ---
 import { type CollectionEntry, render } from "astro:content";
 
+import License from "@/components/blog/License.astro";
 import Masthead from "@/components/blog/Masthead.astro";
 import PostNav from "@/components/blog/PostNav.astro";
 import ShareButtons from "@/components/blog/ShareButtons.astro";
 import WalineComments from "@/components/blog/WalineComments.astro";
 import TOC from "@/components/blog/TOC.astro";
+import { siteConfig } from "@/site.config";
 
 import BaseLayout from "./Base.astro";
 
@@ -42,12 +44,13 @@ const readingTime: string = remarkPluginFrontmatter.readingTime;
 				<slot />
 			</div>
 		</div>
+		<License />
 		<PostNav {nextPost} {prevPost} />
 		<ShareButtons title={title} url={Astro.url.href} />
 		<WalineComments />
 	</article>
 	<button
-		class="hover:border-link fixed inset-e-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 cursor-pointer items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:inset-e-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
+		class="hover:border-link fixed inset-e-4 bottom-8 z-90 flex h-10 w-10 translate-y-28 items-center justify-center rounded-full border-2 border-transparent bg-zinc-200 text-3xl opacity-0 transition-all transition-discrete duration-300 data-[show=true]:translate-y-0 data-[show=true]:opacity-100 sm:inset-e-8 sm:h-12 sm:w-12 dark:bg-zinc-700"
 		data-show="false"
 		id="to-top-btn"
 	>

@@ -6,25 +6,28 @@
             "description": "随机排列，每次刷新都会看到不同的顺序。",
             "links": [
                 {
-                    "name": "Xiaochen004hao 的 博客",
+                    "name": "Xiaochen004hao",
                     "description": "一个小萌新（也许是苦力怕）",
-                    "url": "https://blog.qoslzm.dpdns.org/",
-                    "avatar": "https://blog.qoslzm.dpdns.org/icon.svg"
+                    "url": "https://weblog.xc4h.qzz.io/",
+                    "avatar": "https://weblog.xc4h.qzz.io/icon.svg",
+                    "siteshot": "https://weblog.xc4h.qzz.io/siteshot.png"
                 }
             ]
         }
     ],
     "siteInfo": {
-        "name": "Xiaochen004hao 的 博客",
+        "name": "Xiaochen004hao",
         "description": "一个小萌新（也许是苦力怕）",
-        "url": "https://blog.qoslzm.dpdns.org/",
-        "avatar": "https://blog.qoslzm.dpdns.org/icon.svg"
+        "url": "https://weblog.xc4h.qzz.io/",
+        "avatar": "https://weblog.xc4h.qzz.io/icon.svg",
+        "siteshot": "https://weblog.xc4h.qzz.io/siteshot.png"
     },
     "changeLog": [],
     "requirements": [
-        "已在你的网站中添加本站友链",
-        "网站拥有独立域名，非免费子域名",
-        "至少五篇原创文章，且最近一年持续更新",
-        "内容健康向上，不违反法律法规"
+        "已在贵站中添加本站相关友链信息",
+        "网站最好拥有独立域名，当然也可以是免费子域名，但不要太夸张",
+        "至少五篇原创文章，且最近半年有更新，当然越多越好了（",
+        "内容健康向上，不违反法律法规",
+        "不接受广告、推广、销售等商业性质的友链"
     ]
 }

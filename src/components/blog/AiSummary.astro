@@ -1,0 +1,87 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	summary: string;
+	model: string;
+}
+
+const { summary, model } = Astro.props;
+const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
+---
+
+<div
+	id={id}
+	class="ai-summary border-accent/20 bg-accent/5 relative mt-2 mb-6 rounded-lg border p-4 transition-colors"
+	data-summary={summary}
+	data-id={id}
+>
+	<div class="mb-2 flex items-center gap-2">
+		<Icon aria-hidden="true" class="text-accent h-4 w-4 shrink-0" name="lucide:sparkles" />
+		<span class="text-accent text-xs font-semibold tracking-wide uppercase"> AI 摘要 </span>
+		<span
+			class="text-muted ms-auto rounded-md border px-2 py-0.5 text-[10px] leading-relaxed font-medium"
+		>
+			{model}
+		</span>
+	</div>
+	<p id={`${id}-content`} class="text-sm leading-relaxed">
+		<span class="typewriter-cursor"></span>
+	</p>
+</div>
+
+<style>
+	.typewriter-cursor {
+		display: inline;
+		text-decoration: underline;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 4px;
+		animation: breathe 1.5s ease-in-out infinite;
+	}
+
+	@keyframes breathe {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.3;
+		}
+	}
+</style>
+
+<script>
+	(() => {
+		const init = () => {
+			const containers = document.querySelectorAll(".ai-summary");
+			containers.forEach((container) => {
+				const id = container.getAttribute("data-id");
+				const text = container.getAttribute("data-summary");
+				if (!id || !text) return;
+				const contentEl = container.querySelector<HTMLElement>(`#${id}-content`);
+				if (!contentEl) return;
+
+				const cursor = contentEl.querySelector(".typewriter-cursor");
+				let index = 0;
+
+				if (contentEl.dataset.typed === "true") return;
+				contentEl.dataset.typed = "true";
+
+				function typeNext() {
+					if (index < text.length) {
+						const char = text[index++];
+						const textNode = document.createTextNode(char);
+						contentEl.insertBefore(textNode, cursor);
+						setTimeout(typeNext, 50);
+					}
+				}
+
+				setTimeout(typeNext, 400);
+			});
+		};
+		document.addEventListener("astro:page-load", init);
+		if (document.readyState === "complete" || document.readyState === "interactive") {
+			init();
+		}
+	})();
+</script>

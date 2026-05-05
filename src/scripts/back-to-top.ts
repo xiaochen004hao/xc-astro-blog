@@ -5,7 +5,15 @@ try {
         if (!btn || !target) return;
 
         btn.addEventListener("click", () => {
-            document.documentElement.scrollTo({ behavior: "smooth", top: 0 });
+            const lenis = (window as unknown as Record<string, unknown>).__lenis as {
+                scrollTo: (target: number | string, options?: { offset?: number }) => void;
+            } | null;
+
+            if (lenis?.scrollTo) {
+                lenis.scrollTo(0);
+            } else {
+                window.scrollTo({ behavior: "smooth", top: 0 });
+            }
         });
 
         const observer = new IntersectionObserver((entries) => {

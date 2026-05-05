@@ -1,3 +1,10 @@
+/* ==========================================================================
+   全局样式入口 - Global Styles Entry
+   项目: xcblog (Astro Cactus Theme)
+   技术栈: Tailwind CSS v4 + CSS 自定义属性
+   说明: 本文件是所有样式的入口，定义颜色系统、光标主题、排版基础
+   ========================================================================== */
+
 @import "tailwindcss";
 @source not "../pages/og-image";
 @config "../../tailwind.config.ts";
@@ -8,10 +15,16 @@ html > *:not(head):not(body) {
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* ------------------------------------------------------------------
+   1. 颜色系统 (CSS Custom Properties)
+   使用 @property 注册，支持过渡动画和 JS 读取/修改
+   所有颜色使用 oklch 色空间，确保跨设备一致性
+   ------------------------------------------------------------------ */
+
 @property --color-global-bg {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(0.95 0 0);
+	initial-value: oklch(95% 0 0);
 }
 @property --color-global-text {
 	syntax: "<color>";
@@ -21,22 +34,22 @@ html > *:not(head):not(body) {
 @property --color-muted {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(44.6% 0.03 256.802);
+	initial-value: oklch(44.6% 0.0096 235.05);
 }
 @property --color-link {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(55.44% 0.0431 185.69);
+	initial-value: oklch(60.44% 0.1133 349);
 }
 @property --color-accent {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(0.47 0.08 194.77);
+	initial-value: oklch(47% 0.08 194.77);
 }
 @property --color-accent-2 {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(18.15% 0 0);
+	initial-value: oklch(33.9795% 0.058002 194.768948);
 }
 @property --color-quote {
 	syntax: "<color>";
@@ -46,24 +59,24 @@ html > *:not(head):not(body) {
 @property --color-logo-bg {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(0.94 0.02 196.8);
+	initial-value: oklch(94% 0.02 196.8);
 }
 @property --color-logo-text {
 	syntax: "<color>";
 	inherits: true;
-	initial-value: oklch(0.47 0.08 194.77);
+	initial-value: oklch(47% 0.08 194.77);
 }
 
 @theme {
-	--color-global-bg: oklch(0.95 0 0);
+	--color-global-bg: oklch(95% 0 0);
 	--color-global-text: oklch(26.99% 0.0096 235.05);
-	--color-muted: oklch(44.6% 0.03 256.802);
-	--color-link: oklch(55.44% 0.0431 185.69);
-	--color-accent: oklch(0.47 0.08 194.77);
-	--color-accent-2: oklch(18.15% 0 0);
+	--color-muted: oklch(44.6% 0.0096 235.05);
+	--color-link: oklch(60.44% 0.1133 349);
+	--color-accent: oklch(47% 0.08 194.77);
+	--color-accent-2: oklch(33.9795% 0.058002 194.768948);
 	--color-quote: oklch(55.27% 0.195 19.06);
-	--color-logo-bg: oklch(0.94 0.02 196.8);
-	--color-logo-text: oklch(0.47 0.08 194.77);
+	--color-logo-bg: oklch(94% 0.02 196.8);
+	--color-logo-text: oklch(47% 0.08 194.77);
 	--radius-md: 0.375rem;
 }
 
@@ -71,11 +84,117 @@ html > *:not(head):not(body) {
 	navigation: auto;
 }
 
+/* ------------------------------------------------------------------
+   2. 光标主题 (W11 Cursor Concept)
+   基于 public/w11-cursor-concept-free/ 目录下的 .cur/.ani 文件
+   光标优先级（从低到高）:
+     默认 arrow → 输入框 ibeam → 交互元素 hand → 特殊场景各自对应
+   注意: 不对文本容器(p/h1-h6等)设 ibeam，因为 cursor 作用于整个盒模型区域
+   ------------------------------------------------------------------ */
 @layer base {
 	html {
 		color-scheme: light dark;
 		accent-color: var(--color-accent);
 		scrollbar-gutter: stable;
+
+		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+
+		a,
+		[role="link"],
+		button,
+		[role="button"],
+		input[type="button"],
+		input[type="submit"],
+		input[type="reset"],
+		summary,
+		details,
+		details > summary,
+		[tabindex]:not([tabindex="-1"]):not(input):not(textarea),
+		[data-copy-value],
+		label:has(input),
+		label:has(select) {
+			cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer;
+		}
+
+		.copy {
+			cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer !important;
+		}
+
+		&:where(
+			input[type="text"],
+			input[type="search"],
+			input:not([type]),
+			textarea,
+			[contenteditable="true"]
+		) {
+			cursor: url("/w11-cursor-concept-free/ibeam.cur") 11 17, text;
+		}
+
+		&:where([disabled], [aria-disabled="true"], [aria-busy="true"]) {
+			cursor: url("/w11-cursor-concept-free/no.cur") 9 9, not-allowed;
+		}
+
+		&:where(select) {
+			cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		}
+
+		&:where([draggable="true"], [data-draggable]) {
+			cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grab;
+		}
+
+		&:where([aria-grabbed="true"]) {
+			cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grabbing;
+		}
+
+		canvas,
+		[role="img"]:not(a) {
+			cursor: url("/w11-cursor-concept-free/crosshair.cur") 16 16, crosshair;
+		}
+
+		img:not(a img) {
+			cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		}
+
+		abbr[title],
+		.help,
+		[role="tooltip"][aria-describedby] {
+			cursor: url("/w11-cursor-concept-free/help.cur") 9 9, help;
+		}
+
+		&:where([style*="cursor:n-resize"], [style*="cursor: ns-resize"]) {
+			cursor: url("/w11-cursor-concept-free/sizens.cur") 16 20, n-resize;
+		}
+		&:where([style*="cursor:e-resize"], [style*="cursor: ew-resize"]) {
+			cursor: url("/w11-cursor-concept-free/sizewe.cur") 20 16, e-resize;
+		}
+		&:where(
+			[style*="cursor:ne-resize"],
+			[style*="cursor: nesw-resize"]
+		) {
+			cursor: url("/w11-cursor-concept-free/sizenesw.cur") 18 14, ne-resize;
+		}
+		&:where(
+			[style*="cursor:nw-resize"],
+			[style*="cursor: nwse-resize"]
+		) {
+			cursor: url("/w11-cursor-concept-free/sizenwse.cur") 14 18, nw-resize;
+		}
+
+		.copy,
+		[aria-label*="复制"],
+		[aria-label*="copy" i] {
+			cursor: url("/w11-cursor-concept-free/person.cur") 5 5, copy;
+		}
+
+		.context-menu,
+		[contextmenu] {
+			cursor: url("/w11-cursor-concept-free/uparrow.cur") 10 2, context-menu;
+		}
+
+		.waiting,
+		&:is(.loading, .spinner, [data-loading], [aria-busy="true"]) {
+			cursor: url("/w11-cursor-concept-free/wait.ani"), wait;
+		}
 
 		&[data-theme="light"] {
 			color-scheme: light;
@@ -83,15 +202,15 @@ html > *:not(head):not(body) {
 
 		&[data-theme="dark"] {
 			color-scheme: dark;
-			--color-global-bg: oklch(0.18 0 0);
+			--color-global-bg: oklch(18% 0 0);
 			--color-global-text: oklch(83.54% 0 264);
 			--color-muted: oklch(70.7% 0.022 261.325);
 			--color-link: oklch(70.44% 0.1133 349);
 			--color-accent: oklch(85.06% 0.141 194.84);
-			--color-accent-2: oklch(94.66% 0 0);
-			--color-quote: oklch(94.8% 0.106 136.49);
-			--color-logo-bg: oklch(0.18 0.03 195.09);
-			--color-logo-text: oklch(0.85 0.14 194.83);
+			--color-accent-2: oklch(97.1944% 0.040953 196.4971);
+			--color-quote: oklch(65.3% 0.195 19.06);
+			--color-logo-bg: oklch(18% 0.03 195.09);
+			--color-logo-text: oklch(85% 0.14 194.83);
 		}
 
 		--color-mode-transition-duration: 300ms;
@@ -106,9 +225,7 @@ html > *:not(head):not(body) {
 			--color-accent-2 var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-quote var(--color-mode-transition-duration) var(--color-mode-transition-easing),
 			--color-logo-bg var(--color-mode-transition-duration) var(--color-mode-transition-easing),
-			--color-logo-text var(--color-mode-transition-duration) var(--color-mode-transition-easing),
-
-		--color-zinc-700 var(--color-mode-transition-duration) var(--color-mode-transition-easing);
+			--color-logo-text var(--color-mode-transition-duration) var(--color-mode-transition-easing);
 	}
 
 	::selection {
@@ -144,11 +261,27 @@ html > *:not(head):not(body) {
 	:where(img):not([data-no-zoom]):not(#waline img) {
 		border-radius: 4px;
 	}
+
+	::-webkit-scrollbar {
+		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		width: 8px;
+		height: 8px;
+	}
+	::-webkit-scrollbar-thumb {
+		cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grab;
+	}
+	::-webkit-scrollbar-track {
+		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+	}
 }
 
-/* 外部链接图标 */
-.prose a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not([class*="no-external-icon"])::after,
-a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):not([class*="no-external-icon"]):not([class*="pagefind-ui"]):not(nav a):not(.cactus-link):not(#waline a):not(.friend-card)::after {
+/* ------------------------------------------------------------------
+   3. 外部链接图标
+   为站外链接自动添加 ↗ 图标（通过 mask 实现）
+   排除: 站内链接、导航栏、Waline、友链、Pagefind 等
+   ------------------------------------------------------------------ */
+.prose a[href^="http"]:not([href*="weblog.xc4h.qzz.io"]):not([href*="localhost"]):not([class*="no-external-icon"])::after,
+a[href^="http"]:not([href*="weblog.xc4h.qzz.io"]):not([href*="localhost"]):not([class*="no-external-icon"]):not([class*="pagefind-ui"]):not(nav a):not(.cactus-link):not(#waline a):not(.friend-card)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
@@ -160,11 +293,74 @@ a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):no
 	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* ------------------------------------------------------------------
+   4. 组件样式导入
+   各功能模块的独立样式文件，按 @layer(components) 加载
+   ------------------------------------------------------------------ */
 @import "./components/admonition.css" layer(components);
 @import "./components/github-card.css" layer(components);
 @import "./components/medium-zoom.css" layer(components);
 @import "./print.css";
 
+/* ------------------------------------------------------------------
+   5. Waline 评论区光标覆盖
+   waline-custom.css 中有 15+ 处原生 cursor 值会覆盖全局光标
+   此处通过 ID 选择器 + !important 强制统一为自定义光标
+   不修改第三方样式文件，避免升级冲突
+   ------------------------------------------------------------------ */
+#waline {
+	cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+
+	.wl-editor,
+	.wl-editor:focus,
+	.wl-header input,
+	.wl-header input:focus,
+	.wl-gif-popup input {
+		cursor: url("/w11-cursor-concept-free/ibeam.cur") 11 17, text;
+	}
+
+	img:not(a img) {
+		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+	}
+
+	a,
+	button,
+	.wl-btn:not(:disabled),
+	.wl-close,
+	.wl-logout-btn,
+	.wl-action,
+	[role="button"],
+	summary,
+	details,
+	.wl-sort li,
+	.wl-reaction-item,
+	.wl-star-rate,
+	.wl-emoji-popup button,
+	.wl-gif-popup img,
+	.wl-card .wl-delete,
+	.wl-card .wl-like,
+	.wl-card .wl-reply,
+	.wl-card .wl-edit,
+	.wl-card .wl-rss,
+	.wl-content.expand,
+	.wl-user-wall .wl-user-item,
+	[data-copy-value] {
+		cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer !important;
+	}
+
+	.wl-btn:disabled,
+	.wl-btn.primary:disabled {
+		cursor: url("/w11-cursor-concept-free/no.cur") 9 9, not-allowed !important;
+	}
+
+	.token.entity {
+		cursor: url("/w11-cursor-concept-free/help.cur") 8 8, help !important;
+	}
+}
+
+/* ------------------------------------------------------------------
+   6. 公共组件类 (Tailwind @apply 封装)
+   ------------------------------------------------------------------ */
 @layer components {
 	.cactus-link {
 		@apply hover:decoration-link underline underline-offset-2 hover:decoration-2;
@@ -175,6 +371,10 @@ a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):no
 	}
 }
 
+/* ------------------------------------------------------------------
+   7. Prose 排版变量 (Tailwind Typography)
+   将 CSS 变量映射到 Tailwind prose 工具类的内部变量
+   ------------------------------------------------------------------ */
 @utility prose {
 	--tw-prose-body: var(--color-global-text);
 	--tw-prose-bold: var(--color-global-text);
@@ -185,8 +385,12 @@ a[href^="http"]:not([href*="blog.qoslzm.dpdns.org"]):not([href*="localhost"]):no
 	--tw-prose-links: var(--color-global-text);
 	--tw-prose-quotes: var(--color-quote);
 	--tw-prose-th-borders: var(--color-muted);
+	--tw-prose-lead: var(--color-global-text);
 }
 
+/* ------------------------------------------------------------------
+   8. 字体系统
+   ------------------------------------------------------------------ */
 :root {
 	--font-sans: "LXGW WenKai LITE", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
 		"Noto Sans", sans-serif;

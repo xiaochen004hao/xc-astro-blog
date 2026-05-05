@@ -8,6 +8,7 @@ interface FriendLink {
 	url: string;
 	description: string;
 	avatar?: string;
+	siteshot?: string;
 }
 
 interface FriendCategory {
@@ -63,14 +64,14 @@ const meta = {
 							>
 								<div class="screenshot-wrap bg-muted/10 relative aspect-video w-full overflow-hidden">
 									<img
-										src={`https://s0.wp.com/mshots/v1/${friend.url}`}
+										src={friend.siteshot || `https://s0.wp.com/mshots/v1/${friend.url}`}
 										alt={`${friend.name} 网站预览`}
 										class="screenshot-img h-full w-full object-cover"
 										loading="lazy"
 										data-no-zoom
-										onerror="this.classList.add('error');"
+										onerror="this.classList.add('error'); this.nextElementSibling.classList.add('show');"
 									/>
-									<div class="screenshot-fallback bg-muted/15 absolute inset-0 flex hidden items-center justify-center">
+									<div class="screenshot-fallback bg-muted/15 absolute inset-0 hidden items-center justify-center [&.show]:flex">
 										<span class="text-muted/40 text-3xl font-bold select-none">
 											{friend.name.charAt(0)}
 										</span>
@@ -132,7 +133,7 @@ const meta = {
 	{
 		friendsData.changeLog.length > 0 && (
 			<section class="mt-16">
-				<details class="group cursor-pointer">
+				<details class="group">
 					<summary class="text-muted hover:text-accent text-sm font-medium transition-colors">
 						友链变更记录
 					</summary>
@@ -186,7 +187,7 @@ const meta = {
 								{key === "url" ? "link" : key}:
 							</span>
 							<code
-								class="cursor-pointer truncate text-xs transition-colors hover:text-(--color-accent)"
+								class="truncate text-xs transition-colors hover:text-(--color-accent)"
 								data-copy-value={value}
 								data-copy-label={
 									key === "url"
@@ -243,6 +244,9 @@ const meta = {
 	.group:hover .screenshot-img:not(.error) {
 		filter: blur(0) brightness(1);
 		transform: scale(1);
+	}
+	.screenshot-img.error ~ .screenshot-fallback {
+		display: flex !important;
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.friend-card:hover {

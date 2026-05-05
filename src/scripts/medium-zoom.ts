@@ -1,50 +1,117 @@
-import mediumZoom from "medium-zoom";
+import PhotoSwipe from "photoswipe";
+import type PhotoSwipeLightbox from "photoswipe";
+import "photoswipe/style.css";
 
-let currentZoom: ReturnType<typeof mediumZoom> | null = null;
-
-function injectZoomStyles() {
-    const id = "medium-zoom-injected";
-    if (document.getElementById(id)) return;
-    const style = document.createElement("style");
-    style.id = id;
-    style.textContent =
-        ".medium-zoom-overlay{position:fixed;top:0;right:0;bottom:0;left:0;opacity:0;transition:opacity .3s;will-change:opacity}.medium-zoom--opened .medium-zoom-overlay{cursor:pointer;cursor:zoom-out;opacity:1}.medium-zoom-image{cursor:pointer;cursor:zoom-in;transition:transform .3s cubic-bezier(.2,0,.2,1)!important}.medium-zoom-image--hidden{visibility:hidden}.medium-zoom-image--opened{position:relative;cursor:pointer;cursor:zoom-out;will-change:transform}";
-    document.head.appendChild(style);
+interface LenisInstance {
+    stop: () => void;
+    start: () => void;
 }
 
-function initMediumZoom() {
-    injectZoomStyles();
+interface PhotoSwipeItem {
+    src: string;
+    width: number;
+    height: number;
+    alt?: string;
+    title?: string;
+}
 
-    if (currentZoom) {
-        try { currentZoom.detach(); } catch { /* ignore */ }
-        currentZoom = null;
+interface PhotoSwipeOptions {
+    dataSource: PhotoSwipeItem[];
+    index: number;
+    bgOpacity?: number;
+    showHideAnimationType?: "zoom" | "none" | "fade";
+    zoomAnimationDuration?: number;
+    preloaderDelay?: number;
+    paddingFn?: () => { top: number; bottom: number; left: number; right: number };
+    closeOnVerticalDrag?: boolean;
+    wheelToZoom?: boolean;
+}
+
+let photoswipeInstance: PhotoSwipeLightbox | null = null;
+
+function getLenis(): LenisInstance | null {
+    const lenis = (window as unknown as Record<string, unknown>).__lenis;
+    if (typeof lenis === "object" && lenis !== null && "stop" in lenis && "start" in lenis) {
+        return lenis as LenisInstance;
     }
+    return null;
+}
 
+function initPhotoSwipe() {
     const images = document.querySelectorAll<HTMLImageElement>(
-        "article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img)",
+        "article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img, #waline img)",
     );
 
     if (!images.length) return;
 
-    currentZoom = mediumZoom(images, {
-        margin: 24,
-        background: "oklch(from var(--color-global-bg) l c h / 0.92)",
-        scrollOffset: 0,
-    });
+    images.forEach((img) => {
+        img.addEventListener("click", (e) => {
+            e.preventDefault();
 
-    currentZoom.on("open", () => { (window as any).__lenis?.stop?.(); });
-    currentZoom.on("closed", () => { (window as any).__lenis?.start?.(); });
+            try {
+                const index = Array.from(images).indexOf(img);
+                const items: PhotoSwipeItem[] = Array.from(images).map((image) => ({
+                    src: image.src,
+                    width: image.naturalWidth || image.width,
+                    height: image.naturalHeight || image.height,
+                    alt: image.alt || "",
+                    title: image.getAttribute("title") || "",
+                }));
+
+                const options: PhotoSwipeOptions = {
+                    dataSource: items,
+                    index: index,
+                    bgOpacity: 0.9,
+                    showHideAnimationType: "zoom",
+                    zoomAnimationDuration: 300,
+                    preloaderDelay: 0,
+                    paddingFn: () => ({ top: 20, bottom: 20, left: 20, right: 20 }),
+                    closeOnVerticalDrag: true,
+                    wheelToZoom: true,
+                };
+
+                photoswipeInstance = new PhotoSwipe(options);
+
+                photoswipeInstance.on("beforeOpen", () => {
+                    const lenis = getLenis();
+                    lenis?.stop?.();
+                    document.body.classList.add("pswp-active");
+                });
+
+                photoswipeInstance.on("close", () => {
+                    const lenis = getLenis();
+                    lenis?.start?.();
+                    document.body.classList.remove("pswp-active");
+                    photoswipeInstance = null;
+                });
+
+                photoswipeInstance.init();
+            } catch (error) {
+                console.error("[PhotoSwipe] 初始化失败:", error);
+                document.body.classList.remove("pswp-active");
+                photoswipeInstance = null;
+
+                const lenis = getLenis();
+                lenis?.start?.();
+            }
+        });
+    });
 }
 
 document.addEventListener("astro:before-swap", () => {
-    if (currentZoom) {
-        try { currentZoom.detach(); } catch { /* ignore */ }
-        currentZoom = null;
+    if (photoswipeInstance) {
+        try {
+            photoswipeInstance.destroy();
+        } catch (error) {
+            console.error("[PhotoSwipe] 销毁失败:", error);
+        } finally {
+            photoswipeInstance = null;
+        }
     }
 });
 
 document.addEventListener("astro:page-load", () => {
     requestAnimationFrame(() => {
-        requestAnimationFrame(initMediumZoom);
+        requestAnimationFrame(initPhotoSwipe);
     });
 });
