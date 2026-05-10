@@ -75,12 +75,14 @@ function initPhotoSwipe() {
                 photoswipeInstance.on("beforeOpen", () => {
                     const lenis = getLenis();
                     lenis?.stop?.();
+                    document.body.style.overflow = "hidden";
                     document.body.classList.add("pswp-active");
                 });
 
                 photoswipeInstance.on("close", () => {
                     const lenis = getLenis();
                     lenis?.start?.();
+                    document.body.style.overflow = "";
                     document.body.classList.remove("pswp-active");
                     photoswipeInstance = null;
                 });

@@ -11,6 +11,7 @@
 		"sync": "astro sync",
 		"check": "astro check && biome check",
 		"lint": "biome check --write",
+		"webmentions": "node --experimental-vm-modules src/utils/webmentions.ts",
 		"format": "prettier -w . --cache"
 	},
 	"dependencies": {

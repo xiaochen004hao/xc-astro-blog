@@ -1,0 +1,164 @@
+---
+import { WEBMENTION_URL } from "astro:env/client";
+import { getWebmentionsForUrl, groupWebmentions } from "@/utils/webmentions";
+
+interface Props {
+	url: string;
+}
+
+const { url } = Astro.props;
+
+if (!WEBMENTION_URL) {
+	return new Response(null);
+}
+
+const children = await getWebmentionsForUrl(url, WEBMENTION_URL);
+const { likes, mentions, replies } = groupWebmentions(children);
+
+const total = likes.length + mentions.length + replies.length;
+if (total === 0) {
+	return new Response(null);
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+	if (!dateStr) return "";
+	return new Date(dateStr).toLocaleDateString("zh-CN", {
+		month: "short",
+		day: "numeric",
+	});
+}
+
+function truncateText(text: string, maxLen = 120): string {
+	if (text.length <= maxLen) return text;
+	return text.slice(0, maxLen) + "…";
+}
+---
+
+<section class="webmentions mt-12 border-t pt-10">
+	<h2 class="text-accent-2 mb-6 text-lg font-semibold">
+		Webmentions
+		<span class="text-muted ml-2 text-sm font-normal">({total})</span>
+	</h2>
+
+	{
+		likes.length > 0 && (
+			<div class="mb-6">
+				<h3 class="text-muted mb-3 text-xs font-semibold tracking-wide uppercase">
+					👍 喜欢 ({likes.length})
+				</h3>
+				<div class="flex flex-wrap gap-2">
+					{likes.map((like) => (
+						<a
+							href={like.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="hover:ring-accent shrink-0 rounded-full ring-1 ring-transparent transition-all hover:scale-110"
+							title={like.author?.name || "匿名"}
+						>
+							<img
+								src={like.author?.photo || ""}
+								alt={like.author?.name || ""}
+								class="h-8 w-8 rounded-full object-cover"
+								loading="lazy"
+								onerror="this.style.display='none'"
+							/>
+						</a>
+					))}
+				</div>
+			</div>
+		)
+	}
+
+	{
+		mentions.length > 0 && (
+			<div class="mb-6">
+				<h3 class="text-muted mb-3 text-xs font-semibold tracking-wide uppercase">
+					🔄 提及 ({mentions.length})
+				</h3>
+				<ul class="space-y-2">
+					{mentions.map((mention) => (
+						<li class="flex items-center gap-3">
+							{mention.author?.photo && (
+								<img
+									src={mention.author.photo}
+									alt=""
+									class="h-5 w-5 shrink-0 rounded-full object-cover"
+									loading="lazy"
+									onerror="this.style.display='none'"
+								/>
+							)}
+							<div class="min-w-0 flex-1">
+								<a
+									href={mention.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="hover:text-accent text-sm font-medium transition-colors"
+								>
+									{mention.author?.name || mention.url}
+								</a>
+								{mention.published && (
+									<span class="text-muted ml-2 text-xs">{formatDate(mention.published)}</span>
+								)}
+							</div>
+						</li>
+					))}
+				</ul>
+			</div>
+		)
+	}
+
+	{
+		replies.length > 0 && (
+			<div>
+				<h3 class="text-muted mb-3 text-xs font-semibold tracking-wide uppercase">
+					💬 回复 ({replies.length})
+				</h3>
+				<ul class="space-y-4">
+					{replies.map((reply) => (
+						<li class="border-global-bg/20 rounded-lg border p-3">
+							<div class="mb-2 flex items-center gap-2">
+								{reply.author?.photo && (
+									<img
+										src={reply.author.photo}
+										alt=""
+										class="h-6 w-6 shrink-0 rounded-full object-cover"
+										loading="lazy"
+										onerror="this.style.display='none'"
+									/>
+								)}
+								<a
+									href={reply.author?.url || reply.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="hover:text-accent text-sm font-medium transition-colors"
+								>
+									{reply.author?.name || "匿名"}
+								</a>
+								{reply.published && (
+									<span class="text-muted text-xs">{formatDate(reply.published)}</span>
+								)}
+							</div>
+							{reply.content?.text && (
+								<p class="text-muted text-sm leading-relaxed">{truncateText(reply.content.text)}</p>
+							)}
+							<a
+								href={reply.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="text-muted hover:text-accent mt-2 inline-block rounded py-1 text-sm transition-colors"
+							>
+								查看原文 →
+							</a>
+						</li>
+					))}
+				</ul>
+			</div>
+		)
+	}
+</section>
+
+<style is:global>
+	.webmentions img {
+		display: inline-block;
+	}
+</style>
