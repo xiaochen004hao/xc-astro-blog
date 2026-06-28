@@ -1,9 +1,4 @@
-/* ==========================================================================
-   Waline 评论系统自定义主题色
-   上游样式: @waline/client/dist/waline.css (由 WalineComments.astro 引入)
-   说明: 仅覆盖 CSS 变量以匹配站点主题色
-   光标: 由 global.css #waline 规则统一接管
-   ========================================================================== */
+/* Waline 评论系统 CSS 变量：全部引用站点变量，自动跟随明暗主题 */
 
 :root {
 	--waline-font-size: 1rem;
@@ -35,15 +30,13 @@
 	--waline-box-shadow: none;
 }
 
+/* 深色模式：代码块背景更暗 */
 [data-theme="dark"],
 :is([data-theme="dark"]) {
 	--waline-code-bg-color: oklch(12% 0 0);
 }
 
-/* ==========================================================================
-   Vditor 编辑器容器样式
-   用站点 CSS 变量覆盖 Vditor 默认配色，确保浅色/深色模式都与站点一致
-   ========================================================================== */
+/* Vditor 编辑器容器：用站点变量覆盖 Vditor 默认配色 */
 .wl-vditor-wrapper {
 	margin-top: 0.5rem;
 	width: 100%;
@@ -85,7 +78,7 @@
 	background-color: var(--waline-bg-color);
 }
 
-/* 编辑器内容区域文字颜色 */
+/* Vditor 编辑器内容区域：标题、链接、引用、代码颜色 */
 .wl-vditor-wrapper .vditor-reset {
 	color: var(--color-global-text);
 }
@@ -112,7 +105,7 @@
 	color: var(--color-quote);
 }
 
-/* IR 模式 Markdown 标记节点 */
+/* IR 模式 Markdown 标记符号颜色 */
 .wl-vditor-wrapper .vditor-ir .vditor-ir__node {
 	color: var(--color-global-text);
 }
@@ -121,10 +114,7 @@
 	color: var(--color-muted);
 }
 
-/* ==========================================================================
-   评论内容显示区域样式
-   让 Waline 渲染的评论 HTML 与 Vditor 编辑器预览样式一致
-   ========================================================================== */
+/* 评论内容显示区域：让 Waline 渲染的 HTML 与 Vditor 预览样式一致 */
 #waline .wl-content {
 	color: var(--color-global-text);
 }

@@ -8,9 +8,11 @@ import "../../styles/waline-custom.css";
 </div>
 
 <script>
+	// Waline 评论服务地址和 Vditor CDN
 	const WALINE_SERVER = "https://waline.xc4h.qzz.io/";
 	const VDITOR_CDN = "https://cdn.jsdelivr.net/npm/vditor@3.11.2/";
 
+	// 运行时状态：Waline 实例、Vditor 实例、各 Observer 和事件监听器
 	let walineInstance: { destroy?: () => void } | null = null;
 	let walineInitPromise: Promise<void> | null = null;
 	let vditorInstance: any = null;
@@ -24,6 +26,7 @@ import "../../styles/waline-custom.css";
 			: "light";
 	}
 
+	// 销毁所有实例和监听器（页面切换前调用，防止内存泄漏）
 	function destroyAll() {
 		if (vditorInstance) {
 			try {
@@ -51,6 +54,7 @@ import "../../styles/waline-custom.css";
 		if (el) el.innerHTML = "";
 	}
 
+	// 预加载 Vditor CSS（只加一次，用 data 属性去重）
 	function preloadVditorCss() {
 		if (document.querySelector('link[data-vditor-css]')) return;
 		const link = document.createElement("link");
@@ -60,19 +64,22 @@ import "../../styles/waline-custom.css";
 		document.head.appendChild(link);
 	}
 
+	// 用 Vditor 替换 Waline 原生 textarea，实现所见即所得的 Markdown 编辑
 	async function initVditor(textarea: HTMLTextAreaElement) {
 		if (vditorInstance) return;
 
 		preloadVditorCss();
 
+		// 动态 import Vditor（约 500KB，懒加载不阻塞首屏）
 		const { default: Vditor } = await import("vditor");
 
+		// await 期间可能已被销毁，二次检查
 		if (vditorInstance) return;
 
+		// 在 textarea 后面插入 Vditor 容器，隐藏原生 textarea
 		const container = document.createElement("div");
 		container.className = "wl-vditor-wrapper";
 		textarea.insertAdjacentElement("afterend", container);
-
 		textarea.style.display = "none";
 		textarea.setAttribute("aria-hidden", "true");
 
@@ -81,7 +88,7 @@ import "../../styles/waline-custom.css";
 		vditorInstance = new Vditor(container, {
 			height: 240,
 			minHeight: 180,
-			mode: "ir",
+			mode: "ir", // 即时渲染模式：输入 Markdown 标记后立即渲染为对应样式
 			theme: theme === "dark" ? "dark" : "classic",
 			cdn: VDITOR_CDN,
 			toolbar: [
@@ -114,18 +121,20 @@ import "../../styles/waline-custom.css";
 			preview: { delay: 300, hljs: { style: theme === "dark" ? "github-dark" : "github" } },
 			comment: { enable: false },
 			hint: { emojiPath: `${VDITOR_CDN}dist/images/emoji/` },
+			// Vditor 内容变化时同步到隐藏的 textarea，并触发 input 事件让 Waline 感知
 			input: (value: string) => {
 				textarea.value = value;
-				// 触发 input 事件，让 Waline 内部状态感知变化
 				textarea.dispatchEvent(new Event("input", { bubbles: true }));
 			},
 			after: () => {
+				// 编辑器初始化完成后，如果 textarea 已有内容（如编辑回复），回填到 Vditor
 				if (textarea.value) {
 					vditorInstance?.setValue?.(textarea.value);
 				}
 			},
 		});
 
+		// 监听站点明暗主题切换，同步更新 Vditor 主题
 		themeObserver = new MutationObserver(() => {
 			if (!vditorInstance) return;
 			const newTheme = getCurrentTheme();
@@ -142,15 +151,15 @@ import "../../styles/waline-custom.css";
 			attributeFilter: ["data-theme"],
 		});
 
+		// 拦截 Waline 提交按钮点击：提交前强制同步内容到 textarea，提交后清空编辑器
 		submitListener = (e: Event) => {
 			const target = e.target as HTMLElement;
 			if (target.classList?.contains("wl-btn") && target.classList.contains("primary")) {
-				// 提交前确保 textarea 拿到最新内容
 				if (vditorInstance) {
 					textarea.value = vditorInstance.getValue?.() || "";
 					textarea.dispatchEvent(new Event("input", { bubbles: true }));
 				}
-				// 延迟清空，等 Waline 提交完成
+				// 延迟 600ms 清空，等 Waline 提交请求完成
 				setTimeout(() => {
 					if (vditorInstance && !textarea.value) {
 						vditorInstance.setValue?.("");
@@ -161,12 +170,14 @@ import "../../styles/waline-custom.css";
 		document.addEventListener("click", submitListener, true);
 	}
 
+	// 等待 Waline 渲染出原生 textarea 后，用 Vditor 替换它
 	function watchForEditor() {
 		const existing = document.querySelector<HTMLTextAreaElement>(".wl-editor");
 		if (existing) {
 			initVditor(existing);
 			return;
 		}
+		// Waline 尚未渲染编辑器，用 MutationObserver 监听 DOM 变化
 		vditorObserver = new MutationObserver(() => {
 			const textarea = document.querySelector<HTMLTextAreaElement>(".wl-editor");
 			if (textarea && !vditorInstance) {
@@ -181,10 +192,12 @@ import "../../styles/waline-custom.css";
 		});
 	}
 
+	// 初始化 Waline 评论系统
 	async function walineInit() {
 		const el = document.getElementById("waline");
 		if (!el) return;
 
+		// 防止重复初始化（View Transitions 可能多次触发 page-load）
 		if (!walineInitPromise) {
 			walineInitPromise = import("@waline/client")
 				.then(({ init }) => {
@@ -199,6 +212,7 @@ import "../../styles/waline-custom.css";
 						requiredMeta: ["nick"],
 						pageSize: 10,
 					});
+					// Waline 渲染完成后，延迟 100ms 开始监听编辑器出现
 					setTimeout(watchForEditor, 100);
 				})
 				.finally(() => {
@@ -209,6 +223,7 @@ import "../../styles/waline-custom.css";
 		await walineInitPromise;
 	}
 
+	// 生命周期：页面加载时初始化，页面切换前销毁
 	document.addEventListener("astro:before-swap", destroyAll);
 	document.addEventListener("astro:page-load", walineInit);
 </script>

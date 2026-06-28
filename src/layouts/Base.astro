@@ -141,14 +141,16 @@ const {
 		</script>
 
 		<script is:inline>
-			// 记录链接点击位置，作为波浪式页面切换的扩散圆心
+			// 波浪式页面切换：记录链接点击坐标，作为扩散圆心
 			(function () {
+				// 捕获阶段监听 click，抢在导航前记录鼠标坐标
 				document.addEventListener(
 					"click",
 					(e) => {
 						const link = e.target instanceof Element ? e.target.closest("a") : null;
 						if (!link) return;
 						const href = link.getAttribute("href");
+						// 排除外部链接、锚点、新窗口等非站内导航
 						if (
 							!href ||
 							href.startsWith("#") ||
@@ -159,14 +161,13 @@ const {
 							link.hasAttribute("download")
 						)
 							return;
-						// 记录点击坐标，供 wave-reveal 动画使用
 						document.documentElement.style.setProperty("--wave-x", e.clientX + "px");
 						document.documentElement.style.setProperty("--wave-y", e.clientY + "px");
 					},
 					true,
 				);
 
-				// View Transitions swap 时把坐标转移到新文档，防止变量丢失
+				// View Transitions swap 时新文档会替换旧文档，需把坐标转移过去
 				document.addEventListener("astro:before-swap", function (ev) {
 					var x = document.documentElement.style.getPropertyValue("--wave-x");
 					var y = document.documentElement.style.getPropertyValue("--wave-y");

@@ -88,56 +88,58 @@ html > *:not(head):not(body) {
 	navigation: auto;
 }
 
-/* ------------------------------------------------------------------
-   1.5 波浪式页面切换动画 (Wave Reveal Transition)
-   以鼠标点击位置为圆心，新页面呈圆形扩散覆盖旧页面
-   多层 drop-shadow 边缘发光 + 弹性缓动，模拟水波晕开的逼真效果
-   ------------------------------------------------------------------ */
+/* 波浪式页面切换动画：以鼠标点击位置为圆心，新页面圆形扩散覆盖旧页面 */
+
 :root {
 	--wave-x: 50%;
 	--wave-y: 50%;
 }
 
+/* 新页面从鼠标位置圆形扩散（clip-path GPU 加速，无 filter 避免卡顿） */
 @keyframes wave-reveal {
-	0% {
+	from {
 		clip-path: circle(0 at var(--wave-x) var(--wave-y));
-		filter: drop-shadow(0 0 0 transparent);
 	}
-	15% {
-		clip-path: circle(18% at var(--wave-x) var(--wave-y));
-		filter:
-			drop-shadow(0 0 14px oklch(from var(--color-accent) l c h / 0.85))
-			drop-shadow(0 0 28px oklch(from var(--color-accent) l c h / 0.45));
-	}
-	50% {
-		clip-path: circle(65% at var(--wave-x) var(--wave-y));
-		filter:
-			drop-shadow(0 0 10px oklch(from var(--color-accent) l c h / 0.6))
-			drop-shadow(0 0 20px oklch(from var(--color-accent) l c h / 0.25));
-	}
-	100% {
+	to {
 		clip-path: circle(160% at var(--wave-x) var(--wave-y));
-		filter: drop-shadow(0 0 0 transparent);
 	}
 }
 
-/* 旧页面保持不动，被新页面从鼠标位置扩散覆盖 */
+/* 旧页面同步淡出，增加层次感 */
+@keyframes wave-fade {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+/* 旧页面淡出 */
 ::view-transition-old(root) {
-	animation: none;
+	animation: wave-fade 0.9s ease-out;
 	z-index: 0;
 }
 
-/* 新页面以鼠标坐标为圆心，圆形扩散展开，多层发光模拟水波光泽 */
+/* 新页面圆形扩散，0.9s ease-out-expo 缓动先快后慢 */
 ::view-transition-new(root) {
 	animation: wave-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 	z-index: 1;
 }
 
+/* 扩散区域外显示 accent 色光晕（静态背景，不参与动画，零性能开销） */
+::view-transition-image-pair(root) {
+	background: oklch(from var(--color-accent) l c h / 0.18);
+}
+
 /* 尊重减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
 	::view-transition-new(root) {
 		animation: none;
-		filter: none;
+	}
+	::view-transition-image-pair(root) {
+		background: none;
 	}
 }
 
