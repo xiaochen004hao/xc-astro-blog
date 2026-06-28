@@ -116,6 +116,8 @@ import "../../styles/waline-custom.css";
 			hint: { emojiPath: `${VDITOR_CDN}dist/images/emoji/` },
 			input: (value: string) => {
 				textarea.value = value;
+				// 触发 input 事件，让 Waline 内部状态感知变化
+				textarea.dispatchEvent(new Event("input", { bubbles: true }));
 			},
 			after: () => {
 				if (textarea.value) {
@@ -143,6 +145,12 @@ import "../../styles/waline-custom.css";
 		submitListener = (e: Event) => {
 			const target = e.target as HTMLElement;
 			if (target.classList?.contains("wl-btn") && target.classList.contains("primary")) {
+				// 提交前确保 textarea 拿到最新内容
+				if (vditorInstance) {
+					textarea.value = vditorInstance.getValue?.() || "";
+					textarea.dispatchEvent(new Event("input", { bubbles: true }));
+				}
+				// 延迟清空，等 Waline 提交完成
 				setTimeout(() => {
 					if (vditorInstance && !textarea.value) {
 						vditorInstance.setValue?.("");

@@ -49,11 +49,32 @@
 
 /* ==========================================================================
    Vditor 编辑器容器样式
-   替换 Waline 原生 textarea，保持与评论区布局协调
+   用站点 CSS 变量覆盖 Vditor 默认配色，确保浅色/深色模式都与站点一致
    ========================================================================== */
 .wl-vditor-wrapper {
 	margin-top: 0.5rem;
 	width: 100%;
+}
+
+/* 浅色和深色模式统一使用站点变量 */
+.wl-vditor-wrapper .vditor,
+.wl-vditor-wrapper .vditor--dark {
+	--border-color: var(--waline-border-color);
+	--toolbar-background-color: var(--waline-bg-color-light);
+	--toolbar-icon-color: var(--color-muted);
+	--toolbar-icon-hover-color: var(--color-accent);
+	--textarea-background-color: var(--waline-bg-color);
+	--textarea-text-color: var(--color-global-text);
+	--panel-background-color: var(--waline-bg-color);
+	--heading-border-color: var(--waline-border-color);
+	--blockquote-color: var(--color-muted);
+	--ir-heading-color: var(--color-accent-2);
+	--ir-title-color: var(--color-muted);
+	--ir-bi-color: var(--color-link);
+	--ir-link-color: var(--color-link);
+	--ir-bracket-color: var(--color-accent);
+	--ir-paren-color: var(--color-muted);
+	--count-background-color: oklch(from var(--color-accent) l c h / 0.15);
 }
 
 .wl-vditor-wrapper .vditor {
@@ -64,9 +85,45 @@
 .wl-vditor-wrapper .vditor-toolbar {
 	border-radius: 0.5rem 0.5rem 0 0;
 	border-color: var(--waline-border-color);
-	background-color: var(--waline-bg-color-light);
+	background-color: var(--toolbar-background-color);
 }
 
 .wl-vditor-wrapper .vditor-content {
 	background-color: var(--waline-bg-color);
+}
+
+/* 编辑器内容区域文字颜色 */
+.wl-vditor-wrapper .vditor-reset {
+	color: var(--color-global-text);
+}
+
+.wl-vditor-wrapper .vditor-reset h1,
+.wl-vditor-wrapper .vditor-reset h2,
+.wl-vditor-wrapper .vditor-reset h3,
+.wl-vditor-wrapper .vditor-reset h4,
+.wl-vditor-wrapper .vditor-reset h5,
+.wl-vditor-wrapper .vditor-reset h6 {
+	color: var(--color-accent-2);
+}
+
+.wl-vditor-wrapper .vditor-reset a {
+	color: var(--color-link);
+}
+
+.wl-vditor-wrapper .vditor-reset blockquote {
+	color: var(--color-muted);
+	border-color: var(--color-muted);
+}
+
+.wl-vditor-wrapper .vditor-reset code {
+	color: var(--color-quote);
+}
+
+/* IR 模式 Markdown 标记节点 */
+.wl-vditor-wrapper .vditor-ir .vditor-ir__node {
+	color: var(--color-global-text);
+}
+
+.wl-vditor-wrapper .vditor-ir .vditor-ir__node--expand .vditor-ir__marker {
+	color: var(--color-muted);
 }
