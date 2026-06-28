@@ -9,49 +9,40 @@ import "../../styles/waline-custom.css";
 
 <script>
 	const WALINE_SERVER = "https://waline.xc4h.qzz.io/";
+	const VDITOR_CDN = "https://cdn.jsdelivr.net/npm/vditor@3.11.2/";
+
 	let walineInstance: { destroy?: () => void } | null = null;
 	let walineInitPromise: Promise<void> | null = null;
+	let vditorInstance: any = null;
+	let vditorObserver: MutationObserver | null = null;
+	let themeObserver: MutationObserver | null = null;
+	let submitListener: ((e: Event) => void) | null = null;
 
-	function destroyWaline() {
-		if (walineInstance?.destroy) {
-			walineInstance.destroy();
-			walineInstance = null;
-		}
-		const el = document.getElementById("waline");
-		if (el) el.innerHTML = "";
+	function getCurrentTheme(): "light" | "dark" {
+		return document.documentElement.getAttribute("data-theme") === "dark"
+			? "dark"
+			: "light";
 	}
 
-	async function walineInit() {
-		const el = document.getElementById("waline");
-		if (!el) return;
-
-		if (!walineInitPromise) {
-			walineInitPromise = import("@waline/client")
-				.then(({ init }) => {
-					walineInstance = init({
-						el: "#waline",
-						serverURL: WALINE_SERVER,
-						path: window.location.pathname,
-						lang: "zh-CN",
-						dark: '[data-theme="dark"]',
-						emoji: ["//unpkg.com/@waline/emojis@latest/weibo"],
-						meta: ["nick", "mail", "link"],
-						requiredMeta: ["nick"],
-						pageSize: 10,
-					});
-				})
-				.finally(() => {
-					walineInitPromise = null;
-				});
+	function destroyAll() {
+		if (vditorInstance) {
+			try {
+				vditorInstance.destroy?.();
+			} catch {}
+			vditorInstance = null;
 		}
-
-		await walineInitPromise;
-	}
-
-	document.addEventListener("astro:before-swap", destroyWaline);
-	document.addEventListener("astro:page-load", walineInit);
-</script>
-		// 销毁 Waline
+		if (vditorObserver) {
+			vditorObserver.disconnect();
+			vditorObserver = null;
+		}
+		if (themeObserver) {
+			themeObserver.disconnect();
+			themeObserver = null;
+		}
+		if (submitListener) {
+			document.removeEventListener("click", submitListener, true);
+			submitListener = null;
+		}
 		if (walineInstance?.destroy) {
 			walineInstance.destroy();
 			walineInstance = null;
@@ -61,7 +52,6 @@ import "../../styles/waline-custom.css";
 	}
 
 	function preloadVditorCss() {
-		// 预加载 Vditor CSS，避免初始化时无样式闪烁
 		if (document.querySelector('link[data-vditor-css]')) return;
 		const link = document.createElement("link");
 		link.rel = "stylesheet";
@@ -77,15 +67,12 @@ import "../../styles/waline-custom.css";
 
 		const { default: Vditor } = await import("vditor");
 
-		// 再次检查，防止重复初始化
 		if (vditorInstance) return;
 
-		// 创建 Vditor 容器
 		const container = document.createElement("div");
 		container.className = "wl-vditor-wrapper";
 		textarea.insertAdjacentElement("afterend", container);
 
-		// 隐藏原生 textarea（保留在 DOM 中供 Waline 提交读取）
 		textarea.style.display = "none";
 		textarea.setAttribute("aria-hidden", "true");
 
@@ -131,14 +118,12 @@ import "../../styles/waline-custom.css";
 				textarea.value = value;
 			},
 			after: () => {
-				// 同步初始值（例如草稿恢复场景）
 				if (textarea.value) {
 					vditorInstance?.setValue?.(textarea.value);
 				}
 			},
 		});
 
-		// 监听主题变化，切换 Vditor 主题
 		themeObserver = new MutationObserver(() => {
 			if (!vditorInstance) return;
 			const newTheme = getCurrentTheme();
@@ -155,11 +140,9 @@ import "../../styles/waline-custom.css";
 			attributeFilter: ["data-theme"],
 		});
 
-		// 监听 Waline 提交按钮点击，提交后清空 Vditor
 		submitListener = (e: Event) => {
 			const target = e.target as HTMLElement;
 			if (target.classList?.contains("wl-btn") && target.classList.contains("primary")) {
-				// 延迟清空，等 Waline 提交完成
 				setTimeout(() => {
 					if (vditorInstance && !textarea.value) {
 						vditorInstance.setValue?.("");
@@ -171,7 +154,6 @@ import "../../styles/waline-custom.css";
 	}
 
 	function watchForEditor() {
-		// Waline 初始化后会创建 .wl-editor textarea
 		const existing = document.querySelector<HTMLTextAreaElement>(".wl-editor");
 		if (existing) {
 			initVditor(existing);
@@ -209,7 +191,6 @@ import "../../styles/waline-custom.css";
 						requiredMeta: ["nick"],
 						pageSize: 10,
 					});
-					// Waline 创建 DOM 后，监听编辑器出现
 					setTimeout(watchForEditor, 100);
 				})
 				.finally(() => {
