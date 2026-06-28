@@ -20,6 +20,7 @@ import "../../styles/waline-custom.css";
 	let themeObserver: MutationObserver | null = null;
 	let submitListener: ((e: Event) => void) | null = null;
 
+	// 读取当前站点主题（light / dark）
 	function getCurrentTheme(): "light" | "dark" {
 		return document.documentElement.getAttribute("data-theme") === "dark"
 			? "dark"
