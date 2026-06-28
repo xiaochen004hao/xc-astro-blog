@@ -91,7 +91,7 @@ html > *:not(head):not(body) {
 /* ------------------------------------------------------------------
    1.5 波浪式页面切换动画 (Wave Reveal Transition)
    以鼠标点击位置为圆心，新页面呈圆形扩散覆盖旧页面
-   边缘带 accent 色发光，模拟水波晕开的逼真效果
+   多层 drop-shadow 边缘发光 + 弹性缓动，模拟水波晕开的逼真效果
    ------------------------------------------------------------------ */
 :root {
 	--wave-x: 50%;
@@ -99,11 +99,25 @@ html > *:not(head):not(body) {
 }
 
 @keyframes wave-reveal {
-	from {
+	0% {
 		clip-path: circle(0 at var(--wave-x) var(--wave-y));
+		filter: drop-shadow(0 0 0 transparent);
 	}
-	to {
-		clip-path: circle(150% at var(--wave-x) var(--wave-y));
+	15% {
+		clip-path: circle(18% at var(--wave-x) var(--wave-y));
+		filter:
+			drop-shadow(0 0 14px oklch(from var(--color-accent) l c h / 0.85))
+			drop-shadow(0 0 28px oklch(from var(--color-accent) l c h / 0.45));
+	}
+	50% {
+		clip-path: circle(65% at var(--wave-x) var(--wave-y));
+		filter:
+			drop-shadow(0 0 10px oklch(from var(--color-accent) l c h / 0.6))
+			drop-shadow(0 0 20px oklch(from var(--color-accent) l c h / 0.25));
+	}
+	100% {
+		clip-path: circle(160% at var(--wave-x) var(--wave-y));
+		filter: drop-shadow(0 0 0 transparent);
 	}
 }
 
@@ -113,11 +127,10 @@ html > *:not(head):not(body) {
 	z-index: 0;
 }
 
-/* 新页面以鼠标坐标为圆心，圆形扩散展开，边缘带 accent 色发光模拟水波光泽 */
+/* 新页面以鼠标坐标为圆心，圆形扩散展开，多层发光模拟水波光泽 */
 ::view-transition-new(root) {
-	animation: wave-reveal 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	animation: wave-reveal 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 	z-index: 1;
-	filter: drop-shadow(0 0 14px oklch(from var(--color-accent) l c h / 0.55));
 }
 
 /* 尊重减少动画偏好 */

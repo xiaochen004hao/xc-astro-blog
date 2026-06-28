@@ -160,11 +160,19 @@ const {
 						)
 							return;
 						// 记录点击坐标，供 wave-reveal 动画使用
-						document.documentElement.style.setProperty("--wave-x", `${e.clientX}px`);
-						document.documentElement.style.setProperty("--wave-y", `${e.clientY}px`);
+						document.documentElement.style.setProperty("--wave-x", e.clientX + "px");
+						document.documentElement.style.setProperty("--wave-y", e.clientY + "px");
 					},
 					true,
 				);
+
+				// View Transitions swap 时把坐标转移到新文档，防止变量丢失
+				document.addEventListener("astro:before-swap", function (ev) {
+					var x = document.documentElement.style.getPropertyValue("--wave-x");
+					var y = document.documentElement.style.getPropertyValue("--wave-y");
+					if (x) ev.newDocument.documentElement.style.setProperty("--wave-x", x);
+					if (y) ev.newDocument.documentElement.style.setProperty("--wave-y", y);
+				});
 			})();
 		</script>
 
