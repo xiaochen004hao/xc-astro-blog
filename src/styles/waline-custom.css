@@ -10,25 +10,25 @@
 	--waline-white: #fff;
 	--waline-light-grey: #999;
 	--waline-dark-grey: #666;
-	--waline-theme-color: oklch(47% 0.08 194.77);
-	--waline-active-color: oklch(60.44% 0.1133 349);
-	--waline-color: oklch(26.99% 0.0096 235.05);
-	--waline-bg-color: #fff;
-	--waline-bg-color-light: #f8f8f8;
-	--waline-bg-color-hover: #f0f0f0;
-	--waline-border-color: #ddd;
-	--waline-disable-bg-color: #f8f8f8;
-	--waline-disable-color: #000;
-	--waline-code-bg-color: #282c34;
+	--waline-theme-color: var(--color-accent);
+	--waline-active-color: var(--color-link);
+	--waline-color: var(--color-global-text);
+	--waline-bg-color: var(--color-global-bg);
+	--waline-bg-color-light: oklch(from var(--color-global-bg) calc(l + 0.04) 0 0);
+	--waline-bg-color-hover: oklch(from var(--color-global-bg) calc(l + 0.06) 0 0);
+	--waline-border-color: oklch(from var(--color-muted) l c h / 0.3);
+	--waline-disable-bg-color: var(--waline-bg-color-light);
+	--waline-disable-color: var(--color-muted);
+	--waline-code-bg-color: oklch(20% 0 0);
 	--waline-warning-color: #915930;
 	--waline-warning-bg-color: rgb(234 179 8 / 14%);
-	--waline-bq-color: #f0f0f0;
+	--waline-bq-color: oklch(from var(--color-muted) l c h / 0.15);
 	--waline-avatar-size: 3.25rem;
 	--waline-m-avatar-size: calc(var(--waline-avatar-size) * 9 / 13);
 	--waline-badge-color: var(--waline-theme-color);
 	--waline-badge-font-size: 0.75em;
-	--waline-info-bg-color: #f8f8f8;
-	--waline-info-color: #999;
+	--waline-info-bg-color: var(--waline-bg-color-light);
+	--waline-info-color: var(--color-muted);
 	--waline-info-font-size: 0.625em;
 	--waline-border: 1px solid var(--waline-border-color);
 	--waline-avatar-radius: 50%;
@@ -37,14 +37,7 @@
 
 [data-theme="dark"],
 :is([data-theme="dark"]) {
-	--waline-theme-color: oklch(85.06% 0.141 194.84);
-	--waline-active-color: oklch(70.44% 0.1133 349);
-	--waline-color: oklch(83.54% 0 264);
-	--waline-bg-color: #1a1a1a;
-	--waline-bg-color-light: #222;
-	--waline-bg-color-hover: #252525;
-	--waline-border-color: #333;
-	--waline-code-bg-color: #121212;
+	--waline-code-bg-color: oklch(12% 0 0);
 }
 
 /* ==========================================================================
@@ -126,4 +119,82 @@
 
 .wl-vditor-wrapper .vditor-ir .vditor-ir__node--expand .vditor-ir__marker {
 	color: var(--color-muted);
+}
+
+/* ==========================================================================
+   评论内容显示区域样式
+   让 Waline 渲染的评论 HTML 与 Vditor 编辑器预览样式一致
+   ========================================================================== */
+#waline .wl-content {
+	color: var(--color-global-text);
+}
+
+#waline .wl-content h1,
+#waline .wl-content h2,
+#waline .wl-content h3,
+#waline .wl-content h4,
+#waline .wl-content h5,
+#waline .wl-content h6 {
+	color: var(--color-accent-2);
+	font-weight: 600;
+}
+
+#waline .wl-content a {
+	color: var(--color-link);
+}
+
+#waline .wl-content blockquote {
+	color: var(--color-muted);
+	border-left: 3px solid var(--color-accent);
+	background: oklch(from var(--color-muted) l c h / 0.08);
+}
+
+#waline .wl-content code {
+	color: var(--color-quote);
+	background: oklch(from var(--color-muted) l c h / 0.12);
+	border-radius: 3px;
+	padding: 0.15em 0.35em;
+	font-size: 0.875em;
+}
+
+#waline .wl-content pre {
+	background: var(--waline-code-bg-color);
+	border-radius: 6px;
+}
+
+#waline .wl-content pre code {
+	color: #abb2bf;
+	background: transparent;
+	padding: 0;
+}
+
+#waline .wl-content strong {
+	color: var(--color-global-text);
+	font-weight: 700;
+}
+
+#waline .wl-content em {
+	color: var(--color-global-text);
+}
+
+#waline .wl-content ul,
+#waline .wl-content ol {
+	color: var(--color-global-text);
+}
+
+#waline .wl-content img {
+	border-radius: 4px;
+}
+
+#waline .wl-content table {
+	border-color: var(--waline-border-color);
+}
+
+#waline .wl-content table th {
+	color: var(--color-accent-2);
+	border-color: var(--waline-border-color);
+}
+
+#waline .wl-content table td {
+	border-color: var(--waline-border-color);
 }
