@@ -46,3 +46,27 @@
 	--waline-border-color: #333;
 	--waline-code-bg-color: #121212;
 }
+
+/* ==========================================================================
+   Vditor 编辑器容器样式
+   替换 Waline 原生 textarea，保持与评论区布局协调
+   ========================================================================== */
+.wl-vditor-wrapper {
+	margin-top: 0.5rem;
+	width: 100%;
+}
+
+.wl-vditor-wrapper .vditor {
+	border-radius: 0.5rem;
+	border-color: var(--waline-border-color);
+}
+
+.wl-vditor-wrapper .vditor-toolbar {
+	border-radius: 0.5rem 0.5rem 0 0;
+	border-color: var(--waline-border-color);
+	background-color: var(--waline-bg-color-light);
+}
+
+.wl-vditor-wrapper .vditor-content {
+	background-color: var(--waline-bg-color);
+}

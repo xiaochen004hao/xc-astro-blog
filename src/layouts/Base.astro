@@ -140,6 +140,34 @@ const {
 			}
 		</script>
 
+		<script is:inline>
+			// 记录链接点击位置，作为波浪式页面切换的扩散圆心
+			(function () {
+				document.addEventListener(
+					"click",
+					(e) => {
+						const link = (e.target as HTMLElement)?.closest?.("a");
+						if (!link) return;
+						const href = link.getAttribute("href");
+						if (
+							!href ||
+							href.startsWith("#") ||
+							href.startsWith("http") ||
+							href.startsWith("mailto:") ||
+							href.startsWith("tel:") ||
+							link.target === "_blank" ||
+							link.hasAttribute("download")
+						)
+							return;
+						// 记录点击坐标，供 wave-reveal 动画使用
+						document.documentElement.style.setProperty("--wave-x", `${e.clientX}px`);
+						document.documentElement.style.setProperty("--wave-y", `${e.clientY}px`);
+					},
+					true,
+				);
+			})();
+		</script>
+
 		<script>
 			if (typeof window !== "undefined" && "serviceWorker" in navigator && !window.__swReady) {
 				window.__swReady = true;

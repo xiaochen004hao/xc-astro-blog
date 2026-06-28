@@ -51,3 +51,175 @@ import "../../styles/waline-custom.css";
 	document.addEventListener("astro:before-swap", destroyWaline);
 	document.addEventListener("astro:page-load", walineInit);
 </script>
+		// 销毁 Waline
+		if (walineInstance?.destroy) {
+			walineInstance.destroy();
+			walineInstance = null;
+		}
+		const el = document.getElementById("waline");
+		if (el) el.innerHTML = "";
+	}
+
+	function preloadVditorCss() {
+		// 预加载 Vditor CSS，避免初始化时无样式闪烁
+		if (document.querySelector('link[data-vditor-css]')) return;
+		const link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.href = `${VDITOR_CDN}dist/index.css`;
+		link.setAttribute("data-vditor-css", "");
+		document.head.appendChild(link);
+	}
+
+	async function initVditor(textarea: HTMLTextAreaElement) {
+		if (vditorInstance) return;
+
+		preloadVditorCss();
+
+		const { default: Vditor } = await import("vditor");
+
+		// 再次检查，防止重复初始化
+		if (vditorInstance) return;
+
+		// 创建 Vditor 容器
+		const container = document.createElement("div");
+		container.className = "wl-vditor-wrapper";
+		textarea.insertAdjacentElement("afterend", container);
+
+		// 隐藏原生 textarea（保留在 DOM 中供 Waline 提交读取）
+		textarea.style.display = "none";
+		textarea.setAttribute("aria-hidden", "true");
+
+		const theme = getCurrentTheme();
+
+		vditorInstance = new Vditor(container, {
+			height: 240,
+			minHeight: 180,
+			mode: "ir",
+			theme: theme === "dark" ? "dark" : "classic",
+			cdn: VDITOR_CDN,
+			toolbar: [
+				"emoji",
+				"headings",
+				"bold",
+				"italic",
+				"|",
+				"link",
+				"list",
+				"ordered-list",
+				"check",
+				"quote",
+				"line",
+				"|",
+				"code",
+				"inline-code",
+				"|",
+				"undo",
+				"redo",
+				"|",
+				"edit-mode",
+				"preview",
+				"fullscreen",
+			],
+			toolbarConfig: { pin: true },
+			cache: { enable: false },
+			counter: { enable: true, type: "markdown", max: 2000 },
+			placeholder: "支持 Markdown 语法，说点什么吧…",
+			preview: { delay: 300, hljs: { style: theme === "dark" ? "github-dark" : "github" } },
+			comment: { enable: false },
+			hint: { emojiPath: `${VDITOR_CDN}dist/images/emoji/` },
+			input: (value: string) => {
+				textarea.value = value;
+			},
+			after: () => {
+				// 同步初始值（例如草稿恢复场景）
+				if (textarea.value) {
+					vditorInstance?.setValue?.(textarea.value);
+				}
+			},
+		});
+
+		// 监听主题变化，切换 Vditor 主题
+		themeObserver = new MutationObserver(() => {
+			if (!vditorInstance) return;
+			const newTheme = getCurrentTheme();
+			try {
+				vditorInstance.setTheme?.(
+					newTheme === "dark" ? "dark" : "classic",
+					newTheme === "dark" ? "dark" : "classic",
+					newTheme === "dark" ? "github-dark" : "github",
+				);
+			} catch {}
+		});
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["data-theme"],
+		});
+
+		// 监听 Waline 提交按钮点击，提交后清空 Vditor
+		submitListener = (e: Event) => {
+			const target = e.target as HTMLElement;
+			if (target.classList?.contains("wl-btn") && target.classList.contains("primary")) {
+				// 延迟清空，等 Waline 提交完成
+				setTimeout(() => {
+					if (vditorInstance && !textarea.value) {
+						vditorInstance.setValue?.("");
+					}
+				}, 600);
+			}
+		};
+		document.addEventListener("click", submitListener, true);
+	}
+
+	function watchForEditor() {
+		// Waline 初始化后会创建 .wl-editor textarea
+		const existing = document.querySelector<HTMLTextAreaElement>(".wl-editor");
+		if (existing) {
+			initVditor(existing);
+			return;
+		}
+		vditorObserver = new MutationObserver(() => {
+			const textarea = document.querySelector<HTMLTextAreaElement>(".wl-editor");
+			if (textarea && !vditorInstance) {
+				vditorObserver?.disconnect();
+				vditorObserver = null;
+				initVditor(textarea);
+			}
+		});
+		vditorObserver.observe(document.getElementById("waline") || document.body, {
+			childList: true,
+			subtree: true,
+		});
+	}
+
+	async function walineInit() {
+		const el = document.getElementById("waline");
+		if (!el) return;
+
+		if (!walineInitPromise) {
+			walineInitPromise = import("@waline/client")
+				.then(({ init }) => {
+					walineInstance = init({
+						el: "#waline",
+						serverURL: WALINE_SERVER,
+						path: window.location.pathname,
+						lang: "zh-CN",
+						dark: '[data-theme="dark"]',
+						emoji: ["//unpkg.com/@waline/emojis@latest/weibo"],
+						meta: ["nick", "mail", "link"],
+						requiredMeta: ["nick"],
+						pageSize: 10,
+					});
+					// Waline 创建 DOM 后，监听编辑器出现
+					setTimeout(watchForEditor, 100);
+				})
+				.finally(() => {
+					walineInitPromise = null;
+				});
+		}
+
+		await walineInitPromise;
+	}
+
+	document.addEventListener("astro:before-swap", destroyAll);
+	document.addEventListener("astro:page-load", walineInit);
+</script>

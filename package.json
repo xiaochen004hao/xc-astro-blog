@@ -47,6 +47,7 @@
 		"tailwindcss": "4.2.1",
 		"unified": "^11.0.5",
 		"unist-util-visit": "^5.1.0",
+		"vditor": "^3.11.2",
 		"zod": "^4.4.2"
 	},
 	"devDependencies": {
@@ -64,7 +65,12 @@
 		"typescript": "^5.9.3"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["@biomejs/biome", "@tailwindcss/oxide", "esbuild", "sharp"],
+		"onlyBuiltDependencies": [
+			"@biomejs/biome",
+			"@tailwindcss/oxide",
+			"esbuild",
+			"sharp"
+		],
 		"overrides": {
 			"sharp": "^0.34.5"
 		}

@@ -89,6 +89,46 @@ html > *:not(head):not(body) {
 }
 
 /* ------------------------------------------------------------------
+   1.5 波浪式页面切换动画 (Wave Reveal Transition)
+   以鼠标点击位置为圆心，新页面呈圆形扩散覆盖旧页面
+   边缘带 accent 色发光，模拟水波晕开的逼真效果
+   ------------------------------------------------------------------ */
+:root {
+	--wave-x: 50%;
+	--wave-y: 50%;
+}
+
+@keyframes wave-reveal {
+	from {
+		clip-path: circle(0 at var(--wave-x) var(--wave-y));
+	}
+	to {
+		clip-path: circle(150% at var(--wave-x) var(--wave-y));
+	}
+}
+
+/* 旧页面保持不动，被新页面从鼠标位置扩散覆盖 */
+::view-transition-old(root) {
+	animation: none;
+	z-index: 0;
+}
+
+/* 新页面以鼠标坐标为圆心，圆形扩散展开，边缘带 accent 色发光模拟水波光泽 */
+::view-transition-new(root) {
+	animation: wave-reveal 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	z-index: 1;
+	filter: drop-shadow(0 0 14px oklch(from var(--color-accent) l c h / 0.55));
+}
+
+/* 尊重减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-new(root) {
+		animation: none;
+		filter: none;
+	}
+}
+
+/* ------------------------------------------------------------------
    2. 光标主题 (W11 Cursor Concept)
    基于 public/w11-cursor-concept-free/ 目录下的 .cur/.ani 文件
    光标优先级（从低到高）:
