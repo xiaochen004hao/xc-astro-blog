@@ -22,12 +22,24 @@
 	color: var(--color-global-text);
 }
 
-toc-heading ol .toc-link      { padding-left: 0.7rem; }
-toc-heading ol ol .toc-link   { padding-left: 1.4rem; }
-toc-heading ol ol ol .toc-link { padding-left: 2.1rem; }
-toc-heading ol ol ol ol .toc-link { padding-left: 2.8rem; }
-toc-heading ol ol ol ol ol .toc-link { padding-left: 3.5rem; }
-toc-heading ol ol ol ol ol ol .toc-link { padding-left: 4.2rem; }
+toc-heading ol .toc-link {
+	padding-left: 0.7rem;
+}
+toc-heading ol ol .toc-link {
+	padding-left: 1.4rem;
+}
+toc-heading ol ol ol .toc-link {
+	padding-left: 2.1rem;
+}
+toc-heading ol ol ol ol .toc-link {
+	padding-left: 2.8rem;
+}
+toc-heading ol ol ol ol ol .toc-link {
+	padding-left: 3.5rem;
+}
+toc-heading ol ol ol ol ol ol .toc-link {
+	padding-left: 4.2rem;
+}
 
 @media (width >= 1024px) {
 	.toc-link {
@@ -50,7 +62,7 @@ toc-heading ol ol ol ol ol ol .toc-link { padding-left: 4.2rem; }
 	}
 
 	.toc-bar.is-read {
-		background-color: oklch(from var(--color-accent) l c h / .25);
+		background-color: oklch(from var(--color-accent) l c h / 0.25);
 	}
 
 	.toc-link.highlight {
@@ -59,7 +71,7 @@ toc-heading ol ol ol ol ol ol .toc-link { padding-left: 4.2rem; }
 	}
 
 	.toc-link.highlight-bg-translucent {
-		background-color: oklch(from var(--color-accent) l c h / .1);
+		background-color: oklch(from var(--color-accent) l c h / 0.1);
 	}
 
 	.toc-link.highlight.rounded-t-lg {

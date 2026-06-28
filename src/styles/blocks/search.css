@@ -103,5 +103,7 @@
    ------------------------------------------------------------------ */
 #cactus__search .pagefind-ui__search-input,
 #cactus__search .pagefind-ui__form {
-	cursor: url("/w11-cursor-concept-free/ibeam.cur") 12 16, text;
+	cursor:
+		url("/w11-cursor-concept-free/ibeam.cur") 12 16,
+		text;
 }

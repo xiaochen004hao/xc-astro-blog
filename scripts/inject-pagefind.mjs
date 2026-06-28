@@ -45,4 +45,6 @@ swContent = swContent.replace(
 swContent = swContent.replace("__PAGEFIND_FILES__", fileListJson);
 
 fs.writeFileSync(SW_SRC, swContent);
-console.log(`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files, cache v4.0.0-${buildTimestamp}`);
+console.log(
+	`[inject-pagefind] Injected ${pagefindFiles.length} pagefind files, cache v4.0.0-${buildTimestamp}`,
+);

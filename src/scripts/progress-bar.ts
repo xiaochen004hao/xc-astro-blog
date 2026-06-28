@@ -1,51 +1,50 @@
 try {
-    function initProgressBar() {
-        const bar = document.getElementById("reading-progress");
-        if (!bar) return;
+	function initProgressBar() {
+		const bar = document.getElementById("reading-progress");
+		if (!bar) return;
 
-        const article = document.querySelector("article");
-        if (!article) {
-            bar.style.opacity = "0";
-            return;
-        }
+		const article = document.querySelector("article");
+		if (!article) {
+			bar.style.opacity = "0";
+			return;
+		}
 
-        let rafId: number | null = null;
+		let rafId: number | null = null;
 
-        const update = () => {
-            rafId = null;
-            const scrollTop = window.scrollY;
-            const articleTop = article.offsetTop;
-            const articleHeight = article.offsetHeight;
-            const viewportHeight = window.innerHeight;
-            const totalScroll = articleHeight - viewportHeight;
+		const update = () => {
+			rafId = null;
+			const scrollTop = window.scrollY;
+			const articleTop = article.offsetTop;
+			const articleHeight = article.offsetHeight;
+			const viewportHeight = window.innerHeight;
+			const totalScroll = articleHeight - viewportHeight;
 
-            if (totalScroll <= 0) {
-                bar.style.width = "0%";
-                return;
-            }
+			if (totalScroll <= 0) {
+				bar.style.width = "0%";
+				return;
+			}
 
-            const scrolled = scrollTop - articleTop;
-            const progress = Math.min(100, Math.max(0, (scrolled / totalScroll) * 100));
-            bar.style.width = `${progress}%`;
-        };
+			const scrolled = scrollTop - articleTop;
+			const progress = Math.min(100, Math.max(0, (scrolled / totalScroll) * 100));
+			bar.style.width = `${progress}%`;
+		};
 
-        const onScroll = () => {
-            if (!rafId) rafId = requestAnimationFrame(update);
-        };
+		const onScroll = () => {
+			if (!rafId) rafId = requestAnimationFrame(update);
+		};
 
-        window.addEventListener("scroll", onScroll, { passive: true });
-        update();
+		window.addEventListener("scroll", onScroll, { passive: true });
+		update();
 
-        document.addEventListener(
-            "astro:before-swap",
-            () => {
-                try {
-                    window.removeEventListener("scroll", onScroll);
-                    if (rafId) cancelAnimationFrame(rafId);
-                } catch { /* ignore */ }
-            },
-        );
-    }
+		document.addEventListener("astro:before-swap", () => {
+			try {
+				window.removeEventListener("scroll", onScroll);
+				if (rafId) cancelAnimationFrame(rafId);
+			} catch {
+				/* ignore */
+			}
+		});
+	}
 
-    document.addEventListener("astro:page-load", initProgressBar);
-} catch { }
+	document.addEventListener("astro:page-load", initProgressBar);
+} catch {}

@@ -1,7 +1,7 @@
 import type { Root } from "mdast";
-import type { Plugin } from "unified";
 import { toString as mdastToString } from "mdast-util-to-string";
 import getReadingTime from "reading-time";
+import type { Plugin } from "unified";
 
 export const remarkReadingTime: Plugin<[], Root> = () => (tree, vfile) => {
 	const textOnPage = mdastToString(tree);

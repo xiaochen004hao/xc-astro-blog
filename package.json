@@ -5,6 +5,7 @@
 	"scripts": {
 		"postinstall": "npm rebuild sharp --force",
 		"dev": "astro dev",
+		"astro": "astro",
 		"clean": "node clean-dist.mjs",
 		"build": "node scripts/build.mjs",
 		"preview": "astro preview",
@@ -63,12 +64,7 @@
 		"typescript": "^5.9.3"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@biomejs/biome",
-			"@tailwindcss/oxide",
-			"esbuild",
-			"sharp"
-		],
+		"onlyBuiltDependencies": ["@biomejs/biome", "@tailwindcss/oxide", "esbuild", "sharp"],
 		"overrides": {
 			"sharp": "^0.34.5"
 		}

@@ -6,6 +6,10 @@
    ========================================================================== */
 
 @import "tailwindcss";
+@import "./components/admonition.css" layer(components);
+@import "./components/github-card.css" layer(components);
+@import "./components/photoswipe.css" layer(components);
+@import "./print.css";
 @source not "../pages/og-image";
 @config "../../tailwind.config.ts";
 
@@ -97,7 +101,9 @@ html > *:not(head):not(body) {
 		accent-color: var(--color-accent);
 		scrollbar-gutter: stable;
 
-		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
 
 		a,
 		[role="link"],
@@ -113,82 +119,108 @@ html > *:not(head):not(body) {
 		[data-copy-value],
 		label:has(input),
 		label:has(select) {
-			cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer;
+			cursor:
+				url("/w11-cursor-concept-free/hand.cur") 9 3,
+				pointer;
 		}
 
 		.copy {
-			cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer !important;
+			cursor:
+				url("/w11-cursor-concept-free/hand.cur") 9 3,
+				pointer !important;
 		}
 
 		&:where(
-			input[type="text"],
-			input[type="search"],
-			input:not([type]),
-			textarea,
-			[contenteditable="true"]
-		) {
-			cursor: url("/w11-cursor-concept-free/ibeam.cur") 11 17, text;
+				input[type="text"],
+				input[type="search"],
+				input:not([type]),
+				textarea,
+				[contenteditable="true"]
+			) {
+			cursor:
+				url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+				text;
 		}
 
 		&:where([disabled], [aria-disabled="true"], [aria-busy="true"]) {
-			cursor: url("/w11-cursor-concept-free/no.cur") 9 9, not-allowed;
+			cursor:
+				url("/w11-cursor-concept-free/no.cur") 9 9,
+				not-allowed;
 		}
 
 		&:where(select) {
-			cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+			cursor:
+				url("/w11-cursor-concept-free/arrow.cur") 1 1,
+				auto;
 		}
 
 		&:where([draggable="true"], [data-draggable]) {
-			cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grab;
+			cursor:
+				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+				grab;
 		}
 
 		&:where([aria-grabbed="true"]) {
-			cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grabbing;
+			cursor:
+				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+				grabbing;
 		}
 
 		canvas,
 		[role="img"]:not(a) {
-			cursor: url("/w11-cursor-concept-free/crosshair.cur") 16 16, crosshair;
+			cursor:
+				url("/w11-cursor-concept-free/crosshair.cur") 16 16,
+				crosshair;
 		}
 
 		img:not(a img) {
-			cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+			cursor:
+				url("/w11-cursor-concept-free/arrow.cur") 1 1,
+				auto;
 		}
 
 		abbr[title],
 		.help,
 		[role="tooltip"][aria-describedby] {
-			cursor: url("/w11-cursor-concept-free/help.cur") 9 9, help;
+			cursor:
+				url("/w11-cursor-concept-free/help.cur") 9 9,
+				help;
 		}
 
 		&:where([style*="cursor:n-resize"], [style*="cursor: ns-resize"]) {
-			cursor: url("/w11-cursor-concept-free/sizens.cur") 16 20, n-resize;
+			cursor:
+				url("/w11-cursor-concept-free/sizens.cur") 16 20,
+				n-resize;
 		}
 		&:where([style*="cursor:e-resize"], [style*="cursor: ew-resize"]) {
-			cursor: url("/w11-cursor-concept-free/sizewe.cur") 20 16, e-resize;
+			cursor:
+				url("/w11-cursor-concept-free/sizewe.cur") 20 16,
+				e-resize;
 		}
-		&:where(
-			[style*="cursor:ne-resize"],
-			[style*="cursor: nesw-resize"]
-		) {
-			cursor: url("/w11-cursor-concept-free/sizenesw.cur") 18 14, ne-resize;
+		&:where([style*="cursor:ne-resize"], [style*="cursor: nesw-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizenesw.cur") 18 14,
+				ne-resize;
 		}
-		&:where(
-			[style*="cursor:nw-resize"],
-			[style*="cursor: nwse-resize"]
-		) {
-			cursor: url("/w11-cursor-concept-free/sizenwse.cur") 14 18, nw-resize;
+		&:where([style*="cursor:nw-resize"], [style*="cursor: nwse-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizenwse.cur") 14 18,
+				nw-resize;
 		}
 
 		.copy,
 		[aria-label*="复制"],
 		[aria-label*="copy" i] {
-			cursor: url("/w11-cursor-concept-free/person.cur") 5 5, copy;
+			cursor:
+				url("/w11-cursor-concept-free/person.cur") 5 5,
+				copy;
 		}
 
 		.context-menu,
 		[contextmenu] {
-			cursor: url("/w11-cursor-concept-free/uparrow.cur") 10 2, context-menu;
+			cursor:
+				url("/w11-cursor-concept-free/uparrow.cur") 10 2,
+				context-menu;
 		}
 
 		.waiting,
@@ -263,15 +295,21 @@ html > *:not(head):not(body) {
 	}
 
 	::-webkit-scrollbar {
-		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
 		width: 8px;
 		height: 8px;
 	}
 	::-webkit-scrollbar-thumb {
-		cursor: url("/w11-cursor-concept-free/sizeall.cur") 16 16, grab;
+		cursor:
+			url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+			grab;
 	}
 	::-webkit-scrollbar-track {
-		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
 	}
 }
 
@@ -297,36 +335,37 @@ a[href^="http"]:not(
 	margin-left: 0.15em;
 	background-color: currentColor;
 	opacity: 0.45;
-	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+	-webkit-mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+		center / contain no-repeat;
 }
 
 /* ------------------------------------------------------------------
-   4. 组件样式导入
-   各功能模块的独立样式文件，按 @layer(components) 加载
-   ------------------------------------------------------------------ */
-@import "./components/admonition.css" layer(components);
-@import "./components/github-card.css" layer(components);
-@import "./components/photoswipe.css" layer(components);
-@import "./print.css";
-
-/* ------------------------------------------------------------------
-   5. Waline 评论区光标覆盖
+   4. Waline 评论区光标覆盖
    通过 ID 选择器 + !important 强制统一为自定义光标
    ------------------------------------------------------------------ */
 #waline {
-	cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+	cursor:
+		url("/w11-cursor-concept-free/arrow.cur") 1 1,
+		auto;
 
 	.wl-editor,
 	.wl-editor:focus,
 	.wl-header input,
 	.wl-header input:focus,
 	.wl-gif-popup input {
-		cursor: url("/w11-cursor-concept-free/ibeam.cur") 11 17, text;
+		cursor:
+			url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+			text;
 	}
 
 	img:not(a img) {
-		cursor: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
 	}
 
 	a,
@@ -351,16 +390,22 @@ a[href^="http"]:not(
 	.wl-content.expand,
 	.wl-user-wall .wl-user-item,
 	[data-copy-value] {
-		cursor: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer !important;
+		cursor:
+			url("/w11-cursor-concept-free/hand.cur") 9 3,
+			pointer !important;
 	}
 
 	.wl-btn:disabled,
 	.wl-btn.primary:disabled {
-		cursor: url("/w11-cursor-concept-free/no.cur") 9 9, not-allowed !important;
+		cursor:
+			url("/w11-cursor-concept-free/no.cur") 9 9,
+			not-allowed !important;
 	}
 
 	.token.entity {
-		cursor: url("/w11-cursor-concept-free/help.cur") 8 8, help !important;
+		cursor:
+			url("/w11-cursor-concept-free/help.cur") 8 8,
+			help !important;
 	}
 }
 
@@ -398,10 +443,12 @@ a[href^="http"]:not(
    8. 字体系统
    ------------------------------------------------------------------ */
 :root {
-	--font-sans: "LXGW WenKai LITE", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
-		"Noto Sans", sans-serif;
-	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-		"Liberation Mono", "Courier New", monospace;
+	--font-sans:
+		"LXGW WenKai LITE", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans",
+		sans-serif;
+	--font-mono:
+		"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
 }
 
 :where(code, pre, kbd, samp, tt):not(#waline *) {

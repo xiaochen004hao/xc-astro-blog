@@ -2,8 +2,8 @@
 import { render } from "astro:content";
 import type { GetStaticPaths, InferGetStaticPropsType } from "astro";
 import { getAllPosts } from "@/data/post";
-import { collectionDateSort } from "@/utils/date";
 import PostLayout from "@/layouts/BlogPost.astro";
+import { collectionDateSort } from "@/utils/date";
 
 export const getStaticPaths = (async () => {
 	const blogEntries = await getAllPosts();
