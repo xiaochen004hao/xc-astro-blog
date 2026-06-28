@@ -2,46 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18.x]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run lint (biome)
-        run: npm run lint
-
-      - name: Type and build check
-        run: npm run check || true
-
-      - name: Build
-        run: npm run build
-
-      - name: Post-build (pagefind)
-        run: npm run postbuild || true
-name: ci
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches: [main, master]
 
 permissions:
   contents: read
@@ -55,25 +18,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-
       - name: Setup node
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: "npm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: npm ci
 
-        # use astro check for issues
+      - name: Run lint (biome)
+        run: npm run lint
+
       - name: Run Astro check
-        run: pnpm astro check
+        run: npm run astro check
 
-        # ensure build works
       - name: Run Astro build
-        run: pnpm build
+        run: npm run build
