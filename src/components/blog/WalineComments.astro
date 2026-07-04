@@ -19,6 +19,8 @@ import "../../styles/waline-custom.css";
 	let walineInitPromise: Promise<void> | null = null;
 	let vditorInstance: any = null;
 	let vditorObserver: MutationObserver | null = null;
+	let vditorContainer: HTMLElement | null = null;
+	let currentTextarea: HTMLTextAreaElement | null = null;
 	let themeObserver: MutationObserver | null = null;
 	let submitListener: ((e: Event) => void) | null = null;
 
@@ -47,6 +49,8 @@ import "../../styles/waline-custom.css";
 			document.removeEventListener("click", submitListener, true);
 			submitListener = null;
 		}
+		vditorContainer = null;
+		currentTextarea = null;
 		if (walineInstance?.destroy) {
 			walineInstance.destroy();
 			walineInstance = null;
@@ -130,6 +134,10 @@ import "../../styles/waline-custom.css";
 		textarea.insertAdjacentElement("afterend", container);
 		textarea.style.display = "none";
 		textarea.setAttribute("aria-hidden", "true");
+
+		// 保存引用，供 MutationObserver 检测位置变化时使用
+		currentTextarea = textarea;
+		vditorContainer = container;
 
 		// syncing 标志：防止 Vditor ↔ textarea 双向同步死循环
 		let syncing = false;
@@ -335,24 +343,68 @@ import "../../styles/waline-custom.css";
 	}
 
 	// 等待 Waline 渲染出原生 textarea 后，用 Vditor 替换它
+	// 同时持续监听 DOM 变化，处理 Waline "回复/取消回复" 操作时 textarea 被移动的情况
 	function watchForEditor() {
 		const existing = document.querySelector<HTMLTextAreaElement>(".wl-editor");
-		if (existing) {
+		if (existing && !vditorInstance) {
 			initVditor(existing);
-			return;
 		}
-		// Waline 尚未渲染编辑器，用 MutationObserver 监听 DOM 变化
+
+		// 持续监听 #waline 的 DOM 变化，处理：
+		// 1. textarea 被移动到回复位置 → Vditor 容器跟着移动
+		// 2. textarea 被销毁/重新创建 → 销毁旧 Vditor，初始化新 Vditor
+		// 3. textarea 的 display 被重置 → 重新隐藏
+		// 用 rAF 防抖，避免 Waline 频繁更新评论列表时过度触发
+		let rafId: number | null = null;
 		vditorObserver = new MutationObserver(() => {
-			const textarea = document.querySelector<HTMLTextAreaElement>(".wl-editor");
-			if (textarea && !vditorInstance) {
-				vditorObserver?.disconnect();
-				vditorObserver = null;
-				initVditor(textarea);
-			}
+			if (rafId !== null) return;
+			rafId = requestAnimationFrame(() => {
+				rafId = null;
+				handleDomChange();
+			});
 		});
+
+		function handleDomChange() {
+			// 情况 A：Vditor 还未初始化，检查是否有 textarea 可用
+			if (!vditorInstance) {
+				const textarea = document.querySelector<HTMLTextAreaElement>(".wl-editor");
+				if (textarea) {
+					initVditor(textarea);
+				}
+				return;
+			}
+
+			// 情况 B：Vditor 已初始化，检查 textarea 是否还在 DOM 中
+			if (!currentTextarea || !document.body.contains(currentTextarea)) {
+				const newTextarea = document.querySelector<HTMLTextAreaElement>(".wl-editor");
+				if (newTextarea && newTextarea !== currentTextarea) {
+					// 销毁旧 Vditor，用新 textarea 重新初始化
+					try {
+						vditorInstance.destroy?.();
+					} catch {}
+					vditorInstance = null;
+					vditorContainer?.remove();
+					vditorContainer = null;
+					initVditor(newTextarea);
+				}
+				return;
+			}
+
+			// 情况 C：textarea 还在，确保 Vditor 容器紧跟其后
+			if (vditorContainer && vditorContainer !== currentTextarea.nextElementSibling) {
+				currentTextarea.insertAdjacentElement("afterend", vditorContainer);
+			}
+
+			// 情况 D：textarea 的 display 可能被 Waline 重置，重新隐藏
+			if (currentTextarea.style.display !== "none") {
+				currentTextarea.style.display = "none";
+			}
+		}
 		vditorObserver.observe(document.getElementById("waline") || document.body, {
 			childList: true,
 			subtree: true,
+			attributes: true,
+			attributeFilter: ["style", "class"],
 		});
 	}
 
