@@ -1,0 +1,180 @@
+---
+import "@/styles/blocks/search.css";
+---
+
+<site-search class="ms-auto">
+	<button
+		class="hover:text-accent flex h-9 w-9 items-center justify-center rounded-md"
+		aria-keyshortcuts="Control+K Meta+K"
+		data-open-modal
+		disabled
+	>
+		<svg
+			aria-hidden="true"
+			class="h-7 w-7"
+			fill="none"
+			stroke="currentColor"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width="1.5"
+			viewBox="0 0 24 24"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path
+				d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6"
+				stroke-linecap="round"
+				stroke-linejoin="round"></path>
+		</svg>
+		<span class="sr-only">打开搜索</span>
+	</button>
+	<dialog
+		aria-label="搜索"
+		class="bg-global-bg fixed inset-0 m-0 max-h-full max-w-full border-0 shadow-sm backdrop:backdrop-blur-sm open:flex sm:relative sm:mx-auto sm:mt-16 sm:mb-auto sm:h-max sm:max-h-[calc(100%-8rem)] sm:min-h-60 sm:w-5/6 sm:max-w-3xl sm:rounded-md sm:border sm:border-zinc-400"
+	>
+		<div class="dialog-frame flex grow flex-col gap-4 p-6 pt-12 sm:pt-6">
+			<button
+				class="ms-auto rounded-md bg-zinc-200 p-2 font-semibold dark:bg-zinc-700"
+				data-close-modal
+				aria-label="关闭搜索对话框"
+			>
+				关闭
+			</button>
+			{
+				import.meta.env.DEV ? (
+					<div class="mx-auto text-center">
+						<p>
+							搜索功能仅在生产构建中可用。
+							<br />
+							请尝试构建并预览网站以在本地测试。
+						</p>
+					</div>
+				) : (
+					<div class="search-container">
+						<div id="cactus__search" />
+					</div>
+				)
+			}
+		</div>
+	</dialog>
+</site-search>
+
+<script>
+	const FALLBACK_HTML = `<div class="text-center py-8"><svg aria-hidden="true" class="mx-auto h-12 w-12 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M21 21l-6-6" stroke-linecap="round" stroke-linejoin="round"/></svg><p class="text-lg font-medium mt-4">搜索功能暂时不可用</p><p class="text-sm text-zinc-500 mt-2">请检查网络连接后 <a href="javascript:location.reload()" class="underline text-accent">刷新页面</a> 重试</p></div>`;
+
+	if (!(window as any).__searchCrashReady) {
+		(window as any).__searchCrashReady = true;
+		window.addEventListener("unhandledrejection", (event) => {
+			const msg = String(event.reason?.message ?? event.reason ?? "");
+			if (
+				!(window as any).__searchCrashed &&
+				(msg.includes("Pagefind") || msg.includes("pagefind"))
+			) {
+				event.preventDefault();
+				(window as any).__searchCrashed = true;
+				const el = document.getElementById("cactus__search");
+				if (el) el.innerHTML = FALLBACK_HTML;
+			}
+		});
+	}
+
+	class SiteSearch extends HTMLElement {
+		#closeBtn = null as HTMLButtonElement | null;
+		#dialog = null as HTMLDialogElement | null;
+		#dialogFrame = null as HTMLDivElement | null;
+		#openBtn = null as HTMLButtonElement | null;
+		#controller = new AbortController();
+
+		constructor() {
+			super();
+			this.#openBtn = this.querySelector("button[data-open-modal]");
+			this.#closeBtn = this.querySelector("button[data-close-modal]");
+			this.#dialog = this.querySelector("dialog");
+			this.#dialogFrame = this.querySelector(".dialog-frame");
+
+			if (this.#openBtn) {
+				this.#openBtn.addEventListener("click", this.#open, { signal: this.#controller.signal });
+				this.#openBtn.disabled = false;
+			}
+
+			if (this.#closeBtn) {
+				this.#closeBtn.addEventListener("click", this.#close, { signal: this.#controller.signal });
+			}
+
+			if (!import.meta.env.DEV) {
+				const onIdle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+				onIdle(() => {
+					if ((window as any).__searchCrashed) return;
+					import("@pagefind/default-ui")
+						.then(({ PagefindUI }) => {
+							if ((window as any).__searchCrashed) return;
+							new PagefindUI({
+								baseUrl: import.meta.env.BASE_URL,
+								bundlePath: import.meta.env.BASE_URL.replace(/\/$/, "") + "/pagefind/",
+								element: "#cactus__search",
+								showImages: false,
+								showSubResults: true,
+							});
+						})
+						.catch(() => {});
+				});
+			}
+		}
+
+		connectedCallback() {
+			window.addEventListener("keydown", this.#onKeydown, { signal: this.#controller.signal });
+		}
+
+		disconnectedCallback() {
+			try {
+				this.#controller.abort();
+			} catch {
+				/* nav away */
+			}
+		}
+
+		#open = (event?: MouseEvent) => {
+			if (!this.#dialog || this.#dialog.open) return;
+			this.#dialog.showModal();
+			document.body.style.overflow = "hidden";
+			const lenis = (window as unknown as Record<string, unknown>).__lenis as {
+				stop?: () => void;
+			} | null;
+			lenis?.stop?.();
+			this.querySelector("input")?.focus();
+			event?.stopPropagation();
+			window.addEventListener("click", this.#onClickOutside, { signal: this.#controller.signal });
+		};
+
+		#close = () => {
+			document.body.style.overflow = "";
+			const lenis = (window as unknown as Record<string, unknown>).__lenis as {
+				start?: () => void;
+			} | null;
+			lenis?.start?.();
+			this.#dialog?.close();
+		};
+
+		#onClickOutside = (event: MouseEvent) => {
+			const isLink = "href" in (event.target || {});
+			if (
+				isLink ||
+				(document.body.contains(event.target as Node) &&
+					!this.#dialogFrame?.contains(event.target as Node))
+			) {
+				this.#close();
+			}
+		};
+
+		#onKeydown = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+				if (!this.#dialog) return;
+				this.#dialog.open ? this.#close() : this.#open();
+				e.preventDefault();
+			}
+		};
+	}
+
+	if (!customElements.get("site-search")) {
+		customElements.define("site-search", SiteSearch);
+	}
+</script>

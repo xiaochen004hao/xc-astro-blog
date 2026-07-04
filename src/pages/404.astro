@@ -1,0 +1,36 @@
+---
+import PageLayout from "@/layouts/Base.astro";
+import { menuLinks } from "@/site.config";
+
+const meta = {
+	description: "哎呀！看起来这个页面迷失在太空中！",
+	title: "页面未找到",
+};
+---
+
+<PageLayout meta={meta}>
+	<div class="flex flex-col items-center justify-center py-24 text-center">
+		<p class="text-muted text-sm tracking-widest">页面未找到</p>
+		<h1 class="text-accent text-[8rem] leading-none font-bold">404</h1>
+		<p class="text-global-text mt-4 text-lg">这个页面似乎去了外太空...</p>
+		<p class="text-muted mt-2 text-sm">它可能已被移动、删除，或者从未存在过。</p>
+
+		<nav
+			aria-label="Main menu"
+			class="text-accent bg-global-bg -inset-x-4 top-12 flex flex-col divide-y px-2 py-4 sm:static sm:z-auto sm:-ms-4 sm:mt-10 sm:flex sm:flex-row sm:divide-x sm:divide-y-0 sm:bg-transparent sm:p-0"
+			id="navigation-menu"
+		>
+			{
+				menuLinks.map((link) => (
+					<a
+						aria-current={Astro.url.pathname === link.path ? "page" : false}
+						class="px-2 py-4 font-semibold sm:px-4 sm:py-0 sm:underline-offset-2 sm:hover:underline"
+						href={link.path}
+					>
+						{link.title === "首页" ? "返回首页" : link.title}
+					</a>
+				))
+			}
+		</nav>
+	</div>
+</PageLayout>

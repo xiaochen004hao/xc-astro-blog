@@ -1,0 +1,131 @@
+/* ==========================================================================
+   Pagefind 搜索组件样式
+   依赖: @pagefind/default-ui (静态搜索引擎)
+   说明: 覆盖 Pagefind UI 默认变量以匹配站点主题色
+         仅在生产构建中可用（开发环境显示占位提示）
+   ========================================================================== */
+
+/* 导入 Pagefind 默认 UI 样式 */
+@import "@pagefind/default-ui/css/ui.css";
+
+/* ------------------------------------------------------------------
+   A. 变量覆盖 - 继承站点字体 + 主题色映射
+   ------------------------------------------------------------------ */
+:root {
+	--pagefind-ui-font: inherit;
+}
+
+#cactus__search {
+	--pagefind-ui-primary: var(--color-accent);
+	--pagefind-ui-text: var(--color-global-text);
+	--pagefind-ui-background: var(--color-zinc-100);
+	--pagefind-ui-border: var(--color-zinc-300);
+	--pagefind-ui-border-width: 1px;
+
+	[data-theme="dark"] & {
+		--pagefind-ui-background: var(--color-zinc-800);
+		--pagefind-ui-border: var(--color-zinc-500);
+	}
+}
+
+/* ------------------------------------------------------------------
+   B. 清除按钮 - 使用 mask 实现自定义 X 图标
+   ------------------------------------------------------------------ */
+#cactus__search .pagefind-ui__search-clear {
+	width: calc(60px * var(--pagefind-ui-scale));
+	padding: 0;
+	background-color: transparent;
+	overflow: hidden;
+}
+
+#cactus__search .pagefind-ui__search-clear:focus {
+	outline: 1px solid var(--color-accent-2);
+}
+
+#cactus__search .pagefind-ui__search-clear::before {
+	content: "";
+	-webkit-mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' %3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E")
+		center / 60% no-repeat;
+	mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' %3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M6 18L18 6M6 6l12 12'%3E%3C/path%3E%3C/svg%3E")
+		center / 60% no-repeat;
+	background-color: var(--color-accent);
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+/* ------------------------------------------------------------------
+   C. 搜索结果 - 去除边框 + 自定义下划线效果
+   ------------------------------------------------------------------ */
+#cactus__search .pagefind-ui__result {
+	border: 0;
+}
+
+#cactus__search .pagefind-ui__result-link {
+	background-size: 100% 6px;
+	background-position: bottom;
+	background-repeat: repeat-x;
+	background-image: linear-gradient(
+		transparent,
+		transparent 5px,
+		var(--color-global-text) 5px,
+		var(--color-global-text)
+	);
+}
+
+#cactus__search .pagefind-ui__result-link:hover {
+	text-decoration: none;
+	background-image: linear-gradient(
+		transparent,
+		transparent 4px,
+		var(--color-link) 4px,
+		var(--color-link)
+	);
+}
+
+#cactus__search [class*="pagefind-ui__results-area"] {
+	padding-bottom: calc(20px * var(--pagefind-ui-scale));
+}
+
+/* ------------------------------------------------------------------
+   D. 高亮标记 - 使用主题引用色
+   ------------------------------------------------------------------ */
+#cactus__search mark {
+	color: var(--color-quote);
+	background-color: transparent;
+	font-weight: 600;
+}
+
+/* ------------------------------------------------------------------
+   E. 光标 - 搜索输入框使用 ibeam 工字光标
+   ------------------------------------------------------------------ */
+#cactus__search .pagefind-ui__search-input,
+#cactus__search .pagefind-ui__form {
+	cursor:
+		url("/w11-cursor-concept-free/ibeam.cur") 12 16,
+		text;
+}
+
+/* ------------------------------------------------------------------
+   F. 弹窗动画 - 透明到实体缓出 + 轻微放大
+   ------------------------------------------------------------------ */
+site-search dialog[open] {
+	animation: search-dialog-fade 0.18s ease-out;
+	transform-origin: center;
+}
+
+site-search dialog::backdrop {
+	animation: search-backdrop-fade 0.15s ease-out;
+}
+
+@keyframes search-dialog-fade {
+	from { transform: scale(0.97); opacity: 0; }
+	to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes search-backdrop-fade {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}

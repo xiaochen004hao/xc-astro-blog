@@ -1,0 +1,272 @@
+---
+import { ClientRouter } from "astro:transitions";
+import BaseHead from "@/components/BaseHead.astro";
+import Footer from "@/components/layout/Footer.astro";
+import Header from "@/components/layout/Header.astro";
+import SkipLink from "@/components/SkipLink.astro";
+import ThemeProvider from "@/components/ThemeProvider.astro";
+import { siteConfig } from "@/site.config";
+import type { SiteMeta } from "@/types";
+
+interface Props {
+	meta: SiteMeta;
+}
+
+const {
+	meta: { articleDate, description = siteConfig.description, ogImage, title },
+} = Astro.props;
+---
+
+<html class="scroll-smooth" lang={siteConfig.lang}>
+	<head>
+		<BaseHead articleDate={articleDate} description={description} ogImage={ogImage} title={title} />
+		<ClientRouter />
+		<ThemeProvider />
+	</head>
+	<body
+		class="bg-global-bg text-global-text mx-auto flex min-h-screen max-w-3xl flex-col px-4 pt-16 font-sans text-sm font-normal antialiased sm:px-8"
+	>
+		<script is:inline>
+			document.querySelectorAll(":root > *:not(head):not(body)").forEach(function (el) {
+				el.style.display = "none";
+			});
+		</script>
+		<div
+			id="reading-progress"
+			class="bg-accent pointer-events-none fixed top-0 left-0 z-100 h-0.5 w-0 transition-[width] duration-150 ease-out"
+		>
+		</div>
+		<!-- SVG 空间涟漪滤镜：提供不规则撕裂边缘 -->
+		<svg
+			style="position: fixed; top: 0; left: 0; width: 0; height: 0; pointer-events: none; z-index: -1;"
+			aria-hidden="true"
+		>
+			<defs>
+				<filter
+					id="wave-tear"
+					color-interpolation-filters="sRGB"
+					x="-50%"
+					y="-50%"
+					width="200%"
+					height="200%"
+				>
+					<feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise"
+					></feTurbulence>
+					<feDisplacementMap
+						in="SourceGraphic"
+						in2="noise"
+						scale="120"
+						xChannelSelector="R"
+						yChannelSelector="G"></feDisplacementMap>
+					<feGaussianBlur stdDeviation="3" result="blur"></feGaussianBlur>
+					<feMerge>
+						<feMergeNode in="blur"></feMergeNode>
+						<feMergeNode in="SourceGraphic"></feMergeNode>
+					</feMerge>
+				</filter>
+			</defs>
+		</svg>
+		<SkipLink />
+		<Header />
+
+		<!-- SW 更新提示（默认隐藏） -->
+		<div
+			id="sw-update-banner"
+			class="fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 px-6 py-3 shadow-lg backdrop-blur-sm"
+			style="background-color: color-mix(in oklch, var(--color-global-bg) 95%, transparent);"
+		>
+			<div class="flex items-center gap-3">
+				<svg
+					class="h-4 w-4 animate-spin"
+					style="color: var(--color-accent);"
+					viewBox="0 0 24 24"
+					fill="none"
+				>
+					<circle
+						cx="12"
+						cy="12"
+						r="10"
+						stroke="currentColor"
+						stroke-width="3"
+						stroke-linecap="round"
+						opacity="0.25"></circle>
+					<path
+						d="M12 2a10 10 0 0 1 10 10"
+						stroke="currentColor"
+						stroke-width="3"
+						stroke-linecap="round"></path>
+				</svg>
+				<span class="text-sm" style="color: var(--color-global-text);">正在更新SW数据...</span>
+			</div>
+		</div>
+		<main id="main">
+			<slot />
+		</main>
+		<Footer />
+
+		<script>
+			import "@/scripts/smooth-scroll.ts";
+		</script>
+
+		<script>
+			import "@/scripts/progress-bar.ts";
+		</script>
+
+		<script>
+			import "@/scripts/photoswipe.ts";
+		</script>
+
+		<script is:inline>
+			(function initLoading() {
+				const KEY = "xc-loaded";
+				if (sessionStorage.getItem(KEY)) return;
+
+				const style = document.createElement("style");
+				style.textContent = `@keyframes xc-pulse{0%,100%{opacity:.65;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}`;
+				document.head.appendChild(style);
+
+				const el = document.createElement("div");
+				el.id = "xc-loading";
+				Object.assign(el.style, {
+					position: "fixed",
+					inset: "0",
+					zIndex: "10000",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					flexDirection: "column",
+					background: "var(--color-global-bg)",
+					transition: "opacity 0.4s ease-out",
+				});
+				el.innerHTML = `<svg aria-hidden="true" style="width:88px;height:88px;animation:xc-pulse 1.6s ease-in-out infinite" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="-2 -2 28 28"><rect x="-2" y="-2" width="28" height="28" fill="var(--color-logo-bg)"/><path fill="var(--color-logo-text)" d="M3 4 h6 v6 h6 v-6 h6 v6 h-6 v3 h3 v8 h-3 v-3 h-6 v3 h-3 v-8 h3 v-3 h-6 z"/></svg>`;
+				document.body.prepend(el);
+				document.body.style.overflow = "hidden";
+
+				let done = false;
+				const minMs = 1400;
+				const maxMs = 6000;
+				const started = Date.now();
+
+				function hide() {
+					if (done) return;
+					done = true;
+					const elapsed = Date.now() - started;
+					const wait = Math.max(0, minMs - elapsed);
+					setTimeout(() => {
+						el.style.opacity = "0";
+						setTimeout(() => {
+							el.remove();
+							style.remove();
+							document.body.style.overflow = "";
+							sessionStorage.setItem(KEY, "1");
+						}, 420);
+					}, wait);
+				}
+
+				window.addEventListener("load", hide);
+				setTimeout(hide, maxMs);
+			})();
+		</script>
+
+		<script is:inline>
+			if (!document.documentElement.dataset.swapEvents) {
+				document.documentElement.dataset.swapEvents = "1";
+				document.addEventListener("astro:before-swap", () => {
+					document.documentElement.style.overflow = "hidden";
+				});
+				document.addEventListener("astro:page-load", () => {
+					document.documentElement.style.overflow = "";
+				});
+			}
+		</script>
+
+		<script is:inline>
+			// 波浪式页面切换：记录链接点击坐标，作为扩散圆心
+			(function () {
+				// 捕获阶段监听 click，抢在导航前记录鼠标坐标
+				document.addEventListener(
+					"click",
+					(e) => {
+						const link = e.target instanceof Element ? e.target.closest("a") : null;
+						if (!link) return;
+						const href = link.getAttribute("href");
+						// 排除外部链接、锚点、新窗口等非站内导航
+						if (
+							!href ||
+							href.startsWith("#") ||
+							href.startsWith("http") ||
+							href.startsWith("mailto:") ||
+							href.startsWith("tel:") ||
+							link.target === "_blank" ||
+							link.hasAttribute("download")
+						)
+							return;
+						document.documentElement.style.setProperty("--wave-x", e.clientX + "px");
+						document.documentElement.style.setProperty("--wave-y", e.clientY + "px");
+					},
+					true,
+				);
+
+				// View Transitions swap 时新文档会替换旧文档，需把坐标转移过去
+				document.addEventListener("astro:before-swap", function (ev) {
+					var x = document.documentElement.style.getPropertyValue("--wave-x");
+					var y = document.documentElement.style.getPropertyValue("--wave-y");
+					if (x) ev.newDocument.documentElement.style.setProperty("--wave-x", x);
+					if (y) ev.newDocument.documentElement.style.setProperty("--wave-y", y);
+				});
+			})();
+		</script>
+
+		<script>
+			if (typeof window !== "undefined" && "serviceWorker" in navigator && !window.__swReady) {
+				window.__swReady = true;
+
+				// 显示"正在更新SW数据..."提示并自动触发更新
+				const showUpdateBanner = () => {
+					document.getElementById("sw-update-banner")?.classList.remove("hidden");
+					navigator.serviceWorker
+						.getRegistration()
+						.then((reg) => {
+							if (reg?.waiting) {
+								reg.waiting.postMessage({ type: "SKIP_WAITING" });
+							} else if (reg?.installing) {
+								reg.installing.addEventListener("statechange", () => {
+									if (reg.waiting) {
+										reg.waiting.postMessage({ type: "SKIP_WAITING" });
+									}
+								});
+							} else {
+								window.location.reload();
+							}
+						})
+						.catch(() => {
+							window.location.reload();
+						});
+				};
+
+				navigator.serviceWorker.addEventListener("controllerchange", () => {
+					window.location.reload();
+				});
+
+				navigator.serviceWorker
+					.register("/service-worker.js")
+					.then((reg) => {
+						reg.addEventListener("updatefound", () => {
+							const newWorker = reg.installing;
+							if (!newWorker) return;
+							newWorker.addEventListener("statechange", () => {
+								if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+									showUpdateBanner();
+								}
+							});
+						});
+
+						if (reg.waiting && navigator.serviceWorker.controller) {
+							showUpdateBanner();
+						}
+					})
+					.catch(() => {});
+			}
+		</script>
+	</body>
+</html>

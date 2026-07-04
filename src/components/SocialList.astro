@@ -1,0 +1,48 @@
+---
+import { Icon } from "astro-icon/components";
+
+/** 
+	Uses https://www.astroicon.dev/getting-started/
+	Find icons via guide: https://www.astroicon.dev/guides/customization/#open-source-icon-sets
+	Installed packs: @iconify-json/simple-icons (brands), @iconify-json/lucide (UI)
+*/
+const socialLinks: {
+	friendlyName: string;
+	isWebmention?: boolean;
+	link: string;
+	name: string;
+}[] = [
+	{
+		friendlyName: "Github",
+		isWebmention: true,
+		link: "https://github.com/xiaochen004hao",
+		name: "simple-icons:github",
+	},
+	{
+		friendlyName: "Bilibili",
+		link: "https://space.bilibili.com/3546624408160947",
+		name: "simple-icons:bilibili",
+	},
+];
+---
+
+<div class="flex flex-wrap items-end gap-x-2">
+	<p>发现我的足迹:</p>
+	<ul class="flex flex-1 items-center gap-x-2 sm:flex-initial">
+		{
+			socialLinks.map(({ friendlyName, isWebmention, link, name }) => (
+				<li class="flex">
+					<a
+						class="no-external-icon hover:text-link inline-block"
+						href={link}
+						rel={`noreferrer ${isWebmention ? "me authn" : ""}`}
+						target="_blank"
+					>
+						<Icon aria-hidden="true" class="h-8 w-8" focusable="false" name={name} />
+						<span class="sr-only">{friendlyName}</span>
+					</a>
+				</li>
+			))
+		}
+	</ul>
+</div>

@@ -1,0 +1,291 @@
+/* ==========================================================================
+   Waline 评论系统样式
+   1. CSS 变量：引用站点变量，自动跟随明暗主题
+   2. Vditor 编辑器容器：覆盖 Vditor 默认配色
+   3. 第三方内容排版恢复：对抗 Tailwind Preflight 的 margin/padding:0
+      和 Waline 自带的 [data-waline] *{line-height:1.75}
+      作用于：评论显示区 #waline .wl-content
+              Vditor 编辑器预览区 .wl-vditor-wrapper .vditor-reset
+   ========================================================================== */
+
+/* ------------------------------------------------------------------
+   1. Waline CSS 变量
+   ------------------------------------------------------------------ */
+:root {
+	--waline-font-size: 1rem;
+	--waline-white: #fff;
+	--waline-light-grey: #999;
+	--waline-dark-grey: #666;
+	--waline-theme-color: var(--color-accent);
+	--waline-active-color: var(--color-link);
+	--waline-color: var(--color-global-text);
+	--waline-bg-color: var(--color-global-bg);
+	--waline-bg-color-light: oklch(from var(--color-global-bg) calc(l + 0.04) 0 0);
+	--waline-bg-color-hover: oklch(from var(--color-global-bg) calc(l + 0.06) 0 0);
+	--waline-border-color: oklch(from var(--color-muted) l c h / 0.3);
+	--waline-disable-bg-color: var(--waline-bg-color-light);
+	--waline-disable-color: var(--color-muted);
+	--waline-code-bg-color: oklch(20% 0 0);
+	--waline-warning-color: #915930;
+	--waline-warning-bg-color: rgb(234 179 8 / 14%);
+	--waline-bq-color: oklch(from var(--color-muted) l c h / 0.15);
+	--waline-avatar-size: 3.25rem;
+	--waline-m-avatar-size: calc(var(--waline-avatar-size) * 9 / 13);
+	--waline-badge-color: var(--waline-theme-color);
+	--waline-badge-font-size: 0.75em;
+	--waline-info-bg-color: var(--waline-bg-color-light);
+	--waline-info-color: var(--color-muted);
+	--waline-info-font-size: 0.625em;
+	--waline-border: 1px solid var(--waline-border-color);
+	--waline-avatar-radius: 50%;
+	--waline-box-shadow: none;
+}
+
+/* 深色模式：代码块背景更暗 */
+[data-theme="dark"],
+:is([data-theme="dark"]) {
+	--waline-code-bg-color: oklch(12% 0 0);
+}
+
+/* ------------------------------------------------------------------
+   2. Vditor 编辑器容器：覆盖 Vditor 默认配色
+   ------------------------------------------------------------------ */
+.wl-vditor-wrapper {
+	width: 100%;
+}
+
+/* 强制 Vditor 编辑器内部使用 border-box
+   对抗 Waline 自带的 [data-waline] *{box-sizing:content-box}
+   Vditor 自身 CSS 假设 border-box，content-box 会破坏工具栏布局 */
+.wl-vditor-wrapper *,
+.wl-vditor-wrapper *::before,
+.wl-vditor-wrapper *::after {
+	box-sizing: border-box;
+}
+
+/* 浅色和深色模式统一使用站点变量 */
+.wl-vditor-wrapper .vditor,
+.wl-vditor-wrapper .vditor--dark {
+	--border-color: var(--waline-border-color);
+	--toolbar-background-color: var(--waline-bg-color-light);
+	--toolbar-icon-color: var(--color-muted);
+	--toolbar-icon-hover-color: var(--color-accent);
+	--textarea-background-color: var(--waline-bg-color);
+	--textarea-text-color: var(--color-global-text);
+	--panel-background-color: var(--waline-bg-color);
+	--heading-border-color: var(--waline-border-color);
+	--blockquote-color: var(--color-muted);
+	--ir-heading-color: var(--color-accent-2);
+	--ir-title-color: var(--color-muted);
+	--ir-bi-color: var(--color-link);
+	--ir-link-color: var(--color-link);
+	--ir-bracket-color: var(--color-accent);
+	--ir-paren-color: var(--color-muted);
+	--count-background-color: oklch(from var(--color-accent) l c h / 0.15);
+}
+
+.wl-vditor-wrapper .vditor {
+	border-radius: 0.5rem;
+	border-color: var(--waline-border-color);
+}
+
+.wl-vditor-wrapper .vditor-toolbar {
+	border-radius: 0.5rem 0.5rem 0 0;
+	border-color: var(--waline-border-color);
+	background-color: var(--toolbar-background-color);
+}
+
+.wl-vditor-wrapper .vditor-content {
+	background-color: var(--waline-bg-color);
+}
+
+/* IR 模式 Markdown 标记符号颜色 */
+.wl-vditor-wrapper .vditor-ir .vditor-ir__node {
+	color: var(--color-global-text);
+}
+
+.wl-vditor-wrapper .vditor-ir .vditor-ir__node--expand .vditor-ir__marker {
+	color: var(--color-muted);
+}
+
+/* 隐藏 Vditor 编辑模式切换按钮，确保始终使用 IR 模式 */
+.wl-vditor-wrapper [data-type="edit-mode"],
+.wl-vditor-wrapper .vditor-edit-mode {
+	display: none !important;
+}
+
+/* ------------------------------------------------------------------
+   3. 第三方内容排版恢复
+      对抗：Tailwind Preflight 的 *,::before,::after,::backdrop{margin:0;padding:0}
+            Waline 自带的 [data-waline] *{box-sizing:content-box;line-height:1.75}
+      作用域：#waline .wl-content（评论显示区）
+              .wl-vditor-wrapper .vditor-reset（Vditor 编辑器预览区）
+      特异性：:is() 取参数中最高的特异性 = #waline .wl-content = 1-1-0
+              高于 [data-waline] * (0-1-0) 和 * (0-0-0)，可稳定覆盖
+   ------------------------------------------------------------------ */
+
+/* 3.1 基础排版：line-height 对齐 .prose 的 1.7（覆盖 Waline 的 1.75） */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) {
+	line-height: 1.7;
+	color: var(--color-global-text);
+}
+
+/* 3.2 段落：恢复垂直间距 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) p {
+	margin: 0.75em 0;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) p:first-child {
+	margin-top: 0;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) p:last-child {
+	margin-bottom: 0;
+}
+
+/* 3.3 标题：恢复字号、字重、垂直间距 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h1 {
+	margin: 0.6em 0 0.6em;
+	font-size: 1.5em;
+	line-height: 1.3;
+	font-weight: 600;
+	color: var(--color-accent-2);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h2 {
+	margin: 0.8em 0;
+	font-size: 1.3em;
+	line-height: 1.3;
+	font-weight: 600;
+	color: var(--color-accent-2);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h3 {
+	margin: 1em 0;
+	font-size: 1.15em;
+	line-height: 1.4;
+	font-weight: 600;
+	color: var(--color-accent-2);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h4,
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h5,
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) h6 {
+	margin: 1.2em 0;
+	font-size: 1em;
+	line-height: 1.5;
+	font-weight: 600;
+	color: var(--color-accent-2);
+}
+
+/* 3.4 列表：恢复 list-style 和 padding-left（对抗 Preflight 的 list-style:none） */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) ul {
+	list-style: disc;
+	padding-left: 1.5em;
+	margin: 0.75em 0;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) ol {
+	list-style: decimal;
+	padding-left: 1.5em;
+	margin: 0.75em 0;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) li {
+	margin: 0.25em 0;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) li > ul,
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) li > ol {
+	margin: 0.25em 0;
+}
+
+/* 3.5 引用块 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) blockquote {
+	margin: 0.75em 0;
+	padding: 0.25em 0 0.25em 1em;
+	border-left: 3px solid var(--color-accent);
+	background: oklch(from var(--color-muted) l c h / 0.08);
+	color: var(--color-muted);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) blockquote p {
+	margin: 0.25em 0;
+}
+
+/* 3.6 代码块 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) pre {
+	margin: 0.75em 0;
+	padding: 0.75em 1em;
+	background: var(--waline-code-bg-color);
+	border-radius: 6px;
+	overflow-x: auto;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) code {
+	color: var(--color-quote);
+	background: oklch(from var(--color-muted) l c h / 0.12);
+	border-radius: 3px;
+	padding: 0.15em 0.35em;
+	font-size: 0.875em;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) pre code {
+	color: #abb2bf;
+	background: transparent;
+	padding: 0;
+	font-size: 0.875em;
+}
+
+/* 3.7 行内元素 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) a {
+	color: var(--color-link);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) strong {
+	color: var(--color-global-text);
+	font-weight: 700;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) em {
+	color: var(--color-global-text);
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) img {
+	border-radius: 4px;
+	max-width: 100%;
+}
+
+/* 3.8 分隔线 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) hr {
+	margin: 1.5em 0;
+	border: 0;
+	border-top: 1px dashed var(--color-muted);
+}
+
+/* 3.9 表格 */
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) table {
+	border-collapse: collapse;
+	margin: 0.75em 0;
+	width: 100%;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) th,
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) td {
+	border: 1px solid var(--waline-border-color);
+	padding: 0.4em 0.7em;
+}
+
+:is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) th {
+	color: var(--color-accent-2);
+	font-weight: 600;
+}
+
+/* ------------------------------------------------------------------
+   4. 评论系统 UI 覆盖
+   ------------------------------------------------------------------ */
+
+/* 隐藏 Waline 原生操作栏（表情、图片上传、预览），Vditor 工具栏已替代 */
+#waline .wl-operation {
+	display: none !important;
+}

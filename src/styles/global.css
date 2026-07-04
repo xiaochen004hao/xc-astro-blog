@@ -1,0 +1,529 @@
+/* ==========================================================================
+   全局样式入口 - Global Styles Entry
+   项目: xcblog (Astro Cactus Theme)
+   技术栈: Tailwind CSS v4 + CSS 自定义属性
+   说明: 本文件是所有样式的入口，定义颜色系统、光标主题、排版基础
+   ========================================================================== */
+
+@import "tailwindcss";
+@import "./components/admonition.css" layer(components);
+@import "./components/github-card.css" layer(components);
+@import "./components/photoswipe.css" layer(components);
+@import "./print.css";
+@source not "../pages/og-image";
+@config "../../tailwind.config.ts";
+
+html > *:not(head):not(body) {
+	display: none !important;
+}
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ------------------------------------------------------------------
+   1. 颜色系统 (CSS Custom Properties)
+   使用 @property 注册，支持过渡动画和 JS 读取/修改
+   所有颜色使用 oklch 色空间，确保跨设备一致性
+   ------------------------------------------------------------------ */
+
+@property --color-global-bg {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(95% 0 0);
+}
+@property --color-global-text {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(26.99% 0.0096 235.05);
+}
+@property --color-muted {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(44.6% 0.0096 235.05);
+}
+@property --color-link {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(48% 0.12 230);
+}
+@property --color-accent {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(47% 0.08 194.77);
+}
+@property --color-accent-2 {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(33.9795% 0.058002 194.768948);
+}
+@property --color-quote {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(45% 0.10 280);
+}
+@property --color-logo-bg {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(94% 0.02 196.8);
+}
+@property --color-logo-text {
+	syntax: "<color>";
+	inherits: true;
+	initial-value: oklch(47% 0.08 194.77);
+}
+
+@theme {
+	--color-global-bg: oklch(95% 0 0);
+	--color-global-text: oklch(26.99% 0.0096 235.05);
+	--color-muted: oklch(44.6% 0.0096 235.05);
+	--color-link: oklch(48% 0.12 230);
+	--color-accent: oklch(47% 0.08 194.77);
+	--color-accent-2: oklch(33.9795% 0.058002 194.768948);
+	--color-quote: oklch(45% 0.10 280);
+	--color-logo-bg: oklch(94% 0.02 196.8);
+	--color-logo-text: oklch(47% 0.08 194.77);
+	--radius-md: 0.375rem;
+}
+
+@view-transition {
+	navigation: auto;
+}
+
+/* ==========================================================================
+   空间涟漪页面切换特效 (View Transitions + SVG)
+   ========================================================================== */
+
+:root {
+	--wave-x: 50vw;
+	--wave-y: 50vh;
+}
+
+::view-transition-group(root),
+::view-transition-image-pair(root) {
+	overflow: visible;
+}
+
+/* 允许在动画期间穿透遮罩，提前与新页面交互 */
+::view-transition {
+	pointer-events: none;
+}
+
+/* 1. 旧页面：空间吸入、扭曲与模糊 */
+@keyframes old-page-vortex {
+	0% { opacity: 1; transform: scale(1) rotate(0deg) skew(0deg); filter: blur(0px) brightness(1); }
+	100% { opacity: 0; transform: scale(1.15) rotate(-2deg) translate3d(20px, 20px, 0) skew(4deg, 4deg); filter: blur(12px) brightness(0.2) saturate(1.5) hue-rotate(20deg); }
+}
+
+::view-transition-old(root) {
+	animation: old-page-vortex 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	transform-origin: var(--wave-x) var(--wave-y);
+	z-index: 1;
+	will-change: transform, opacity, filter;
+}
+
+/* 2. 新页面：圆形扩散 + accent 色边缘发光 */
+@keyframes new-page-reveal {
+	0% { clip-path: circle(0vmax at var(--wave-x) var(--wave-y)); }
+	100% { clip-path: circle(150vmax at var(--wave-x) var(--wave-y)); }
+}
+
+::view-transition-new(root) {
+	animation: new-page-reveal 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	z-index: 2;
+	will-change: clip-path, filter;
+	/* 边缘朝外发光，accent 色光晕 */
+	filter: drop-shadow(0 0 30px var(--color-accent));
+}
+
+/* 3. image-pair 静态光晕：旧页面半透明时透过显示 */
+::view-transition-image-pair(root) {
+	background: radial-gradient(
+		circle 50vmax at var(--wave-x) var(--wave-y),
+		oklch(from var(--color-accent) l c h / 0.3) 0%,
+		oklch(from var(--color-accent) l c h / 0.1) 30%,
+		transparent 60%
+	);
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation: none !important;
+		filter: none !important;
+	}
+}
+
+/* ------------------------------------------------------------------
+   2. 光标主题 (W11 Cursor Concept)
+   基于 public/w11-cursor-concept-free/ 目录下的 .cur/.ani 文件
+   光标优先级（从低到高）:
+     默认 arrow → 输入框 ibeam → 交互元素 hand → 特殊场景各自对应
+   注意: 不对文本容器(p/h1-h6等)设 ibeam，因为 cursor 作用于整个盒模型区域
+   ------------------------------------------------------------------ */
+@layer base {
+	html {
+		color-scheme: light dark;
+		accent-color: var(--color-accent);
+		scrollbar-gutter: stable;
+
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
+
+		a,
+		[role="link"],
+		button,
+		[role="button"],
+		input[type="button"],
+		input[type="submit"],
+		input[type="reset"],
+		summary,
+		details,
+		details > summary,
+		[tabindex]:not([tabindex="-1"]):not(input):not(textarea),
+		[data-copy-value],
+		label:has(input),
+		label:has(select) {
+			cursor:
+				url("/w11-cursor-concept-free/hand.cur") 9 3,
+				pointer;
+		}
+
+		.copy {
+			cursor:
+				url("/w11-cursor-concept-free/hand.cur") 9 3,
+				pointer !important;
+		}
+
+		&:where(
+				input[type="text"],
+				input[type="search"],
+				input:not([type]),
+				textarea,
+				[contenteditable="true"]
+			) {
+			cursor:
+				url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+				text;
+		}
+
+		&:where([disabled], [aria-disabled="true"], [aria-busy="true"]) {
+			cursor:
+				url("/w11-cursor-concept-free/no.cur") 9 9,
+				not-allowed;
+		}
+
+		&:where(select) {
+			cursor:
+				url("/w11-cursor-concept-free/arrow.cur") 1 1,
+				auto;
+		}
+
+		&:where([draggable="true"], [data-draggable]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+				grab;
+		}
+
+		&:where([aria-grabbed="true"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+				grabbing;
+		}
+
+		canvas,
+		[role="img"]:not(a) {
+			cursor:
+				url("/w11-cursor-concept-free/crosshair.cur") 16 16,
+				crosshair;
+		}
+
+		img:not(a img) {
+			cursor:
+				url("/w11-cursor-concept-free/arrow.cur") 1 1,
+				auto;
+		}
+
+		abbr[title],
+		.help,
+		[role="tooltip"][aria-describedby] {
+			cursor:
+				url("/w11-cursor-concept-free/help.cur") 9 9,
+				help;
+		}
+
+		&:where([style*="cursor:n-resize"], [style*="cursor: ns-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizens.cur") 16 20,
+				n-resize;
+		}
+		&:where([style*="cursor:e-resize"], [style*="cursor: ew-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizewe.cur") 20 16,
+				e-resize;
+		}
+		&:where([style*="cursor:ne-resize"], [style*="cursor: nesw-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizenesw.cur") 18 14,
+				ne-resize;
+		}
+		&:where([style*="cursor:nw-resize"], [style*="cursor: nwse-resize"]) {
+			cursor:
+				url("/w11-cursor-concept-free/sizenwse.cur") 14 18,
+				nw-resize;
+		}
+
+		.copy,
+		[aria-label*="复制"],
+		[aria-label*="copy" i] {
+			cursor:
+				url("/w11-cursor-concept-free/person.cur") 5 5,
+				copy;
+		}
+
+		.context-menu,
+		[contextmenu] {
+			cursor:
+				url("/w11-cursor-concept-free/uparrow.cur") 10 2,
+				context-menu;
+		}
+
+		.waiting,
+		&:is(.loading, .spinner, [data-loading], [aria-busy="true"]) {
+			cursor: url("/w11-cursor-concept-free/wait.ani"), wait;
+		}
+
+		&[data-theme="light"] {
+			color-scheme: light;
+		}
+
+		&[data-theme="dark"] {
+			color-scheme: dark;
+			--color-global-bg: oklch(18% 0 0);
+			--color-global-text: oklch(83.54% 0 264);
+			--color-muted: oklch(70.7% 0.022 261.325);
+			--color-link: oklch(72% 0.13 230);
+			--color-accent: oklch(85.06% 0.141 194.84);
+			--color-accent-2: oklch(97.1944% 0.040953 196.4971);
+			--color-quote: oklch(68% 0.10 280);
+			--color-logo-bg: oklch(18% 0.03 195.09);
+			--color-logo-text: oklch(85% 0.14 194.83);
+		}
+
+		--color-mode-transition-duration: 300ms;
+		--color-mode-transition-easing: ease-in-out;
+
+		transition:
+			--color-global-bg var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-global-text var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-muted var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-link var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-accent var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-accent-2 var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-quote var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-logo-bg var(--color-mode-transition-duration) var(--color-mode-transition-easing),
+			--color-logo-text var(--color-mode-transition-duration) var(--color-mode-transition-easing);
+	}
+
+	::selection {
+		background-color: oklch(from var(--color-accent) l c h / 0.2);
+		color: var(--color-accent-2);
+	}
+
+	:target {
+		scroll-margin-block: 5ex;
+	}
+
+	:where([data-astro-image]) {
+		object-fit: var(--fit);
+		object-position: var(--pos);
+	}
+	[data-astro-image="full-width"] {
+		width: 100%;
+	}
+	[data-astro-image="constrained"] {
+		max-width: 100%;
+	}
+
+	body {
+		font-family: var(--font-sans);
+	}
+
+	:where(:focus-visible):not(#waline *) {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+		border-radius: 2px;
+	}
+
+	:where(img):not([data-no-zoom]):not(#waline img) {
+		border-radius: 4px;
+	}
+
+	::-webkit-scrollbar {
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
+		width: 8px;
+		height: 8px;
+	}
+	::-webkit-scrollbar-thumb {
+		cursor:
+			url("/w11-cursor-concept-free/sizeall.cur") 16 16,
+			grab;
+	}
+	::-webkit-scrollbar-track {
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
+	}
+}
+
+/* ------------------------------------------------------------------
+   3. 外部链接图标
+   为站外链接自动添加 ↗ 图标（通过 mask 实现）
+   使用 CSS :not() 列表语法排除站内和特定组件
+   ------------------------------------------------------------------ */
+a[href^="http"]:not(
+	[href*="weblog.xc4h.qzz.io"],
+	[href*="localhost"],
+	[class*="no-external-icon"],
+	[class*="pagefind-ui"] a,
+	nav a,
+	.cactus-link,
+	#waline a,
+	.friend-card
+)::after {
+	content: "";
+	display: inline-block;
+	width: 0.7em;
+	height: 0.7em;
+	margin-left: 0.15em;
+	background-color: currentColor;
+	opacity: 0.45;
+	mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+	-webkit-mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+		center / contain no-repeat;
+}
+
+/* ------------------------------------------------------------------
+   4. Waline 评论区光标覆盖
+   通过 ID 选择器 + !important 强制统一为自定义光标
+   ------------------------------------------------------------------ */
+#waline {
+	cursor:
+		url("/w11-cursor-concept-free/arrow.cur") 1 1,
+		auto;
+
+	.wl-editor,
+	.wl-editor:focus,
+	.wl-header input,
+	.wl-header input:focus,
+	.wl-gif-popup input {
+		cursor:
+			url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+			text;
+	}
+
+	img:not(a img) {
+		cursor:
+			url("/w11-cursor-concept-free/arrow.cur") 1 1,
+			auto;
+	}
+
+	a,
+	button,
+	.wl-btn:not(:disabled),
+	.wl-close,
+	.wl-logout-btn,
+	.wl-action,
+	[role="button"],
+	summary,
+	details,
+	.wl-sort li,
+	.wl-reaction-item,
+	.wl-star-rate,
+	.wl-emoji-popup button,
+	.wl-gif-popup img,
+	.wl-card .wl-delete,
+	.wl-card .wl-like,
+	.wl-card .wl-reply,
+	.wl-card .wl-edit,
+	.wl-card .wl-rss,
+	.wl-content.expand,
+	.wl-user-wall .wl-user-item,
+	[data-copy-value] {
+		cursor:
+			url("/w11-cursor-concept-free/hand.cur") 9 3,
+			pointer !important;
+	}
+
+	.wl-btn:disabled,
+	.wl-btn.primary:disabled {
+		cursor:
+			url("/w11-cursor-concept-free/no.cur") 9 9,
+			not-allowed !important;
+	}
+
+	.token.entity {
+		cursor:
+			url("/w11-cursor-concept-free/help.cur") 8 8,
+			help !important;
+	}
+}
+
+/* ------------------------------------------------------------------
+   6. 公共组件类 (Tailwind @apply 封装)
+   ------------------------------------------------------------------ */
+@layer components {
+	.cactus-link {
+		@apply hover:decoration-link underline underline-offset-2 hover:decoration-2;
+	}
+
+	.title {
+		@apply text-accent-2 text-2xl font-semibold;
+	}
+}
+
+/* ------------------------------------------------------------------
+   7. Prose 排版变量 (Tailwind Typography)
+   将 CSS 变量映射到 Tailwind prose 工具类的内部变量
+   ------------------------------------------------------------------ */
+@utility prose {
+	--tw-prose-body: var(--color-global-text);
+	--tw-prose-bold: var(--color-global-text);
+	--tw-prose-bullets: var(--color-global-text);
+	--tw-prose-code: var(--color-global-text);
+	--tw-prose-headings: var(--color-accent-2);
+	--tw-prose-hr: 0.5px dashed var(--color-muted);
+	--tw-prose-links: var(--color-global-text);
+	--tw-prose-quotes: var(--color-quote);
+	--tw-prose-th-borders: var(--color-muted);
+	--tw-prose-lead: var(--color-global-text);
+}
+
+/* ------------------------------------------------------------------
+   8. 字体系统
+   ------------------------------------------------------------------ */
+:root {
+	--font-sans:
+		"LXGW WenKai LITE", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans",
+		sans-serif;
+	--font-mono:
+		"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
+}
+
+:where(code, pre, kbd, samp, tt):not(#waline *) {
+	font-family: var(--font-mono);
+}
+
+@font-face {
+	font-family: "JetBrains Mono";
+	font-style: normal;
+	font-weight: 400 700;
+	font-display: swap;
+	src: local("JetBrains Mono");
+}

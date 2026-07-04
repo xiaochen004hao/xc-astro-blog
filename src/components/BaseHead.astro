@@ -1,0 +1,129 @@
+---
+import { WEBMENTION_PINGBACK, WEBMENTION_URL } from "astro:env/client";
+import { siteConfig } from "@/site.config";
+import type { SiteMeta } from "@/types";
+import "@/styles/global.css";
+import "@/styles/components/toc.css";
+
+type Props = SiteMeta;
+
+const { articleDate, description, ogImage, title } = Astro.props;
+
+const titleSeparator = "•";
+const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url).href;
+---
+
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>{siteTitle}</title>
+
+{/* 图标 - 由 ThemeProvider 根据主题动态切换 */}
+<link id="favicon" href="/icon-light.svg" rel="icon" type="image/svg+xml" />
+{/* DNS 预读取和预连接以加速字体加载 */}
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+{/* LXGW WenKai LITE 仅加载正文常规+粗体 */}
+<link
+	rel="preload"
+	as="style"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css"
+	crossorigin="anonymous"
+/>
+<link
+	rel="preload"
+	as="style"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-bold.css"
+	crossorigin="anonymous"
+/>
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-regular.css"
+/>
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.0.0/lxgwwenkailite-bold.css"
+/>
+{
+	import.meta.env.PROD && (
+		<>
+			<link href="/icons/apple-touch-icon.png" rel="apple-touch-icon" />
+		</>
+	)
+}
+
+{/* 规范 URL */}
+<link href={canonicalURL} rel="canonical" />
+
+{/* 主要 Meta 标签 */}
+<meta content={siteTitle} name="title" />
+<meta content={description} name="description" />
+<meta content={siteConfig.author} name="author" />
+
+{/* Open Graph / Facebook */}
+<meta content={articleDate ? "article" : "website"} property="og:type" />
+<meta content={title} property="og:title" />
+<meta content={description} property="og:description" />
+<meta content={canonicalURL} property="og:url" />
+<meta content={siteConfig.title} property="og:site_name" />
+<meta content={siteConfig.ogLocale} property="og:locale" />
+<meta content={socialImageURL} property="og:image" />
+<meta content="1200" property="og:image:width" />
+<meta content="630" property="og:image:height" />
+{
+	articleDate && (
+		<>
+			<meta content={siteConfig.author} property="article:author" />
+			<meta content={articleDate} property="article:published_time" />
+		</>
+	)
+}
+
+{/* Twitter */}
+<meta content="summary_large_image" property="twitter:card" />
+<meta content={canonicalURL} property="twitter:url" />
+<meta content={title} property="twitter:title" />
+<meta content={description} property="twitter:description" />
+<meta content={socialImageURL} property="twitter:image" />
+
+{/* 网站地图 */}
+<link href="/sitemap-index.xml" rel="sitemap" />
+
+{/* RSS 自动发现 */}
+<link href="/rss.xml" title="Blog" rel="alternate" type="application/rss+xml" />
+<link href="/notes/rss.xml" title="Notes" rel="alternate" type="application/rss+xml" />
+
+{/* Webmentions */}
+{
+	WEBMENTION_URL && (
+		<>
+			<link href={WEBMENTION_URL} rel="webmention" />
+			{WEBMENTION_PINGBACK && <link href={WEBMENTION_PINGBACK} rel="pingback" />}
+		</>
+	)
+}
+
+<meta content={Astro.generator} name="generator" />
+
+<style is:global>
+	html {
+		scrollbar-color: oklch(from var(--color-accent) l c h / 0.5) var(--color-global-bg);
+		scrollbar-width: thin;
+	}
+
+	::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+	::-webkit-scrollbar-track {
+		background: var(--color-global-bg);
+	}
+	::-webkit-scrollbar-thumb {
+		background-color: oklch(from var(--color-accent) l c h / 0.5);
+		border-radius: 4px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background-color: oklch(from var(--color-accent) l c h / 0.7);
+	}
+</style>

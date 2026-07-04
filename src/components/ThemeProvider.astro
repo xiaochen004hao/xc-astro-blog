@@ -1,0 +1,113 @@
+---
+
+---
+
+<script is:inline>
+	(function () {
+		const storageKey = "xcblog-theme";
+
+		function resolveTheme(value) {
+			return value === "auto" || value === "dark" ? "dark" : "light";
+		}
+
+		function getCookie(name) {
+			const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+			return match ? decodeURIComponent(match[1]) : null;
+		}
+
+		function getTheme() {
+			const stored = localStorage.getItem(storageKey);
+			if (stored) return stored;
+			const cookie = getCookie(storageKey);
+			if (cookie) return cookie;
+			return "auto";
+		}
+
+		function getResolvedTheme() {
+			return resolveTheme(getTheme());
+		}
+
+		function applyFavicon(theme) {
+			const link = document.getElementById("favicon");
+			if (link instanceof HTMLLinkElement) {
+				link.href = theme === "dark" ? "/icon-dark.svg" : "/icon-light.svg";
+			}
+		}
+
+		function applyTheme(theme) {
+			document.documentElement.setAttribute("data-theme", theme);
+			document.documentElement.style.colorScheme = theme;
+			document.documentElement.setAttribute("data-theme-mode", getTheme());
+			applyFavicon(theme);
+		}
+
+		function setTheme(value) {
+			try {
+				localStorage.setItem(storageKey, value);
+			} catch {}
+			try {
+				document.cookie = `${storageKey}=${value};path=/;max-age=31536000;SameSite=Lax`;
+			} catch {}
+			applyTheme(resolveTheme(value));
+			return value;
+		}
+
+		function initTheme() {
+			applyTheme(getResolvedTheme());
+		}
+
+		initTheme();
+
+		window.__theme = {
+			get: getTheme,
+			getResolved: getResolvedTheme,
+			set: setTheme,
+		};
+	})();
+</script>
+
+<style is:global>
+	.toggle-item {
+		cursor:
+			url("/w11-cursor-concept-free/hand.cur") 9 3,
+			pointer;
+	}
+	.theme-toggle:focus-visible {
+		outline: 2px solid oklch(from var(--color-accent) l c h / 0.6);
+		outline-offset: 2px;
+		border-radius: 0.375rem;
+	}
+</style>
+
+<script>
+	function syncThemeAndToggle() {
+		const mode = window.__theme?.get();
+		const theme = window.__theme?.getResolved();
+		if (!theme) return;
+
+		// 确保文档主题属性在
+		document.documentElement.setAttribute("data-theme", theme);
+		document.documentElement.style.colorScheme = theme;
+		if (mode) {
+			document.documentElement.setAttribute("data-theme-mode", mode);
+		}
+
+		// 同步 favicon（View Transitions 后 link 元素会重建）
+		const favicon = document.getElementById("favicon");
+		if (favicon instanceof HTMLLinkElement) {
+			favicon.href = theme === "dark" ? "/icon-dark.svg" : "/icon-light.svg";
+		}
+
+		// 同步按钮
+		const button = document.querySelector(".theme-toggle button");
+		if (!button) return;
+		button.setAttribute("aria-checked", theme === "dark" ? "true" : "false");
+		button.setAttribute("aria-label", theme === "dark" ? "深色模式" : "浅色模式");
+	}
+
+	document.addEventListener("astro:page-load", syncThemeAndToggle);
+	document.addEventListener("astro:after-swap", syncThemeAndToggle);
+	if (document.readyState === "complete" || document.readyState === "interactive") {
+		syncThemeAndToggle();
+	}
+</script>

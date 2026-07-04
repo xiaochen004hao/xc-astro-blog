@@ -1,0 +1,34 @@
+---
+import { getAllPosts, getUniqueTagsWithCount } from "@/data/post";
+import PageLayout from "@/layouts/Base.astro";
+
+const allPosts = await getAllPosts();
+const allTags = getUniqueTagsWithCount(allPosts);
+
+const meta = {
+	description: "我在文章中写过的所有主题列表",
+	title: "所有标签",
+};
+---
+
+<PageLayout meta={meta}>
+	<h1 class="title mb-6">标签</h1>
+	<ul class="space-y-4">
+		{
+			allTags.map(([tag, val]) => (
+				<li class="flex items-center gap-x-2">
+					<a
+						class="cactus-link inline-block"
+						href={`/tags/${tag}/`}
+						title={`查看带有 ${tag} 标签的文章`}
+					>
+						&#35;{tag}
+					</a>
+					<span class="inline-block">
+						- {val} 篇文章
+					</span>
+				</li>
+			))
+		}
+	</ul>
+</PageLayout>
