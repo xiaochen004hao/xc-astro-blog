@@ -160,10 +160,11 @@ import "../../styles/waline-custom.css";
 
 		// 拦截 setRangeText：Waline 插入表情/图片时调用此方法
 		const nativeSetRangeText = HTMLTextAreaElement.prototype.setRangeText;
+		// 使用 any 类型绕过 TS 重载签名检查（原生 setRangeText 有两个重载，重写时无法完美匹配）
 		textarea.setRangeText = function (
 			replacement: string,
-			start: number,
-			end: number,
+			start?: number,
+			end?: number,
 			selectionMode?: "select" | "start" | "end" | "preserve",
 		) {
 			if (!syncing && vditorInstance) {
@@ -175,8 +176,8 @@ import "../../styles/waline-custom.css";
 				syncing = false;
 				return;
 			}
-			return nativeSetRangeText.call(textarea, replacement, start, end, selectionMode);
-		};
+			return nativeSetRangeText.call(textarea, replacement, start ?? 0, end ?? 0, selectionMode);
+		} as typeof nativeSetRangeText;
 
 		// 拦截 textarea 的 value setter：Waline 直接赋值时（插入表情/图片等）同步到 Vditor
 		const nativeDescriptor = Object.getOwnPropertyDescriptor(
@@ -257,7 +258,7 @@ import "../../styles/waline-custom.css";
 				multiple: false,
 				handler: (files: File[]) => {
 					const file = files[0];
-					if (!file) return;
+					if (!file) return null;
 					const formData = new FormData();
 					formData.append("file", file);
 					fetch(`${WALINE_SERVER}api/media`, {
@@ -273,6 +274,7 @@ import "../../styles/waline-custom.css";
 							}
 						})
 						.catch((err) => console.error("图片上传失败", err));
+					return null;
 				},
 			},
 			// Vditor 内容变化时同步到隐藏的 textarea，并触发 input 事件让 Waline 感知
