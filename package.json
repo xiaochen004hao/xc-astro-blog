@@ -4,9 +4,11 @@
 	"version": "7.0.0",
 	"scripts": {
 		"postinstall": "npm rebuild sharp --force",
+		"predev": "node scripts/copy-vditor.mjs",
 		"dev": "astro dev",
 		"astro": "astro",
 		"clean": "node clean-dist.mjs",
+		"prebuild": "node scripts/copy-vditor.mjs",
 		"build": "node scripts/build.mjs",
 		"preview": "astro preview",
 		"sync": "astro sync",
@@ -65,12 +67,7 @@
 		"typescript": "^5.9.3"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"@biomejs/biome",
-			"@tailwindcss/oxide",
-			"esbuild",
-			"sharp"
-		],
+		"onlyBuiltDependencies": ["@biomejs/biome", "@tailwindcss/oxide", "esbuild", "sharp"],
 		"overrides": {
 			"sharp": "^0.34.5"
 		}

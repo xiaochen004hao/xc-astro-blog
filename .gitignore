@@ -35,6 +35,9 @@ Thumbs.db
 # Webmention 缓存数据（由脚本自动生成，无需提交）
 src/data/webmentions/
 
+# Vditor 资源（由 scripts/copy-vditor.mjs 从 node_modules 复制生成）
+public/vditor/
+
 # Astro
 .astro/
 

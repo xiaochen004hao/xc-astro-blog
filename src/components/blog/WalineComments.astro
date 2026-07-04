@@ -8,21 +8,11 @@ import "../../styles/waline-custom.css";
 </div>
 
 <script>
-	// Waline 评论服务地址和 Vditor CDN
+	// Waline 评论服务地址
 	const WALINE_SERVER = "https://waline.xc4h.qzz.io/";
-	const VDITOR_CDN = "https://cdn.jsdelivr.net/npm/vditor@3.11.2/";
-
-	// 预加载 Vditor 图标 sprite（本地打包，避免 CDN 加载失败导致工具栏图标不显示）
-	// ant.js 会在 document.body 开头注入 SVG <symbol> 定义，供 <use xlink:href> 引用
-	import vditorIconScript from "vditor/dist/js/icons/ant.js?raw";
-	function preloadVditorIcons() {
-		if (document.getElementById("vditorIconScript")) return;
-		if (document.querySelector('svg symbol[id^="vditor-icon-"]')) return;
-		const script = document.createElement("script");
-		script.id = "vditorIconScript";
-		script.textContent = vditorIconScript;
-		document.head.appendChild(script);
-	}
+	// Vditor 资源从本地加载（由 scripts/copy-vditor.mjs 复制到 public/vditor/dist/）
+	// 避免从 CDN 加载时网络抖动导致 i18n/lute/icons 404 或编辑器加载失败
+	const VDITOR_CDN = "/vditor/";
 
 	// 运行时状态：Waline 实例、Vditor 实例、各 Observer 和事件监听器
 	let walineInstance: { destroy?: () => void } | null = null;
@@ -124,7 +114,6 @@ import "../../styles/waline-custom.css";
 		if (vditorInstance) return;
 
 		preloadVditorCss();
-		preloadVditorIcons();
 
 		// 加载微博表情包（与 Waline 配置一致，确保 :weibo_表情名: 能正确渲染）
 		const { emojis: weiboEmojis, path: emojiPath } = await loadWeiboEmojis();
