@@ -92,7 +92,7 @@ function truncateText(text: string, maxLen = 120): string {
 									href={mention.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="hover:text-accent text-sm font-medium transition-colors"
+									class="hover:text-accent text-sm font-medium"
 								>
 									{mention.author?.name || mention.url}
 								</a>
@@ -130,7 +130,7 @@ function truncateText(text: string, maxLen = 120): string {
 									href={reply.author?.url || reply.url}
 									target="_blank"
 									rel="noopener noreferrer"
-									class="hover:text-accent text-sm font-medium transition-colors"
+									class="hover:text-accent text-sm font-medium"
 								>
 									{reply.author?.name || "匿名"}
 								</a>
@@ -145,7 +145,7 @@ function truncateText(text: string, maxLen = 120): string {
 								href={reply.url}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="text-muted hover:text-accent mt-2 inline-block rounded py-1 text-sm transition-colors"
+								class="text-muted hover:text-accent mt-2 inline-block rounded py-1 text-sm"
 							>
 								查看原文 →
 							</a>

@@ -286,6 +286,24 @@
    ------------------------------------------------------------------ */
 
 /* 隐藏 Waline 原生操作栏（表情、图片上传、预览），Vditor 工具栏已替代 */
-#waline .wl-operation {
+/* #waline .wl-actions {
 	display: none !important;
+} */
+
+#waline .wl-action > svg {
+    vertical-align: revert ;
+    display: revert ;
+}
+
+#waline .wl-card .wl-content .wl-reply-to {
+    float: left;
+    margin: 0 .5em 0 0;
+}
+
+#waline .vditor-counter {
+    line-height: 1 !important;
+}
+
+#waline .vditor-toolbar__item {
+    line-height: revert;
 }

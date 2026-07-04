@@ -61,10 +61,10 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 <PageLayout meta={meta}>
 	<div class="mb-12 flex items-center gap-3">
 		<h1 class="title">文章</h1>
-		<a class="text-accent" href="/rss.xml" target="_blank">
+		<div class="text-accent"><a href="/rss.xml" target="_blank">
 			<span class="sr-only">RSS 订阅源</span>
-			<Icon aria-hidden="true" class="h-6 w-6" focusable="false" name="simple-icons:rss"></Icon>
-		</a>
+			<Icon aria-hidden="true" class="h-5 w-5" focusable="false" name="simple-icons:rss"></Icon>
+		</a></div>
 	</div>
 	<div class="grid sm:grid-cols-[3fr_1fr] sm:gap-x-8 sm:gap-y-16">
 		<div>
