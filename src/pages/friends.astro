@@ -51,7 +51,7 @@ const meta = {
 				</div>
 				{category.links.length > 0 ? (
 					<div
-						class="friend-grid grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+						class="friend-grid grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
 						data-friend-category={category.id}
 					>
 						{category.links.map((friend) => (
@@ -72,24 +72,24 @@ const meta = {
 										onerror="this.classList.add('error'); this.nextElementSibling.classList.add('show');"
 									/>
 									<div class="screenshot-fallback bg-muted/15 absolute inset-0 hidden items-center justify-center [&.show]:flex">
-										<span class="text-muted/40 text-3xl font-bold select-none">
+										<span class="text-muted/40 text-2xl font-bold select-none sm:text-3xl">
 											{friend.name.charAt(0)}
 										</span>
 									</div>
-									<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/50 to-transparent p-3 pt-8">
+									<div class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/50 to-transparent p-2 pt-8 sm:p-3">
 										<p class="truncate text-xs font-medium text-white drop-shadow">
 											{friend.url.replace(/^https?:\/\//, "")}
 										</p>
 									</div>
 								</div>
-								<div class="flex items-start gap-3 p-4">
+								<div class="flex items-start gap-2 p-3 sm:gap-3 sm:p-4">
 									<img
 										src={
 											friend.avatar ||
 											`https://unavatar.io/${new URL(friend.url).hostname}?fallback=false`
 										}
 										alt={friend.name}
-										class="friend-avatar h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-black/5"
+										class="friend-avatar h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-black/5 sm:h-10 sm:w-10"
 										loading="lazy"
 										data-no-zoom
 										onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22 fill=%22%23a855f7%22>${friend.name.charAt(0)}</text></svg>'"

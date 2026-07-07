@@ -439,7 +439,44 @@ import "../../styles/waline-custom.css";
 		await walineInitPromise;
 	}
 
-	// 生命周期：页面加载时初始化，页面切换前销毁
-	document.addEventListener("astro:before-swap", destroyAll);
-	document.addEventListener("astro:page-load", walineInit);
+	// 延迟加载评论区：当评论区容器接近视口时才初始化 Waline
+	// 避免页面切换动画期间加载 Waline/Vditor 导致卡顿
+	let lazyObserver: IntersectionObserver | null = null;
+
+	function setupLazyLoad() {
+		const el = document.getElementById("waline");
+		if (!el) return;
+
+		// 已初始化或正在初始化，跳过
+		if (walineInitPromise || walineInstance) return;
+
+		// 不支持 IntersectionObserver：延迟 1s 后初始化
+		if (!("IntersectionObserver" in window)) {
+			setTimeout(walineInit, 1000);
+			return;
+		}
+
+		// 评论区距离视口 300px 时触发初始化（提前加载，用户滚动到时已就绪）
+		lazyObserver = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((e) => e.isIntersecting)) {
+					lazyObserver?.disconnect();
+					lazyObserver = null;
+					walineInit();
+				}
+			},
+			{ rootMargin: "300px" },
+		);
+		lazyObserver.observe(el);
+	}
+
+	// 生命周期：页面加载时设置延迟加载，页面切换前销毁
+	document.addEventListener("astro:before-swap", () => {
+		if (lazyObserver) {
+			lazyObserver.disconnect();
+			lazyObserver = null;
+		}
+		destroyAll();
+	});
+	document.addEventListener("astro:page-load", setupLazyLoad);
 </script>
