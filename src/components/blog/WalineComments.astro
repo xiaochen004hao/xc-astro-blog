@@ -89,28 +89,32 @@ import "../../styles/waline-custom.css";
 	}
 
 	// 加载微博表情包列表，供 Vditor IR 模式渲染 :weibo_表情名: 为图片
+	// 表情包由 scripts/copy-vditor.mjs 下载到 public/emojis/weibo/
+	// 文件名格式：weibo_smile.png（带 prefix）
 	// Lute 引擎规则：值包含 "." 则直接用作 <img src>，不拼接 emojiPath
 	// 因此值必须是完整 URL，不能用文件名
 	async function loadWeiboEmojis() {
-		const basePath = "//unpkg.com/@waline/emojis@latest/weibo/";
+		const basePath = "/emojis/weibo/";
 		try {
 			const res = await fetch(`${basePath}info.json`);
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data = await res.json();
 			const emojis: Record<string, string> = {};
 			const ext = data.type || "png";
+			const prefix = data.prefix || "";
 			if (Array.isArray(data.items)) {
 				for (const name of data.items) {
-					// 值必须是完整 URL，Lute 和工具栏都会直接用作 src
-					emojis[`weibo_${name}`] = `${basePath}${name}.${ext}`;
+					// key 是 prefix+name（如 weibo_smile），值是完整 URL
+					// 文件名也是 prefix+name+ext（如 weibo_smile.png）
+					emojis[`${prefix}${name}`] = `${basePath}${prefix}${name}.${ext}`;
 				}
 			}
 			return { emojis, path: basePath };
 		} catch (e) {
-			console.warn("微博表情包加载失败，使用 Vditor 默认表情", e);
-			return {
-				emojis: {},
-				path: `${VDITOR_CDN}dist/images/emoji/`,
-			};
+			console.warn("微博表情包本地加载失败，回退到 CDN", e);
+			// Fallback 到 jsdelivr CDN（国内可访问）
+			const fallbackBase = "https://cdn.jsdelivr.net/npm/@waline/emojis@latest/weibo/";
+			return { emojis: {}, path: fallbackBase };
 		}
 	}
 
@@ -423,7 +427,7 @@ import "../../styles/waline-custom.css";
 						path: window.location.pathname,
 						lang: "zh-CN",
 						dark: '[data-theme="dark"]',
-						emoji: ["//unpkg.com/@waline/emojis@latest/weibo"],
+						emoji: ["/emojis/weibo"],
 						meta: ["nick", "mail", "link"],
 						requiredMeta: ["nick"],
 						pageSize: 10,

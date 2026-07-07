@@ -38,6 +38,9 @@ src/data/webmentions/
 # Vditor 资源（由 scripts/copy-vditor.mjs 从 node_modules 复制生成）
 public/vditor/
 
+# 微博表情包（由 scripts/copy-vditor.mjs 从 unpkg 下载生成）
+public/emojis/
+
 # Astro
 .astro/
 
