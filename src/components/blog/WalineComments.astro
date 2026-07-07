@@ -88,13 +88,13 @@ import "../../styles/waline-custom.css";
 		});
 	}
 
-	// 加载微博表情包列表，供 Vditor IR 模式渲染 :weibo_表情名: 为图片
-	// 表情包由 scripts/copy-vditor.mjs 下载到 public/emojis/weibo/
-	// 文件名格式：weibo_smile.png（带 prefix）
+	// 加载表情包列表，供 Vditor IR 模式渲染 :前缀_表情名: 为图片
+	// 表情包由 scripts/copy-vditor.mjs 下载到 public/emojis/{weibo,bilibili}/
+	// 文件名格式：{prefix}{name}.{ext}（如 weibo_smile.png, bb_doge.png）
 	// Lute 引擎规则：值包含 "." 则直接用作 <img src>，不拼接 emojiPath
 	// 因此值必须是完整 URL，不能用文件名
-	async function loadWeiboEmojis() {
-		const basePath = "/emojis/weibo/";
+	async function loadEmojiPack(packName: string): Promise<Record<string, string>> {
+		const basePath = `/emojis/${packName}/`;
 		try {
 			const res = await fetch(`${basePath}info.json`);
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -105,17 +105,23 @@ import "../../styles/waline-custom.css";
 			if (Array.isArray(data.items)) {
 				for (const name of data.items) {
 					// key 是 prefix+name（如 weibo_smile），值是完整 URL
-					// 文件名也是 prefix+name+ext（如 weibo_smile.png）
 					emojis[`${prefix}${name}`] = `${basePath}${prefix}${name}.${ext}`;
 				}
 			}
-			return { emojis, path: basePath };
+			return emojis;
 		} catch (e) {
-			console.warn("微博表情包本地加载失败，回退到 CDN", e);
-			// Fallback 到 jsdelivr CDN（国内可访问）
-			const fallbackBase = "https://cdn.jsdelivr.net/npm/@waline/emojis@latest/weibo/";
-			return { emojis: {}, path: fallbackBase };
+			console.warn(`表情包 ${packName} 本地加载失败，回退到 CDN`, e);
+			return {};
 		}
+	}
+
+	// 加载所有表情包并合并（微博 + B站）
+	async function loadAllEmojis() {
+		const [weibo, bilibili] = await Promise.all([
+			loadEmojiPack("weibo"),
+			loadEmojiPack("bilibili"),
+		]);
+		return { ...weibo, ...bilibili };
 	}
 
 	async function initVditor(textarea: HTMLTextAreaElement) {
@@ -123,8 +129,8 @@ import "../../styles/waline-custom.css";
 
 		preloadVditorCss();
 
-		// 加载微博表情包（与 Waline 配置一致，确保 :weibo_表情名: 能正确渲染）
-		const { emojis: weiboEmojis, path: emojiPath } = await loadWeiboEmojis();
+		// 加载所有表情包（微博 + B站）
+		const allEmojis = await loadAllEmojis();
 
 		// 动态 import Vditor（约 500KB，懒加载不阻塞首屏）
 		const { default: Vditor } = await import("vditor");
@@ -263,7 +269,7 @@ import "../../styles/waline-custom.css";
 			placeholder: "支持 Markdown 语法，说点什么吧…",
 			preview: { delay: 300, hljs: { style: theme === "dark" ? "github-dark" : "github" } },
 			comment: { enable: false },
-			hint: { emoji: weiboEmojis, emojiPath: emojiPath },
+			hint: { emoji: allEmojis, emojiPath: "/emojis/" },
 			// 图片上传：上传到 Waline 服务器，返回 URL 后插入到 Vditor
 			upload: {
 				accept: "image/*",
@@ -427,7 +433,7 @@ import "../../styles/waline-custom.css";
 						path: window.location.pathname,
 						lang: "zh-CN",
 						dark: '[data-theme="dark"]',
-						emoji: ["/emojis/weibo"],
+						emoji: ["/emojis/weibo", "/emojis/bilibili"],
 						meta: ["nick", "mail", "link"],
 						requiredMeta: ["nick"],
 						pageSize: 10,

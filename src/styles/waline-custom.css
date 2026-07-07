@@ -93,6 +93,22 @@
 	border-radius: 0.5rem 0.5rem 0 0;
 	border-color: var(--waline-border-color);
 	background-color: var(--toolbar-background-color);
+	/* 移动端工具栏按钮过多时允许横向滚动，避免换行导致布局错乱 */
+	overflow-x: auto;
+	overflow-y: hidden;
+	/* 隐藏滚动条但保留滚动功能（美观） */
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+	white-space: nowrap;
+	flex-wrap: nowrap !important;
+}
+
+.wl-vditor-wrapper .vditor-toolbar::-webkit-scrollbar {
+	display: none;
+}
+
+.wl-vditor-wrapper .vditor-toolbar__item {
+	white-space: nowrap;
 }
 
 .wl-vditor-wrapper .vditor-content {
@@ -291,19 +307,19 @@
 } */
 
 #waline .wl-action > svg {
-    vertical-align: revert ;
-    display: revert ;
+	vertical-align: revert;
+	display: revert;
 }
 
 #waline .wl-card .wl-content .wl-reply-to {
-    float: left;
-    margin: 0 .5em 0 0;
+	float: left;
+	margin: 0 0.5em 0 0;
 }
 
 #waline .vditor-counter {
-    line-height: 1 !important;
+	line-height: 1 !important;
 }
 
 #waline .vditor-toolbar__item {
-    line-height: revert;
+	line-height: revert;
 }
