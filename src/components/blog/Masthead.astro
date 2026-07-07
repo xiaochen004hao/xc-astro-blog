@@ -83,8 +83,4 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 		</div>
 	)
 }
-{
-	data.aiSummary && data.aiModel && (
-		<AiSummary summary={data.aiSummary} model={data.aiModel} />
-	)
-}
+{data.aiSummary && data.aiModel && <AiSummary summary={data.aiSummary} model={data.aiModel} />}

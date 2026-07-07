@@ -3,17 +3,17 @@
    ========================================================================== */
 
 article
-img:not(
-	[data-no-zoom],
-	.expressive-code img,
-	.admonition img,
-	.github-card img,
-	.no-zoom img,
-	#waline img
-) {
+	img:not(
+		[data-no-zoom],
+		.expressive-code img,
+		.admonition img,
+		.github-card img,
+		.no-zoom img,
+		#waline img
+	) {
 	cursor:
 		url("/w11-cursor-concept-free/crosshair.cur") 16 16,
-		crosshair;
+		crosshair !important;
 }
 
 .pswp-active {

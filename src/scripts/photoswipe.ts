@@ -1,4 +1,3 @@
-import type PhotoSwipeLightbox from "photoswipe";
 import PhotoSwipe from "photoswipe";
 import "photoswipe/style.css";
 
@@ -27,7 +26,7 @@ interface PhotoSwipeOptions {
 	wheelToZoom?: boolean;
 }
 
-let photoswipeInstance: PhotoSwipeLightbox | null = null;
+let photoswipeInstance: PhotoSwipe | null = null;
 
 function getLenis(): LenisInstance | null {
 	const lenis = (window as unknown as Record<string, unknown>).__lenis;

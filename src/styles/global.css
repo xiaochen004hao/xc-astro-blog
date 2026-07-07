@@ -250,7 +250,7 @@ html > *:not(head):not(body) {
 				crosshair !important;
 		}
 
-		img:not(a img) {
+		img:not(a img):not(.vditor-emojis__icon) {
 			cursor:
 				url("/w11-cursor-concept-free/arrow.cur") 1 1,
 				auto !important;
@@ -437,7 +437,10 @@ a[href^="http"]:not(
 			text !important;
 	}
 
-	img:not(a img):not(.vditor-emojis__icon) {
+	/* 排除表情图标（由 #waline 块接管为 pointer）和文章内图片（由 photoswipe.css 接管为 crosshair）。
+	   原因：@layer base 内的 !important 优先级高于 @layer components，
+	   不排除会压制 components 层的 cursor 规则。 */
+	img:not(a img):not(.vditor-emojis__icon):not(article img) {
 		cursor:
 			url("/w11-cursor-concept-free/arrow.cur") 1 1,
 			auto !important;

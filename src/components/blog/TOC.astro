@@ -152,8 +152,8 @@ const toc = generateToc(headings);
 			}
 			tocEnsureOpen();
 			// 防重入：避免每次 View Transitions 都重复注册 astro:page-load 监听器
-			if (!window.__tocEnsureOpenBound) {
-				window.__tocEnsureOpenBound = true;
+			if (!(window as unknown as { __tocEnsureOpenBound?: boolean }).__tocEnsureOpenBound) {
+				(window as unknown as { __tocEnsureOpenBound?: boolean }).__tocEnsureOpenBound = true;
 				document.addEventListener("astro:page-load", tocEnsureOpen);
 			}
 		}

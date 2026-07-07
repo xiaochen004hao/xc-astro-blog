@@ -479,8 +479,7 @@ import "../../styles/waline-custom.css";
 					// 延迟到浏览器空闲时再加载，确保页面切换动画（1.5s）完成且主线程空闲
 					// 短文章评论区在视口内，不加这个延迟会和动画一起执行导致卡顿
 					const idleCb =
-						window.requestIdleCallback ||
-						((cb: IdleRequestCallback) => setTimeout(cb, 1600));
+						window.requestIdleCallback || ((cb: IdleRequestCallback) => setTimeout(cb, 1600));
 					idleCb(() => walineInit(), { timeout: 3000 });
 				}
 			},

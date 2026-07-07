@@ -14,18 +14,16 @@ const text = rawText.endsWith("#") ? rawText.slice(0, -1) : rawText;
 <li>
 	<div class="relative">
 		<span class="toc-bar"></span>
-		<a
-			aria-label={`Scroll to section: ${text}`}
-			class="toc-link"
-			href={`#${slug}`}
-		>
+		<a aria-label={`Scroll to section: ${text}`} class="toc-link" href={`#${slug}`}>
 			{text}
 		</a>
 	</div>
 	{
 		!!children.length && (
 			<ol>
-				{children.map((subheading) => <Astro.self heading={subheading} />)}
+				{children.map((subheading) => (
+					<Astro.self heading={subheading} />
+				))}
 			</ol>
 		)
 	}
