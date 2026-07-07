@@ -11,6 +11,41 @@
 					"url": "https://blog.xc4h.qzz.io/",
 					"avatar": "https://blog.xc4h.qzz.io/icon.svg",
 					"siteshot": "https://blog.xc4h.qzz.io/siteshot.png"
+				},
+				{
+					"name": "清羽飞扬",
+					"description": "柳影曳曳，清酒孤灯，扬笔撒墨，心境如霜",
+					"url": "https://blog.liushen.fun/",
+					"avatar": "https://blog.liushen.fun/info/avatar.ico",
+					"siteshot": "https://blog.liushen.fun/info/siteshot.jpg"
+				},
+				{
+					"name": "时歌的博客",
+					"description": "理解以真实为本，但真实本身并不会自动呈现",
+					"url": "https://www.lapis.cafe/",
+					"avatar": "https://www.lapis.cafe/avatar.webp",
+					"siteshot": ""
+				},
+				{
+					"name": "AirTouchの小站",
+					"description": "Stay Hungry, Stay Foolish",
+					"url": "https://www.xsl.im/",
+					"avatar": "https://www.xsl.im/avatar.webp",
+					"siteshot": ""
+				},
+				{
+					"name": "Exyone Blog",
+					"description": "一隅藏天地，流水遇知音。",
+					"url": "https://exyon.ee/",
+					"avatar": "",
+					"siteshot": ""
+				},
+				{
+					"name": "bbb-lsy07",
+					"description": "科技激荡人文，洞见智慧本真。",
+					"url": "https://blog.tsoo.net/",
+					"avatar": "https://blog.tsoo.net/upload/lsyb.png",
+					"siteshot": ""
 				}
 			]
 		}

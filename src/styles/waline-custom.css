@@ -93,22 +93,25 @@
 	border-radius: 0.5rem 0.5rem 0 0;
 	border-color: var(--waline-border-color);
 	background-color: var(--toolbar-background-color);
-	/* 移动端工具栏按钮过多时允许横向滚动，避免换行导致布局错乱 */
-	overflow-x: auto;
-	overflow-y: hidden;
-	/* 隐藏滚动条但保留滚动功能（美观） */
-	scrollbar-width: none;
-	-ms-overflow-style: none;
-	white-space: nowrap;
+	/* 不设 overflow，否则会裁剪 emoji 下拉面板 */
 	flex-wrap: nowrap !important;
-}
-
-.wl-vditor-wrapper .vditor-toolbar::-webkit-scrollbar {
-	display: none;
+	white-space: nowrap;
 }
 
 .wl-vditor-wrapper .vditor-toolbar__item {
 	white-space: nowrap;
+}
+
+/* 移动端隐藏不常用的工具栏按钮，避免换行（< 640px） */
+@media (max-width: 639px) {
+	.wl-vditor-wrapper .vditor-toolbar__item[data-type="headings"],
+	.wl-vditor-wrapper .vditor-toolbar__item[data-type="check"],
+	.wl-vditor-wrapper .vditor-toolbar__item[data-type="line"],
+	.wl-vditor-wrapper .vditor-toolbar__item[data-type="inline-code"],
+	.wl-vditor-wrapper .vditor-toolbar__item[data-type="fullscreen"],
+	.wl-vditor-wrapper .vditor-toolbar__item .vditor-toolbar__divider {
+		display: none !important;
+	}
 }
 
 .wl-vditor-wrapper .vditor-content {
@@ -118,10 +121,33 @@
 /* IR 模式 Markdown 标记符号颜色 */
 .wl-vditor-wrapper .vditor-ir .vditor-ir__node {
 	color: var(--color-global-text);
+	/* 确保 emoji 节点始终 inline，不阻断文本流 */
+	display: inline !important;
 }
 
 .wl-vditor-wrapper .vditor-ir .vditor-ir__node--expand .vditor-ir__marker {
 	color: var(--color-muted);
+}
+
+/* Vditor IR 模式 emoji 图片：限制大小，inline 显示，与文字同行 */
+.wl-vditor-wrapper .vditor-reset img[alt^="bmoji_"],
+.wl-vditor-wrapper .vditor-reset img[alt^="bb_"] {
+	display: inline-block;
+	height: 1.4em;
+	width: auto;
+	vertical-align: middle;
+	margin: 0 0.1em;
+	border-radius: 0;
+}
+
+/* IR 模式下 emoji node 内的 img 也要 inline */
+.wl-vditor-wrapper .vditor-ir .vditor-ir__node img {
+	display: inline-block;
+	height: 1.4em;
+	width: auto;
+	vertical-align: middle;
+	margin: 0 0.1em;
+	border-radius: 0;
 }
 
 /* 隐藏 Vditor 编辑模式切换按钮，确保始终使用 IR 模式 */
@@ -270,6 +296,18 @@
 :is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) img {
 	border-radius: 4px;
 	max-width: 100%;
+}
+
+/* 评论显示区 emoji 图片：inline 显示，限制大小（覆盖上面的 max-width: 100%） */
+#waline .wl-content img[alt^="bmoji_"],
+#waline .wl-content img[alt^="bb_"] {
+	display: inline-block;
+	height: 1.4em;
+	width: auto;
+	max-width: none;
+	vertical-align: middle;
+	margin: 0 0.1em;
+	border-radius: 0;
 }
 
 /* 3.8 分隔线 */

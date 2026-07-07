@@ -115,13 +115,13 @@ import "../../styles/waline-custom.css";
 		}
 	}
 
-	// 加载所有表情包并合并（微博 + B站）
+	// 加载所有表情包并合并（B站小黄脸 + B站）
 	async function loadAllEmojis() {
-		const [weibo, bilibili] = await Promise.all([
-			loadEmojiPack("weibo"),
+		const [bmoji, bilibili] = await Promise.all([
+			loadEmojiPack("bmoji"),
 			loadEmojiPack("bilibili"),
 		]);
-		return { ...weibo, ...bilibili };
+		return { ...bmoji, ...bilibili };
 	}
 
 	async function initVditor(textarea: HTMLTextAreaElement) {
@@ -433,7 +433,7 @@ import "../../styles/waline-custom.css";
 						path: window.location.pathname,
 						lang: "zh-CN",
 						dark: '[data-theme="dark"]',
-						emoji: ["/emojis/weibo", "/emojis/bilibili"],
+						emoji: ["/emojis/bmoji", "/emojis/bilibili"],
 						meta: ["nick", "mail", "link"],
 						requiredMeta: ["nick"],
 						pageSize: 10,

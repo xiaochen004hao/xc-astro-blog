@@ -108,7 +108,7 @@ copyRecursive(SRC, DEST);
 console.log("[copy-vditor] Vditor 资源复制完成");
 
 // 下载表情包
-await downloadEmojiPack("weibo");
+await downloadEmojiPack("bmoji");
 await downloadEmojiPack("bilibili");
 
 console.log("[copy-vditor] 全部完成");
