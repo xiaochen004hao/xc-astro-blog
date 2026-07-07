@@ -24,14 +24,21 @@ function deduplicate(children: WebmentionsChildren[]): WebmentionsChildren[] {
 
 async function fetchWebmentions(token: string, target: string): Promise<WebmentionsChildren[]> {
 	const params = new URLSearchParams({ token, target, sort: "published" });
-	const response = await fetch(`${API}?${params}`);
-	const feed = await response.json();
-	const children: WebmentionsChildren[] = feed.children || [];
-	const filtered = children.filter((child) => {
-		const wm = child["wm-property"];
-		return wm === "like-of" || wm === "mention-of" || wm === "in-reply-to" || wm === "repost-of";
-	});
-	return deduplicate(filtered);
+	// 8s 超时：避免网络卡住时阻塞整个构建流程
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), 8000);
+	try {
+		const response = await fetch(`${API}?${params}`, { signal: controller.signal });
+		const feed = await response.json();
+		const children: WebmentionsChildren[] = feed.children || [];
+		const filtered = children.filter((child) => {
+			const wm = child["wm-property"];
+			return wm === "like-of" || wm === "mention-of" || wm === "in-reply-to" || wm === "repost-of";
+		});
+		return deduplicate(filtered);
+	} finally {
+		clearTimeout(timeout);
+	}
 }
 
 export async function getWebmentionsForUrl(

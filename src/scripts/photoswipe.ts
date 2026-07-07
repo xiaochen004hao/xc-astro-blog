@@ -37,65 +37,70 @@ function getLenis(): LenisInstance | null {
 	return null;
 }
 
+function openPhotoSwipe(img: HTMLImageElement, images: HTMLImageElement[]) {
+	try {
+		const index = images.indexOf(img);
+		const items: PhotoSwipeItem[] = images.map((image) => ({
+			src: image.src,
+			width: image.naturalWidth || image.width,
+			height: image.naturalHeight || image.height,
+			alt: image.alt || "",
+			title: image.getAttribute("title") || "",
+		}));
+
+		const options: PhotoSwipeOptions = {
+			dataSource: items,
+			index: index,
+			bgOpacity: 0.9,
+			showHideAnimationType: "zoom",
+			zoomAnimationDuration: 300,
+			preloaderDelay: 0,
+			paddingFn: () => ({ top: 20, bottom: 20, left: 20, right: 20 }),
+			closeOnVerticalDrag: true,
+			wheelToZoom: true,
+		};
+
+		photoswipeInstance = new PhotoSwipe(options);
+
+		photoswipeInstance.on("beforeOpen", () => {
+			const lenis = getLenis();
+			lenis?.stop?.();
+			document.body.style.overflow = "hidden";
+			document.body.classList.add("pswp-active");
+		});
+
+		photoswipeInstance.on("close", () => {
+			const lenis = getLenis();
+			lenis?.start?.();
+			document.body.style.overflow = "";
+			document.body.classList.remove("pswp-active");
+			photoswipeInstance = null;
+		});
+
+		photoswipeInstance.init();
+	} catch (error) {
+		console.error("[PhotoSwipe] 初始化失败:", error);
+		document.body.classList.remove("pswp-active");
+		photoswipeInstance = null;
+
+		const lenis = getLenis();
+		lenis?.start?.();
+	}
+}
+
 function initPhotoSwipe() {
-	const images = document.querySelectorAll<HTMLImageElement>(
-		"article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img, #waline img)",
+	const images = Array.from(
+		document.querySelectorAll<HTMLImageElement>(
+			"article img:not([data-no-zoom], .expressive-code img, .admonition img, .github-card img, .no-zoom img, #waline img)",
+		),
 	);
 
 	if (!images.length) return;
 
 	images.forEach((img) => {
-		img.addEventListener("click", (e) => {
+		img.addEventListener("click", (e: Event) => {
 			e.preventDefault();
-
-			try {
-				const index = Array.from(images).indexOf(img);
-				const items: PhotoSwipeItem[] = Array.from(images).map((image) => ({
-					src: image.src,
-					width: image.naturalWidth || image.width,
-					height: image.naturalHeight || image.height,
-					alt: image.alt || "",
-					title: image.getAttribute("title") || "",
-				}));
-
-				const options: PhotoSwipeOptions = {
-					dataSource: items,
-					index: index,
-					bgOpacity: 0.9,
-					showHideAnimationType: "zoom",
-					zoomAnimationDuration: 300,
-					preloaderDelay: 0,
-					paddingFn: () => ({ top: 20, bottom: 20, left: 20, right: 20 }),
-					closeOnVerticalDrag: true,
-					wheelToZoom: true,
-				};
-
-				photoswipeInstance = new PhotoSwipe(options);
-
-				photoswipeInstance.on("beforeOpen", () => {
-					const lenis = getLenis();
-					lenis?.stop?.();
-					document.body.style.overflow = "hidden";
-					document.body.classList.add("pswp-active");
-				});
-
-				photoswipeInstance.on("close", () => {
-					const lenis = getLenis();
-					lenis?.start?.();
-					document.body.style.overflow = "";
-					document.body.classList.remove("pswp-active");
-					photoswipeInstance = null;
-				});
-
-				photoswipeInstance.init();
-			} catch (error) {
-				console.error("[PhotoSwipe] 初始化失败:", error);
-				document.body.classList.remove("pswp-active");
-				photoswipeInstance = null;
-
-				const lenis = getLenis();
-				lenis?.start?.();
-			}
+			openPhotoSwipe(img, images);
 		});
 	});
 }

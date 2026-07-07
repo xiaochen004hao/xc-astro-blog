@@ -105,22 +105,22 @@ const toc = generateToc(headings);
 						const slug = (link.getAttribute("href") || "").substring(1);
 						const heading = this.headings.find((h) => h.id === slug);
 						if (heading) {
-						history.pushState(null, heading.textContent || "", `#${slug}`);
-						// 优先使用 Lenis scrollTo，支持 offset 偏移避免标题紧贴顶部
-						const win = window as unknown as {
-							__lenis?: {
-								scrollTo: (
-									target: HTMLElement | number | string,
-									opts?: { offset?: number },
-								) => void;
+							history.pushState(null, heading.textContent || "", `#${slug}`);
+							// 优先使用 Lenis scrollTo，支持 offset 偏移避免标题紧贴顶部
+							const win = window as unknown as {
+								__lenis?: {
+									scrollTo: (
+										target: HTMLElement | number | string,
+										opts?: { offset?: number },
+									) => void;
+								};
 							};
-						};
-						if (win.__lenis?.scrollTo) {
-							win.__lenis.scrollTo(heading, { offset: -80 });
-						} else {
-							heading.scrollIntoView({ behavior: "smooth" });
+							if (win.__lenis?.scrollTo) {
+								win.__lenis.scrollTo(heading, { offset: -80 });
+							} else {
+								heading.scrollIntoView({ behavior: "smooth" });
+							}
 						}
-					}
 					});
 
 					this.#intervalId = setInterval(this.updatePositionAndStyle, 100);
@@ -151,7 +151,11 @@ const toc = generateToc(headings);
 				}
 			}
 			tocEnsureOpen();
-			document.addEventListener("astro:page-load", tocEnsureOpen);
+			// 防重入：避免每次 View Transitions 都重复注册 astro:page-load 监听器
+			if (!window.__tocEnsureOpenBound) {
+				window.__tocEnsureOpenBound = true;
+				document.addEventListener("astro:page-load", tocEnsureOpen);
+			}
 		}
 	} catch {}
 </script>

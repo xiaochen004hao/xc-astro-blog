@@ -180,7 +180,7 @@ html > *:not(head):not(body) {
 
 		cursor:
 			url("/w11-cursor-concept-free/arrow.cur") 1 1,
-			auto;
+			auto !important;
 
 		a,
 		[role="link"],
@@ -198,7 +198,7 @@ html > *:not(head):not(body) {
 		label:has(select) {
 			cursor:
 				url("/w11-cursor-concept-free/hand.cur") 9 3,
-				pointer;
+				pointer !important;
 		}
 
 		.copy {
@@ -208,52 +208,52 @@ html > *:not(head):not(body) {
 		}
 
 		&:where(
-				input[type="text"],
-				input[type="search"],
-				input:not([type]),
-				textarea,
-				[contenteditable="true"]
-			) {
+			input[type="text"],
+			input[type="search"],
+			input:not([type]),
+			textarea,
+			[contenteditable="true"]
+		) {
 			cursor:
 				url("/w11-cursor-concept-free/ibeam.cur") 11 17,
-				text;
+				text !important;
 		}
 
 		&:where([disabled], [aria-disabled="true"], [aria-busy="true"]) {
 			cursor:
 				url("/w11-cursor-concept-free/no.cur") 9 9,
-				not-allowed;
+				not-allowed !important;
 		}
 
 		&:where(select) {
 			cursor:
 				url("/w11-cursor-concept-free/arrow.cur") 1 1,
-				auto;
+				auto !important;
 		}
 
 		&:where([draggable="true"], [data-draggable]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
-				grab;
+				grab !important;
 		}
 
 		&:where([aria-grabbed="true"]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizeall.cur") 16 16,
-				grabbing;
+				grabbing !important;
 		}
 
 		canvas,
 		[role="img"]:not(a) {
 			cursor:
 				url("/w11-cursor-concept-free/crosshair.cur") 16 16,
-				crosshair;
+				crosshair !important;
 		}
 
 		img:not(a img) {
 			cursor:
 				url("/w11-cursor-concept-free/arrow.cur") 1 1,
-				auto;
+				auto !important;
 		}
 
 		abbr[title],
@@ -267,22 +267,22 @@ html > *:not(head):not(body) {
 		&:where([style*="cursor:n-resize"], [style*="cursor: ns-resize"]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizens.cur") 16 20,
-				n-resize;
+				n-resize !important;
 		}
 		&:where([style*="cursor:e-resize"], [style*="cursor: ew-resize"]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizewe.cur") 20 16,
-				e-resize;
+				e-resize !important;
 		}
 		&:where([style*="cursor:ne-resize"], [style*="cursor: nesw-resize"]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizenesw.cur") 18 14,
-				ne-resize;
+				ne-resize !important;
 		}
 		&:where([style*="cursor:nw-resize"], [style*="cursor: nwse-resize"]) {
 			cursor:
 				url("/w11-cursor-concept-free/sizenwse.cur") 14 18,
-				nw-resize;
+				nw-resize !important;
 		}
 
 		.copy,
@@ -290,19 +290,19 @@ html > *:not(head):not(body) {
 		[aria-label*="copy" i] {
 			cursor:
 				url("/w11-cursor-concept-free/person.cur") 5 5,
-				copy;
+				copy !important;
 		}
 
 		.context-menu,
 		[contextmenu] {
 			cursor:
 				url("/w11-cursor-concept-free/uparrow.cur") 10 2,
-				context-menu;
+				context-menu !important;
 		}
 
 		.waiting,
 		&:is(.loading, .spinner, [data-loading], [aria-busy="true"]) {
-			cursor: url("/w11-cursor-concept-free/wait.ani"), wait;
+			cursor: url("/w11-cursor-concept-free/wait.ani"), wait !important;
 		}
 
 		&[data-theme="light"] {
@@ -374,19 +374,19 @@ html > *:not(head):not(body) {
 	::-webkit-scrollbar {
 		cursor:
 			url("/w11-cursor-concept-free/arrow.cur") 1 1,
-			auto;
+			auto !important;
 		width: 8px;
 		height: 8px;
 	}
 	::-webkit-scrollbar-thumb {
 		cursor:
 			url("/w11-cursor-concept-free/sizeall.cur") 16 16,
-			grab;
+			grab !important;
 	}
 	::-webkit-scrollbar-track {
 		cursor:
 			url("/w11-cursor-concept-free/arrow.cur") 1 1,
-			auto;
+			auto !important;
 	}
 }
 
@@ -396,15 +396,15 @@ html > *:not(head):not(body) {
    使用 CSS :not() 列表语法排除站内和特定组件
    ------------------------------------------------------------------ */
 a[href^="http"]:not(
-	[href*="weblog.xc4h.qzz.io"],
-	[href*="localhost"],
-	[class*="no-external-icon"],
-	[class*="pagefind-ui"] a,
-	nav a,
-	.cactus-link,
-	#waline a,
-	.friend-card
-)::after {
+		[href*="weblog.xc4h.qzz.io"],
+		[href*="localhost"],
+		[class*="no-external-icon"],
+		[class*="pagefind-ui"] a,
+		nav a,
+		.cactus-link,
+		#waline a,
+		.friend-card
+	)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
@@ -412,11 +412,9 @@ a[href^="http"]:not(
 	margin-left: 0.15em;
 	background-color: currentColor;
 	opacity: 0.45;
-	mask:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
-	-webkit-mask:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
 }
 
@@ -427,7 +425,7 @@ a[href^="http"]:not(
 #waline {
 	cursor:
 		url("/w11-cursor-concept-free/arrow.cur") 1 1,
-		auto;
+		auto !important;
 
 	.wl-editor,
 	.wl-editor:focus,
@@ -436,13 +434,13 @@ a[href^="http"]:not(
 	.wl-gif-popup input {
 		cursor:
 			url("/w11-cursor-concept-free/ibeam.cur") 11 17,
-			text;
+			text !important;
 	}
 
-	img:not(a img) {
+	img:not(a img):not(.vditor-emojis__icon) {
 		cursor:
 			url("/w11-cursor-concept-free/arrow.cur") 1 1,
-			auto;
+			auto !important;
 	}
 
 	a,
@@ -466,7 +464,9 @@ a[href^="http"]:not(
 	.wl-card .wl-rss,
 	.wl-content.expand,
 	.wl-user-wall .wl-user-item,
-	[data-copy-value] {
+	[data-copy-value],
+	.vditor-emojis__icon,
+	.vditor-emojis__tail a {
 		cursor:
 			url("/w11-cursor-concept-free/hand.cur") 9 3,
 			pointer !important;

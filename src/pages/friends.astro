@@ -280,6 +280,9 @@ const meta = {
 			document.querySelectorAll(".friend-grid").forEach(shuffleGrid);
 
 			document.querySelectorAll("[data-copy-value]").forEach(function (el) {
+				// 防重入：避免 View Transitions 后重复注册 click 监听器
+				if (el.dataset.copyBound === "1") return;
+				el.dataset.copyBound = "1";
 				el.dataset.copyOrig = el.textContent;
 				el.addEventListener("click", function () {
 					var val = el.dataset.copyValue;

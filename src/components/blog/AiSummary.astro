@@ -20,7 +20,7 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 		<Icon aria-hidden="true" class="text-accent-2 h-4 w-4 shrink-0" name="lucide:sparkles" />
 		<span class="text-accent-2 text-lg font-semibold tracking-wide uppercase"> AI 摘要 </span>
 		<span
-			class="text-muted ms-auto rounded-md bg-muted/10 px-2 py-0.5 text-[10px] leading-relaxed font-medium"
+			class="text-muted bg-muted/10 ms-auto rounded-md px-2 py-0.5 text-[10px] leading-relaxed font-medium"
 		>
 			{model}
 		</span>
@@ -64,11 +64,12 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 				const contentEl = container.querySelector<HTMLElement>(`#${id}-content`);
 				if (!contentEl) return;
 
-				let index = 0;
-
+				// 防重入：避免 init 被同时触发两次（astro:page-load + readyState 检查）
+				// 导致同一个元素被两个 setTimeout 同时打字
 				if (contentEl.dataset.typed === "true") return;
 				contentEl.dataset.typed = "true";
 
+				let index = 0;
 				const textNode = document.createTextNode("");
 				contentEl.appendChild(textNode);
 
