@@ -42,7 +42,8 @@ swContent = swContent.replace(
 	/const CACHE_VERSION = "[^"]*"/,
 	`const CACHE_VERSION = "v4.0.0-${buildTimestamp}"`,
 );
-swContent = swContent.replace("__PAGEFIND_FILES__", fileListJson);
+// 用正则全局替换占位符，避免注释中误用同名标识符时只替换第一个
+swContent = swContent.replace(/__PAGEFIND_FILES__/g, fileListJson);
 
 fs.writeFileSync(SW_SRC, swContent);
 console.log(

@@ -1,6 +1,8 @@
 const CACHE_VERSION = "__CACHE_VERSION__";
 const OFFLINE_PAGE = "/service-worker-offline.html";
-const PRECACHE = [OFFLINE_PAGE, "/"];
+// pagefind 文件列表由 scripts/inject-pagefind.mjs 注入到下方占位符
+const PAGEFIND_FILES = __PAGEFIND_FILES__;
+const PRECACHE = [OFFLINE_PAGE, "/", ...PAGEFIND_FILES];
 
 self.addEventListener("install", (evt) => {
 	console.log("[sw] install", CACHE_VERSION);

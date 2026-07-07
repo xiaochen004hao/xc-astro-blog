@@ -261,10 +261,18 @@ const meta = {
 		window.__friendsReady = true;
 
 		function shuffleGrid(grid) {
+			// Fisher-Yates 洗牌：先在数组内打乱顺序，再一次性重建 DOM
+			// 避免边改 DOM 边用旧引用做参考点导致的错乱
 			var children = Array.from(grid.children);
 			for (var i = children.length - 1; i > 0; i--) {
 				var j = Math.floor(Math.random() * (i + 1));
-				grid.insertBefore(children[j], children[i]);
+				var temp = children[i];
+				children[i] = children[j];
+				children[j] = temp;
+			}
+			// appendChild 对已存在元素是"移动"而非"复制"，按洗牌后顺序重建
+			for (var k = 0; k < children.length; k++) {
+				grid.appendChild(children[k]);
 			}
 		}
 

@@ -37,6 +37,8 @@ const note = defineCollection({
 	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/note" }),
 });
 
+// 可选的标签元数据集合：在 src/content/tag/<tagname>.md 定义标签的标题和描述
+// 不定义则使用默认标题（关于 <tag> 的文章）和描述
 const tag = defineCollection({
 	schema: z.object({
 		title: titleSchema,

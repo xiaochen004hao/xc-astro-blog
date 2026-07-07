@@ -89,14 +89,15 @@ import "../../styles/waline-custom.css";
 	}
 
 	// 加载表情包列表，供 Vditor IR 模式渲染 :前缀_表情名: 为图片
-	// 表情包由 scripts/copy-vditor.mjs 下载到 public/emojis/{weibo,bilibili}/
-	// 文件名格式：{prefix}{name}.{ext}（如 weibo_smile.png, bb_doge.png）
+	// info.json 由 scripts/copy-vditor.mjs 下载到本地 public/emojis/{packName}/
+	// 但图片本身不下载，直接走 jsdelivr CDN（按需加载，不占用仓库体积）
 	// Lute 引擎规则：值包含 "." 则直接用作 <img src>，不拼接 emojiPath
 	// 因此值必须是完整 URL，不能用文件名
 	async function loadEmojiPack(packName: string): Promise<Record<string, string>> {
-		const basePath = `/emojis/${packName}/`;
+		const localInfoUrl = `/emojis/${packName}/info.json`;
+		const cdnBase = `https://cdn.jsdelivr.net/npm/@waline/emojis@latest/${packName}/`;
 		try {
-			const res = await fetch(`${basePath}info.json`);
+			const res = await fetch(localInfoUrl);
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data = await res.json();
 			const emojis: Record<string, string> = {};
@@ -104,13 +105,13 @@ import "../../styles/waline-custom.css";
 			const prefix = data.prefix || "";
 			if (Array.isArray(data.items)) {
 				for (const name of data.items) {
-					// key 是 prefix+name（如 weibo_smile），值是完整 URL
-					emojis[`${prefix}${name}`] = `${basePath}${prefix}${name}.${ext}`;
+					// key 是 prefix+name（如 bmoji_smile），值是 CDN 完整 URL
+					emojis[`${prefix}${name}`] = `${cdnBase}${prefix}${name}.${ext}`;
 				}
 			}
 			return emojis;
 		} catch (e) {
-			console.warn(`表情包 ${packName} 本地加载失败，回退到 CDN`, e);
+			console.warn(`表情包 ${packName} 加载失败`, e);
 			return {};
 		}
 	}
@@ -129,7 +130,7 @@ import "../../styles/waline-custom.css";
 
 		preloadVditorCss();
 
-		// 加载所有表情包（微博 + B站）
+		// 加载所有表情包（B站小黄脸 + B站）
 		const allEmojis = await loadAllEmojis();
 
 		// 动态 import Vditor（约 500KB，懒加载不阻塞首屏）
@@ -269,7 +270,7 @@ import "../../styles/waline-custom.css";
 			placeholder: "支持 Markdown 语法，说点什么吧…",
 			preview: { delay: 300, hljs: { style: theme === "dark" ? "github-dark" : "github" } },
 			comment: { enable: false },
-			hint: { emoji: allEmojis, emojiPath: "/emojis/" },
+			hint: { emoji: allEmojis },
 			// 图片上传：上传到 Waline 服务器，返回 URL 后插入到 Vditor
 			upload: {
 				accept: "image/*",
@@ -433,7 +434,10 @@ import "../../styles/waline-custom.css";
 						path: window.location.pathname,
 						lang: "zh-CN",
 						dark: '[data-theme="dark"]',
-						emoji: ["/emojis/bmoji", "/emojis/bilibili"],
+						emoji: [
+							"https://cdn.jsdelivr.net/npm/@waline/emojis@latest/bmoji",
+							"https://cdn.jsdelivr.net/npm/@waline/emojis@latest/bilibili",
+						],
 						meta: ["nick", "mail", "link"],
 						requiredMeta: ["nick"],
 						pageSize: 10,
