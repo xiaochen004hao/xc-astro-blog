@@ -89,7 +89,7 @@ html > *:not(head):not(body) {
 }
 
 /* ==========================================================================
-   空间涟漪页面切换特效 (View Transitions + SVG)
+   空间涟漪页面切换特效 (View Transitions)
    ========================================================================== */
 
 :root {
@@ -102,36 +102,63 @@ html > *:not(head):not(body) {
 	overflow: visible;
 }
 
-/* 允许在动画期间穿透遮罩，提前与新页面交互 */
+/* 旧页面动画期间禁用交互（避免误触），新页面立即可交互。
+   动画结束后通过 JS 移除 ::view-transition 的 pointer-events 限制。 */
 ::view-transition {
 	pointer-events: none;
 }
 
-/* 1. 旧页面：空间吸入、扭曲与模糊 */
+/* 新页面立即可交互，不受 ::view-transition 的 pointer-events: none 影响 */
+::view-transition-new(root) {
+	pointer-events: auto;
+}
+
+/* 1. 旧页面：渐进扭曲 + 模糊 + 变深 + 空间吸入
+   用多关键帧 transform skew/rotate/scale 模拟"从无到有的海浪扭曲"。
+   brightness 逐渐降低让旧页面变暗，便于与新页面区分。
+   注：SVG url(#wave-tear) filter 在 ::view-transition-old pseudo-element 上不生效
+   （Chromium 合成层限制），故用 CSS 原生 filter + transform 多关键帧模拟。 */
 @keyframes old-page-vortex {
 	0% {
 		opacity: 1;
-		transform: scale(1) rotate(0deg) skew(0deg);
-		filter: blur(0px) brightness(1);
+		transform: scale(1.05) rotate(0deg) translate3d(0, 0, 0) skew(0deg, 0deg);
+		filter: blur(0px) brightness(1) saturate(1);
+	}
+	10% {
+		opacity: 0.9;
+		transform: scale(1.06) rotate(-0.5deg) translate3d(2px, 2px, 0) skew(1deg, 0.5deg);
+		filter: blur(1px) brightness(0.9) saturate(1.02);
+	}
+	40% {
+		opacity: 0.7;
+		transform: scale(1.12) rotate(-2deg) translate3d(8px, 8px, 0) skew(4deg, 3deg);
+		filter: blur(5px) brightness(0.6) saturate(1.1);
 	}
 	100% {
 		opacity: 0;
-		transform: scale(1.15) rotate(-2deg) translate3d(20px, 20px, 0) skew(4deg, 4deg);
-		filter: blur(12px) brightness(0.2) saturate(1.5) hue-rotate(20deg);
+		transform: scale(1.35) rotate(-7deg) translate3d(36px, 36px, 0) skew(12deg, 10deg);
+		filter: blur(18px) brightness(0.18) saturate(1.4);
 	}
 }
 
 ::view-transition-old(root) {
-	animation: old-page-vortex 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	animation: old-page-vortex 1.2s linear forwards;
 	transform-origin: var(--wave-x) var(--wave-y);
 	z-index: 1;
 	will-change: transform, opacity, filter;
 }
 
-/* 2. 新页面：圆形扩散 + accent 色边缘发光 */
+/* 2. 新页面：圆形扩散（缓动用 ease-in-quint，先慢后快，
+   前期裁剪框小、视觉变化少，后期快速填满，让收尾更利落，减少交互延迟感） */
 @keyframes new-page-reveal {
 	0% {
 		clip-path: circle(0vmax at var(--wave-x) var(--wave-y));
+	}
+	10% {
+		clip-path: circle(15vmax at var(--wave-x) var(--wave-y));
+	}
+	40% {
+		clip-path: circle(25vmax at var(--wave-x) var(--wave-y));
 	}
 	100% {
 		clip-path: circle(150vmax at var(--wave-x) var(--wave-y));
@@ -139,22 +166,41 @@ html > *:not(head):not(body) {
 }
 
 ::view-transition-new(root) {
-	animation: new-page-reveal 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+	animation: new-page-reveal 1.2s linear forwards;
 	z-index: 2;
-	will-change: clip-path, filter;
-	/* 边缘朝外发光，accent 色光晕 */
-	filter: drop-shadow(0 0 30px var(--color-accent));
+	will-change: clip-path;
+	filter:
+		drop-shadow(0 0 15px oklch(from var(--color-accent) l c h / 0.5))
+		drop-shadow(0 0 35px oklch(from var(--color-accent) l c h / 0.3))
+		drop-shadow(0 0 70px oklch(from var(--color-accent) l c h / 0.15));
 }
 
 /* 3. image-pair 静态光晕：旧页面半透明时透过显示 */
 ::view-transition-image-pair(root) {
 	background: radial-gradient(
-		circle 50vmax at var(--wave-x) var(--wave-y),
-		oklch(from var(--color-accent) l c h / 0.3) 0%,
-		oklch(from var(--color-accent) l c h / 0.1) 30%,
-		transparent 60%
+		circle 100vmax at var(--wave-x) var(--wave-y),
+		oklch(from var(--color-accent) l c h / 0.25) 0%,
+		oklch(from var(--color-accent) l c h / 0.12) 25%,
+		transparent 55%
 	);
 }
+
+/* 移动端降级：clip-path: circle() 在部分移动浏览器可能不流畅，
+   且 GPU 性能受限，禁用 drop-shadow 减轻 GPU 负担。
+   保留旧页面的扭曲/模糊/变暗动画，新页面改为简单淡入避免裁剪卡顿。 */
+@media (pointer: coarse), (max-width: 768px) {
+	::view-transition-new(root) {
+		animation: new-page-fade 0.75s linear forwards;
+		filter: none;
+	}
+	@keyframes new-page-fade {
+		0% { opacity: 0; transform: scale(1.05); }
+		10% { opacity: 0.2; transform: scale(1.04); }
+		40% { opacity: 0.5; transform: scale(1.02); }
+		100% { opacity: 1; transform: scale(1); }
+	}
+}
+
 
 /* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
@@ -162,6 +208,9 @@ html > *:not(head):not(body) {
 	::view-transition-new(root) {
 		animation: none !important;
 		filter: none !important;
+	}
+	::view-transition-image-pair(root) {
+		background: none !important;
 	}
 }
 

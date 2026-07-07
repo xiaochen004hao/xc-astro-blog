@@ -243,6 +243,57 @@
 	margin: 0.25em 0;
 }
 
+/* 3.4.1 任务列表复选框（GFM task list）
+   Waline 服务端不渲染 GFM task list，[ ]/[X] 显示为纯文本，
+   JS (processTaskLists in WalineComments.astro) 将其转换为 input[type=checkbox]
+   并给 li 加 .wl-task-item 标记；Vditor 预览区自带 .vditor-task 类。
+   统一用 appearance:none + 自定义绘制，选中态强制 accent 色。
+   勾选图标用 background-image (SVG) 绘制，比 ::after 伪元素更稳定。 */
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task) {
+	list-style: none !important;
+	margin-left: -0.4em;
+}
+
+:is(
+	#waline li.wl-task-item input[type="checkbox"],
+	.wl-vditor-wrapper .vditor-reset li.vditor-task input[type="checkbox"]
+) {
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	width: 1em;
+	height: 1em;
+	margin: 0 0.4em 0.25em 0;
+	font-size: 1em;
+	vertical-align: middle;
+	border: 1.5px solid var(--color-muted);
+	border-radius: 2px;
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 70% 70%;
+	cursor: pointer;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s;
+}
+
+/* 选中态：accent 色背景 + 白色勾选图标（SVG 内嵌到 background-image） */
+:is(
+	#waline li.wl-task-item input[type="checkbox"]:checked,
+	.wl-vditor-wrapper .vditor-reset li.vditor-task input[type="checkbox"]:checked
+) {
+	background-color: var(--color-accent);
+	border-color: var(--color-accent);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+/* 已发布评论只读，禁止勾选 */
+#waline .wl-content li.wl-task-item input[type="checkbox"] {
+	pointer-events: none;
+	cursor: default;
+}
+
 /* 3.5 引用块 */
 :is(#waline .wl-content, .wl-vditor-wrapper .vditor-reset) blockquote {
 	margin: 0.75em 0;

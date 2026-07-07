@@ -125,6 +125,39 @@ import "../../styles/waline-custom.css";
 		return { ...bmoji, ...bilibili };
 	}
 
+	// 将 Vditor getValue() 返回的 markdown 中的 emoji <img> 标签转回 :emoji_name: 形式
+	// Vditor IR 模式下自定义 emoji（bmoji/bilibili）在 Lute VditorIRDOM2Md 转换时
+	// 可能保留为 <img> 标签而非 :name: 形式，导致提交到 Waline 的是 HTML 而非 markdown。
+	// 通过 src 反向匹配 emoji 字典，提取 emoji 名，转回 :name: 形式。
+	// emojiUrlToName 在 initVditor 内部构建（依赖 allEmojis），此处为占位
+	let emojiUrlToName = new Map<string, string>();
+	// 将 markdown 中的 emoji <img> 标签转回 :emoji_name: 形式
+	// 处理两种来源：
+	// 1. Vditor getValue() 输出：自定义 emoji 在 Lute VditorIRDOM2Md 转换时可能残留为 <img>
+	// 2. Waline 编辑回填：服务端返回的评论 HTML 中 emoji 已渲染为 <img class="wl-emoji">
+	// 通过 src 反向匹配 emoji 字典优先处理；不匹配时从 alt 提取名字。
+	function normalizeEmojiToMarkdown(md: string): string {
+		return md.replace(/<img\s+[^>]*?src="([^"]+)"[^>]*?\/?>/g, (match, src) => {
+			// 1. 通过 src 精确匹配 emoji 字典（最可靠）
+			const name = emojiUrlToName.get(src);
+			if (name) return `:${name}:`;
+			// 2. src 来自 Waline emoji CDN 但字典未命中（如新增 emoji），
+			//    从 alt 属性提取名字（Waline 回填时 alt 不带冒号，如 alt="bmoji_xxx"）
+			if (src.includes("@waline/emojis")) {
+				const altMatch = match.match(/alt="([^"]+)"/);
+				if (altMatch) return `:${altMatch[1]}:`;
+			}
+			// 3. 回退：解析 title=":name:" 属性（Vditor 生成，带冒号）
+			const titleMatch = match.match(/title=":([^"]+):"/);
+			if (titleMatch) return `:${titleMatch[1]}:`;
+			// 4. 回退：解析 alt=":name:" 属性（带冒号）
+			const altColonMatch = match.match(/alt=":([^"]+):"/);
+			if (altColonMatch) return `:${altColonMatch[1]}:`;
+			// 5. 非 emoji 图片（用户上传等）：保留原样
+			return match;
+		});
+	}
+
 	async function initVditor(textarea: HTMLTextAreaElement) {
 		if (vditorInstance) return;
 
@@ -132,6 +165,12 @@ import "../../styles/waline-custom.css";
 
 		// 加载所有表情包（B站小黄脸 + B站）
 		const allEmojis = await loadAllEmojis();
+
+		// 构建 emoji URL → :name: 的反向映射表，供 normalizeEmojiToMarkdown 使用
+		emojiUrlToName = new Map<string, string>();
+		for (const [name, url] of Object.entries(allEmojis)) {
+			emojiUrlToName.set(url, name);
+		}
 
 		// 动态 import Vditor（约 500KB，懒加载不阻塞首屏）
 		const { default: Vditor } = await import("vditor");
@@ -218,13 +257,15 @@ import "../../styles/waline-custom.css";
 					if (!syncing && vditorInstance) {
 						syncing = true;
 						try {
-							const diff = findDiff(oldValue, newValue);
+							// Waline 回填编辑内容时可能含 emoji <img> 标签，先归一化为 :name:
+							const normalized = normalizeEmojiToMarkdown(newValue);
+							const diff = findDiff(oldValue, normalized);
 							if (diff.insertedText && !diff.deletedText) {
 								// 纯插入操作：在 Vditor 光标位置插入差异文本
 								vditorInstance.insertValue?.(diff.insertedText);
 							} else {
 								// 复杂变化（删除+插入）：fallback 到 setValue
-								vditorInstance.setValue?.(newValue);
+								vditorInstance.setValue?.(normalized);
 							}
 						} catch {}
 						syncing = false;
@@ -299,15 +340,18 @@ import "../../styles/waline-custom.css";
 			// Vditor 内容变化时同步到隐藏的 textarea，并触发 input 事件让 Waline 感知
 			input: (value: string) => {
 				syncing = true;
-				textarea.value = value;
+				// value 来自 Vditor getMarkdown()，自定义 emoji 可能残留为 <img> 标签，
+				// 转回 :emoji_name: 形式，确保 Waline 服务端正确识别
+				textarea.value = normalizeEmojiToMarkdown(value);
 				textarea.dispatchEvent(new Event("input", { bubbles: true }));
 				syncing = false;
 			},
 			after: () => {
 				// 编辑器初始化完成后，如果 textarea 已有内容（如编辑回复），回填到 Vditor
+				// Waline 回填的内容可能含 emoji <img> 标签，先归一化为 :name: 再交给 Vditor
 				if (textarea.value) {
 					syncing = true;
-					vditorInstance?.setValue?.(textarea.value);
+					vditorInstance?.setValue?.(normalizeEmojiToMarkdown(textarea.value));
 					syncing = false;
 				}
 				// 隐藏 Waline 原生操作栏（表情、图片上传、预览），Vditor 工具栏已替代
@@ -338,16 +382,23 @@ import "../../styles/waline-custom.css";
 			if (target.classList?.contains("wl-btn") && target.classList.contains("primary")) {
 				if (vditorInstance) {
 					syncing = true;
-					textarea.value = vditorInstance.getValue?.() || "";
+					// getValue() 返回 markdown，但 emoji 可能残留为 <img> 标签，
+					// 转回 :emoji_name: 形式，确保提交到 Waline 的是纯 markdown
+					const md = normalizeEmojiToMarkdown(vditorInstance.getValue?.() || "");
+					textarea.value = md;
 					textarea.dispatchEvent(new Event("input", { bubbles: true }));
 					syncing = false;
 				}
-				// 延迟 600ms 清空，等 Waline 提交请求完成
-				setTimeout(() => {
+				// 监听 Waline 提交结果：成功则清空编辑器，失败则保留内容
+				// Waline 提交成功后会新增 .wl-card 评论节点，或 textarea 被清空
+				const checkAndClear = () => {
 					if (vditorInstance && !textarea.value) {
 						vditorInstance.setValue?.("");
 					}
-				}, 600);
+				};
+				// 快速检查（正常网络）
+				setTimeout(checkAndClear, 600);
+				// 兜底：如果 3s 后 textarea 仍有内容，说明可能提交失败，保留内容
 			}
 		};
 		document.addEventListener("click", submitListener, true);
@@ -375,6 +426,80 @@ import "../../styles/waline-custom.css";
 			});
 		});
 
+		// 处理 GFM 任务列表（task list）：
+		// Waline 有两个 markdown 渲染路径，渲染结果不同：
+		// 1. 评论区（.wl-content）：服务端渲染，[ ] 保留为纯文本 → 需要正则匹配并创建 checkbox
+		// 2. 预览区（.wl-preview 等）：客户端 marked 渲染，[ ] 已渲染成 <input type="checkbox">
+		//    但没有 .wl-task-item 类，CSS 选择器不匹配，用浏览器默认灰色样式
+		// 本函数统一处理两种情况：检测已有 checkbox 则加类标记，纯文本则转换。
+		// 排除 Vditor 预览区（.vditor-reset），它自带 .vditor-task 类走另一套 CSS。
+		let isProcessingTasks = false;
+		function processTaskLists() {
+			if (isProcessingTasks) return;
+			isProcessingTasks = true;
+			try {
+				const lis = document.querySelectorAll<HTMLLIElement>("#waline li");
+				lis.forEach((li) => {
+					if (li.dataset.taskFixed === "1") return; // 跳过已处理
+					if (li.closest(".vditor-reset")) return; // 排除 Vditor 预览区
+
+					// 情况 1：Waline 预览区已渲染出 checkbox（marked 客户端渲染）
+					// 只需加 .wl-task-item 类，让 CSS 选择器统一生效
+					for (const node of Array.from(li.childNodes)) {
+						if (node.nodeName === "INPUT" && (node as HTMLInputElement).type === "checkbox") {
+							li.dataset.taskFixed = "1";
+							li.classList.add("wl-task-item");
+							return;
+						}
+					}
+
+					// 情况 2：服务端渲染为纯文本 "[ ] xxx"
+					// 找到 li 的第一个非空文本节点
+					let firstTextNode: Text | null = null;
+					for (const node of Array.from(li.childNodes)) {
+						if (node.nodeType === Node.TEXT_NODE && node.textContent && node.textContent.trim()) {
+							firstTextNode = node as Text;
+							break;
+						}
+					}
+					if (!firstTextNode) return;
+
+					const text = firstTextNode.textContent || "";
+					// GFM task list 语法：[ ] 或 [x] 或 [X]，后跟可选空格
+					const match = text.match(/^\s*\[\s*([\sxX])\s*\]\s?/);
+					if (!match) return;
+
+					const isChecked = match[1] !== " ";
+
+					// 标记已处理 + 添加样式类（CSS 在 waline-custom.css 中）
+					li.dataset.taskFixed = "1";
+					li.classList.add("wl-task-item");
+
+					// 创建只读复选框
+					const input = document.createElement("input");
+					input.type = "checkbox";
+					input.checked = isChecked;
+					input.disabled = true;
+					input.setAttribute("aria-checked", isChecked ? "true" : "false");
+					input.setAttribute("aria-label", isChecked ? "已完成的任务" : "未完成的任务");
+
+					// 移除匹配的前缀文本，保留下方剩余文本
+					const remaining = text.slice(match[0].length);
+					if (remaining) {
+						firstTextNode.textContent = remaining;
+						li.insertBefore(input, firstTextNode);
+					} else {
+						const next = firstTextNode.nextSibling;
+						li.removeChild(firstTextNode);
+						if (next) li.insertBefore(input, next);
+						else li.appendChild(input);
+					}
+				});
+			} finally {
+				isProcessingTasks = false;
+			}
+		}
+
 		function handleDomChange() {
 			// 情况 A：Vditor 还未初始化，检查是否有 textarea 可用
 			if (!vditorInstance) {
@@ -382,6 +507,8 @@ import "../../styles/waline-custom.css";
 				if (textarea) {
 					initVditor(textarea);
 				}
+				// 即使 Vditor 还未初始化，已发布评论可能已渲染出来，也处理一下 task list
+				processTaskLists();
 				return;
 			}
 
@@ -398,6 +525,7 @@ import "../../styles/waline-custom.css";
 					vditorContainer = null;
 					initVditor(newTextarea);
 				}
+				processTaskLists();
 				return;
 			}
 
@@ -410,6 +538,9 @@ import "../../styles/waline-custom.css";
 			if (currentTextarea.style.display !== "none") {
 				currentTextarea.style.display = "none";
 			}
+
+			// 情况 E：处理评论列表中的 GFM task list（分页/新评论渲染后）
+			processTaskLists();
 		}
 		vditorObserver.observe(document.getElementById("waline") || document.body, {
 			childList: true,

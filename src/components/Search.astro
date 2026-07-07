@@ -75,6 +75,10 @@ import "@/styles/blocks/search.css";
 				if (el) el.innerHTML = FALLBACK_HTML;
 			}
 		});
+		// View Transitions 后恢复 body overflow（弹窗未关闭就被切换的情况）
+		document.addEventListener("astro:page-load", () => {
+			document.body.style.overflow = "";
+		});
 	}
 
 	class SiteSearch extends HTMLElement {
@@ -155,12 +159,15 @@ import "@/styles/blocks/search.css";
 		};
 
 		#onClickOutside = (event: MouseEvent) => {
-			const isLink = "href" in (event.target || {});
-			if (
-				isLink ||
-				(document.body.contains(event.target as Node) &&
-					!this.#dialogFrame?.contains(event.target as Node))
-			) {
+			const target = event.target as Element;
+			// 点击搜索结果链接（站内导航）时不关闭弹窗，
+			// 让 View Transitions 接管，弹窗随页面切换自然消失，视觉更连贯
+			const isInternalLink =
+				target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("/");
+			if (isInternalLink) {
+				return;
+			}
+			if (document.body.contains(target) && !this.#dialogFrame?.contains(target)) {
 				this.#close();
 			}
 		};
