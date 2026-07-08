@@ -5,10 +5,10 @@ const { title, url } = Astro.props as {
 };
 ---
 
-<div class="mt-6 flex items-center gap-2">
+<div class="mt-6 flex items-center gap-2" data-reveal>
 	<button
 		type="button"
-		class="text-muted hover:text-accent inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium"
+		class="text-muted hover:text-accent bg-global-text/5 hover:bg-accent/10 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-200"
 		data-share
 		data-title={title}
 		data-url={url}

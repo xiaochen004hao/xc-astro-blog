@@ -263,11 +263,14 @@ html > *:not(head):not(body) {
 		input[type="button"],
 		input[type="submit"],
 		input[type="reset"],
+		input[type="file"],
 		summary,
 		details,
 		details > summary,
 		[tabindex]:not([tabindex="-1"]):not(input):not(textarea),
 		[data-copy-value],
+		[data-type="upload"],
+		.vditor-toolbar__item,
 		label:has(input),
 		label:has(select) {
 			cursor:
@@ -327,7 +330,7 @@ html > *:not(head):not(body) {
 		img:not(a img):not(.vditor-emojis__icon) {
 			cursor:
 				url("/w11-cursor-concept-free/arrow.cur") 1 1,
-				auto !important;
+				auto;
 		}
 
 		abbr[title],
@@ -465,6 +468,26 @@ html > *:not(head):not(body) {
 }
 
 /* ------------------------------------------------------------------
+   2.2 Vditor 编辑区 + Expressive Code 代码块使用 ibeam 文字光标
+   独立规则（在 @layer base 之外，特异性 0-0-1 + !important），
+   覆盖 Vditor/Expressive Code 自身的 cursor 样式。
+   ------------------------------------------------------------------ */
+.vditor-content,
+.expressive-code {
+	cursor:
+		url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+		text !important;
+}
+/* Expressive Code 内的按钮（复制按钮等）使用手型光标 */
+.expressive-code button,
+.expressive-code .copy-button,
+.expressive-code [data-copied] {
+	cursor:
+		url("/w11-cursor-concept-free/hand.cur") 9 3,
+		pointer !important;
+}
+
+/* ------------------------------------------------------------------
    3. 外部链接图标
    为站外链接自动添加 ↗ 图标（通过 mask 实现）
    使用 CSS :not() 列表语法排除站内和特定组件
@@ -574,6 +597,62 @@ a[href^="http"]:not(
 	.title {
 		@apply text-accent-2 text-2xl font-semibold;
 	}
+}
+
+/* ------------------------------------------------------------------
+   6.5 滚动出现缓入动画
+   用法：给元素加 data-reveal 属性即可
+   变体：data-reveal="scale" 从 0.5 缩放到 1（友链卡片用）
+   延迟：data-reveal-delay="100" 设置延迟（同视口内依次出现）
+   ------------------------------------------------------------------ */
+[data-reveal] {
+	opacity: 0;
+	transform: translateY(16px);
+	transition:
+		opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: opacity, transform;
+}
+/* 未显示的元素禁用交互，避免 hover 等 transform 冲突 */
+[data-reveal]:not([data-revealed="true"]) {
+	pointer-events: none;
+}
+[data-reveal][data-revealed="true"] {
+	opacity: 1;
+	transform: translateY(0);
+}
+/* 缩放变体：从原大小的一半放大到原大小（无位移） */
+[data-reveal="scale"] {
+	transform: scale(0.5);
+}
+[data-reveal="scale"][data-revealed="true"] {
+	transform: scale(1);
+}
+@media (prefers-reduced-motion: reduce) {
+	[data-reveal] {
+		opacity: 1 !important;
+		transform: none !important;
+		transition: none !important;
+	}
+}
+
+/* ------------------------------------------------------------------
+   6.7 全局 hr 虚线样式
+   ------------------------------------------------------------------ */
+hr {
+	border: 0;
+	border-top: 1px dashed var(--color-muted);
+	opacity: 0.5;
+}
+
+/* ------------------------------------------------------------------
+   6.8 组件分隔线（border-t 用作区块分隔）改为虚线
+   覆盖 Tailwind 的 border-t（实线），与 hr 虚线风格统一
+   适用：评论区、Webmentions、友链申请区等用 border-t 分隔区块的位置
+   ------------------------------------------------------------------ */
+.border-t {
+	border-top: 1px dashed var(--color-muted);
+	opacity: 0.8;
 }
 
 /* ------------------------------------------------------------------

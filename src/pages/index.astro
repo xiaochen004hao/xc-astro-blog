@@ -31,17 +31,19 @@ const latestNotes = allNotes
 
 <PageLayout meta={{ description: "我的个人博客", title: "主页" }}>
 	<section>
-		<h1 class="title mb-12">Hello World!</h1>
-		<p class="mb-4">
-			嗨，我是 xiaochen004hao，一个正在学习一切新鲜事物的小萌新。
-			<br />
-			这个博客是我用来记录学习笔记和分享一些有趣的东西的地方，还正在建设中，我会将他打造成一个真正美观、有用的博客。
-		</p>
-		<SocialList />
+		<h1 class="title mb-12" data-reveal data-reveal-delay="0">Hello World!</h1>
+		<div data-reveal data-reveal-delay="100">
+			<p class="mb-4">
+				嗨，我是 xiaochen004hao，一个正在学习一切新鲜事物的小萌新。
+				<br />
+				这个博客是我用来记录学习笔记和分享一些有趣的东西的地方，还正在建设中，我会将他打造成一个真正美观、有用的博客。
+			</p>
+			<SocialList />
+		</div>
 	</section>
 	{
 		pinnedPosts.length > 0 && (
-			<section class="mt-16">
+			<section class="mt-16" data-reveal data-reveal-delay="100">
 				<h2 class="title text-accent mb-6 text-xl">置顶文章</h2>
 				<ul class="space-y-4" role="list">
 					{pinnedPosts.map((p) => (
@@ -53,7 +55,7 @@ const latestNotes = allNotes
 			</section>
 		)
 	}
-	<section class="mt-16">
+	<section class="mt-16" data-reveal data-reveal-delay="200">
 		<h2 class="title text-accent mb-6 text-xl"><a href="/posts/">文章</a></h2>
 		<ul class="space-y-4" role="list">
 			{
@@ -67,7 +69,7 @@ const latestNotes = allNotes
 	</section>
 	{
 		latestNotes.length > 0 && (
-			<section class="mt-16">
+			<section class="mt-16" data-reveal data-reveal-delay="300">
 				<h2 class="title text-accent mb-6 text-xl">
 					<a href="/notes/">笔记</a>
 				</h2>

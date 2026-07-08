@@ -59,7 +59,7 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 ---
 
 <PageLayout meta={meta}>
-	<div class="mb-12 flex items-center gap-3">
+	<div class="mb-12 flex items-center gap-3" data-reveal>
 		<h1 class="title">文章</h1>
 		<div class="text-accent">
 			<a href="/rss.xml" target="_blank">
@@ -71,9 +71,9 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 	<div class="grid sm:grid-cols-[3fr_1fr] sm:gap-x-8 sm:gap-y-16">
 		<div>
 			{
-				pinnedPosts.length > 0 && (
-					<section class="mb-16">
-						<h2 class="title mb-6 text-xl">置顶文章</h2>
+			pinnedPosts.length > 0 && (
+				<section class="mb-16" data-reveal data-reveal-delay="100">
+					<h2 class="title mb-6 text-xl">置顶文章</h2>
 						<ul class="space-y-4" role="list">
 							{pinnedPosts.map((p) => (
 								<li class="grid gap-1 sm:grid-cols-[auto_1fr]">
@@ -85,27 +85,27 @@ const descYearKeys = Object.keys(groupedByYear).sort((a, b) => +b - +a);
 				)
 			}
 			{
-				descYearKeys.map((yearKey) => (
-					<section class="mb-16">
-						<h2 id={`year-${yearKey}`} class="title text-lg">
-							<span class="sr-only">年份</span>
-							{yearKey}
-						</h2>
-						<ul class="mt-5 space-y-4 text-start">
-							{groupedByYear[yearKey]?.map((p) => (
-								<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
-									<PostPreview post={p} />
-								</li>
-							))}
-						</ul>
-					</section>
-				))
-			}
+		descYearKeys.map((yearKey, yearIdx) => (
+			<section class="mb-16" data-reveal data-reveal-delay={String(200 + yearIdx * 100)}>
+					<h2 id={`year-${yearKey}`} class="title text-lg">
+						<span class="sr-only">年份</span>
+						{yearKey}
+					</h2>
+					<ul class="mt-5 space-y-4 text-start">
+						{groupedByYear[yearKey]?.map((p) => (
+							<li class="grid gap-1 sm:grid-cols-[auto_1fr] sm:[&_q]:col-start-2">
+								<PostPreview post={p} />
+							</li>
+						))}
+					</ul>
+				</section>
+			))
+		}
 			<Pagination {...paginationProps} />
 		</div>
 		{
 			!!uniqueTags.length && (
-				<aside>
+				<aside data-reveal data-reveal-delay="200">
 					<h2 class="title mb-4 flex items-center gap-1 text-lg">
 						<svg
 							aria-hidden="true"

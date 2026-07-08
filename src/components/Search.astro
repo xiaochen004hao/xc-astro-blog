@@ -65,10 +65,14 @@ import "@/styles/blocks/search.css";
 		(window as any).__searchCrashReady = true;
 		window.addEventListener("unhandledrejection", (event) => {
 			const msg = String(event.reason?.message ?? event.reason ?? "");
-			if (
-				!(window as any).__searchCrashed &&
-				(msg.includes("Pagefind") || msg.includes("pagefind"))
-			) {
+			// 离线或 pagefind 加载失败时显示友好提示
+			// 错误类型包括：pagefind 相关错误、动态 import 失败、网络错误
+			const isSearchError =
+				msg.includes("Pagefind") ||
+				msg.includes("pagefind") ||
+				msg.includes("Failed to fetch dynamically imported module") ||
+				(msg.includes("Failed to fetch") && msg.includes("pagefind"));
+			if (!(window as any).__searchCrashed && isSearchError) {
 				event.preventDefault();
 				(window as any).__searchCrashed = true;
 				const el = document.getElementById("cactus__search");
@@ -117,7 +121,82 @@ import "@/styles/blocks/search.css";
 								element: "#cactus__search",
 								showImages: false,
 								showSubResults: true,
+								// 翻译使用字符串 + 占位符（[COUNT]、[SEARCH_TERM]），
+								// 不可用函数（Pagefind 内部会调用 .replace() 导致报错）
+								translations: {
+									placeholder: "搜索",
+									clear_search: "清除",
+									load_more: "加载更多结果",
+									search_label: "搜索此站点",
+									filters_label: "筛选",
+									zero_results: "未找到与 [SEARCH_TERM] 相关的结果",
+									many_results: "为 [SEARCH_TERM] 找到 [COUNT] 个结果",
+									one_result: "为 [SEARCH_TERM] 找到 [COUNT] 个结果",
+									total_zero_results: "没有结果",
+									total_one_result: "[COUNT] 个结果",
+									total_many_results: "共 [COUNT] 个结果",
+									alt_search: "未找到与 [SEARCH_TERM] 相关的结果，改为显示 [DIFFERENT_TERM] 的结果",
+									search_suggestion: "未找到 [SEARCH_TERM] 的结果。尝试以下搜索之一：",
+									searching: "正在搜索 [SEARCH_TERM]...",
+									results_label: "搜索结果",
+									keyboard_navigate: "导航",
+									keyboard_select: "选择",
+									keyboard_clear: "清除",
+									keyboard_close: "关闭",
+									keyboard_search: "搜索",
+									error_search: "搜索失败",
+									filter_selected_one: "已选 [COUNT] 项",
+									filter_selected_many: "已选 [COUNT] 项",
+									input_hint: "输入时将显示结果",
+									loading: "加载中",
+								},
 							});
+							// 桌面端（≥1024px）默认展开筛选区块；移动端保持折叠
+							if (window.matchMedia("(min-width: 1024px)").matches) {
+								const searchEl = document.getElementById("cactus__search");
+								if (searchEl) {
+									const openFilters = () => {
+										const blocks = searchEl.querySelectorAll(".pagefind-ui__filter-block");
+										if (blocks.length === 0) return;
+										blocks.forEach((el) => el.setAttribute("open", ""));
+										observer.disconnect();
+									};
+									const observer = new MutationObserver(openFilters);
+									observer.observe(searchEl, { childList: true, subtree: true });
+									openFilters();
+								}
+							}
+							// 为每个文章搜索结果（含子结果）添加缓入动画，
+							// 使其作为整体缓入，而非各标题分开应用特效。
+							// CSS 中 .pagefind-ui__result:not(.search-result-visible) 默认 opacity:0，
+							// 防止 Pagefind 插入 DOM 后到 JS 添加类前的一帧闪烁。
+							// 此处同步添加 .search-result-reveal（启用 transition）+ transitionDelay，
+							// 然后在下一帧添加 .search-result-visible 触发动画。
+							// "Load more" 后新结果也会被 resObserver 捕获并依次动画。
+							const searchEl2 = document.getElementById("cactus__search");
+							if (searchEl2) {
+								const tagResults = () => {
+									const existing = searchEl2.querySelectorAll(
+										".pagefind-ui__result.search-result-reveal",
+									).length;
+									const newOnes = searchEl2.querySelectorAll<HTMLElement>(
+										".pagefind-ui__result:not(.search-result-reveal)",
+									);
+									if (newOnes.length === 0) return;
+									// 同步：标记已处理 + 启用 transition + 设置延迟
+									newOnes.forEach((el, i) => {
+										el.classList.add("search-result-reveal");
+										el.style.transitionDelay = `${(existing + i) * 80}ms`;
+									});
+									// 下一帧触发动画（从 opacity:0 过渡到 opacity:1）
+									requestAnimationFrame(() => {
+										newOnes.forEach((el) => el.classList.add("search-result-visible"));
+									});
+								};
+								const resObserver = new MutationObserver(tagResults);
+								resObserver.observe(searchEl2, { childList: true, subtree: true });
+								tagResults();
+							}
 						})
 						.catch(() => {});
 				});
@@ -160,12 +239,32 @@ import "@/styles/blocks/search.css";
 
 		#onClickOutside = (event: MouseEvent) => {
 			const target = event.target as Element;
-			// 点击搜索结果链接（站内导航）时不关闭弹窗，
-			// 让 View Transitions 接管，弹窗随页面切换自然消失，视觉更连贯
-			const isInternalLink =
-				target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("/");
-			if (isInternalLink) {
-				return;
+			// 点击搜索结果链接时的处理
+			const link =
+				target instanceof HTMLAnchorElement
+					? target
+					: (target.closest?.("a") as HTMLAnchorElement | null);
+			if (link) {
+				const href = link.getAttribute("href") || "";
+				// 站内导航链接
+				if (href.startsWith("/")) {
+					// 判断是否为同页面锚点跳转（如 /posts/foo/#section 且当前已在 /posts/foo/）
+					const hashIdx = href.indexOf("#");
+					if (hashIdx >= 0) {
+						const pathPart = href.slice(0, hashIdx);
+						const currentPath = window.location.pathname.replace(/\/$/, "");
+						// 同页面锚点：关闭弹窗，让平滑滚动接管（View Transitions 不会触发）
+						if (pathPart === currentPath || pathPart === currentPath + "/") {
+							this.#close();
+							return;
+						}
+						// 跨页面锚点：不关闭，让带 View Transitions 的平滑切换动画接管，
+						// 弹窗随页面切换自然消失，视觉更连贯
+						return;
+					}
+					// 无锚点的站内链接：不关闭，让 View Transitions 接管
+					return;
+				}
 			}
 			if (document.body.contains(target) && !this.#dialogFrame?.contains(target)) {
 				this.#close();

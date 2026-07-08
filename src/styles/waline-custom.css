@@ -247,45 +247,93 @@
    Waline 服务端不渲染 GFM task list，[ ]/[X] 显示为纯文本，
    JS (processTaskLists in WalineComments.astro) 将其转换为 input[type=checkbox]
    并给 li 加 .wl-task-item 标记；Vditor 预览区自带 .vditor-task 类。
-   统一用 appearance:none + 自定义绘制，选中态强制 accent 色。
-   勾选图标用 background-image (SVG) 绘制，比 ::after 伪元素更稳定。 */
-:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task) {
+   采用 Pagefind 风格：appearance:none + li::before/::after 伪元素绘制
+   勾选动画：::after 的 width/height 从 0 过渡到完整尺寸，模拟"画勾"效果
+   勾的粗细：2px（比 Pagefind 默认 1px 更粗） */
+
+/* 任务列表的 <ul> 不显示项目符号（覆盖 3.4 的 list-style: disc）
+   覆盖范围：评论区 .wl-content、预览区 .wl-preview，以及 Vditor 预览区 */
+:is(
+	#waline ul:has(li.wl-task-item),
+	.wl-vditor-wrapper .vditor-reset ul:has(li.vditor-task)
+) {
 	list-style: none !important;
-	margin-left: -0.4em;
+	padding-left: 0;
 }
 
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task) {
+	list-style: none !important;
+	position: relative;
+	padding-left: 1.6em;
+}
+
+/* 隐藏原生 checkbox，保留功能（覆盖在伪元素之上接收点击） */
 :is(
 	#waline li.wl-task-item input[type="checkbox"],
 	.wl-vditor-wrapper .vditor-reset li.vditor-task input[type="checkbox"]
 ) {
-	appearance: none;
-	-webkit-appearance: none;
-	-moz-appearance: none;
+	position: absolute;
+	left: 0;
+	top: 0.3em;
 	width: 1em;
 	height: 1em;
-	margin: 0 0.4em 0.25em 0;
-	font-size: 1em;
-	vertical-align: middle;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+/* 复选框外框 (::before) — appearance:none 自定义绘制 */
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task)::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.3em;
+	width: 1em;
+	height: 1em;
 	border: 1.5px solid var(--color-muted);
 	border-radius: 2px;
 	background-color: transparent;
-	background-repeat: no-repeat;
-	background-position: center;
-	background-size: 70% 70%;
-	cursor: pointer;
-	transition:
-		background-color 0.15s,
-		border-color 0.15s;
+	transition: background-color 0.15s, border-color 0.15s;
+	pointer-events: none;
 }
 
-/* 选中态：accent 色背景 + 白色勾选图标（SVG 内嵌到 background-image） */
+/* 选中态：accent 色背景 + accent 色边框 */
 :is(
-	#waline li.wl-task-item input[type="checkbox"]:checked,
-	.wl-vditor-wrapper .vditor-reset li.vditor-task input[type="checkbox"]:checked
-) {
+	#waline li.wl-task-item,
+	.wl-vditor-wrapper .vditor-reset li.vditor-task
+):has(input:checked)::before {
 	background-color: var(--color-accent);
 	border-color: var(--color-accent);
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+}
+
+/* 勾选标记 (::after) — border-bottom + border-left 组成 L 形，
+   旋转 -45deg 后形成勾号，width/height 从 0 过渡实现"画勾"动画。
+   勾的粗细：2px（比 Pagefind 默认 1px 更粗） */
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task)::after {
+	content: "";
+	position: absolute;
+	left: 0.5em;
+	top: 0.8em;
+	width: 0;
+	height: 0;
+	border: solid 2px #fff;
+	border-top: 0;
+	border-right: 0;
+	opacity: 0;
+	transform: translate(-0.28em, 0.05em) skewX(-5deg) rotateZ(-45deg);
+	transform-origin: top left;
+	transition: width 0.1s ease-out 0.1s, height 0.1s ease-in, opacity 0.1s;
+	pointer-events: none;
+}
+
+/* 选中态：显示勾并动画展开 */
+:is(
+	#waline li.wl-task-item,
+	.wl-vditor-wrapper .vditor-reset li.vditor-task
+):has(input:checked)::after {
+	opacity: 1;
+	width: 0.55em;
+	height: 0.25em;
 }
 
 /* 已发布评论只读，禁止勾选 */

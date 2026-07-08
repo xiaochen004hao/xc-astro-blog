@@ -34,7 +34,7 @@ const meta = {
 ---
 
 <PageLayout meta={meta}>
-	<article class="prose prose-sm prose-cactus max-w-none">
+	<article class="prose prose-sm prose-cactus max-w-none" data-reveal>
 		<h1>友人</h1>
 		<p class="lead text-muted">
 			<span class="text-accent">人生海海，山山而川，不过尔尔。</span>
@@ -43,8 +43,8 @@ const meta = {
 	</article>
 
 	{
-		friendsData.categories.map((category) => (
-			<section class="mt-12" id={category.id}>
+		friendsData.categories.map((category, catIndex) => (
+			<section class="mt-12" id={category.id} data-reveal data-reveal-delay={String(100 + catIndex * 80)}>
 				<div class="mb-6">
 					<h2 class="text-accent-2 text-xl font-semibold">{category.title}</h2>
 					{category.description && <p class="text-muted mt-1 text-sm">{category.description}</p>}
@@ -53,15 +53,17 @@ const meta = {
 					<div
 						class="friend-grid grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
 						data-friend-category={category.id}
+						style="visibility: hidden"
 					>
 						{category.links.map((friend) => (
 							<a
-								href={friend.url}
-								target="_blank"
-								rel="noopener noreferrer me"
-								class="group friend-card block overflow-hidden border transition-all duration-200"
-								data-url={friend.url}
-							>
+							href={friend.url}
+							target="_blank"
+							rel="noopener noreferrer me"
+							class="group friend-card block overflow-hidden border transition-all duration-200"
+							data-url={friend.url}
+							data-reveal="scale"
+						>
 								<div class="screenshot-wrap bg-muted/10 relative aspect-video w-full overflow-hidden">
 									<img
 										src={friend.siteshot || `https://s0.wp.com/mshots/v1/${friend.url}`}
@@ -132,7 +134,7 @@ const meta = {
 
 	{
 		friendsData.changeLog.length > 0 && (
-			<section class="mt-16">
+			<section class="mt-16" data-reveal>
 				<details class="group">
 					<summary class="text-muted hover:text-accent text-sm font-medium">友链变更记录</summary>
 					<div class="text-muted mt-4 space-y-2 border-s-2 border-zinc-200 ps-4 text-xs dark:border-zinc-700">
@@ -148,7 +150,7 @@ const meta = {
 		)
 	}
 
-	<section class="mt-16 border-t pt-10" id="apply-links">
+	<section class="mt-16 border-t pt-10" id="apply-links" data-reveal>
 		<h2 class="text-accent-2 text-xl font-semibold">申请友链</h2>
 
 		<p class="text-muted mt-2 text-sm">想和我交换友链？太好了！请先确认你的站点满足以下条件：</p>
@@ -276,8 +278,24 @@ const meta = {
 			}
 		}
 
+		// 首次加载时 CSS 已将网格设为 visibility:hidden，洗牌后恢复可见
+		// 避免 SSR 顺序→JS 洗牌的闪烁
 		function initFriends() {
-			document.querySelectorAll(".friend-grid").forEach(shuffleGrid);
+			document.querySelectorAll(".friend-grid").forEach(function (grid) {
+				if (!grid.dataset.shuffled) {
+					shuffleGrid(grid);
+					grid.dataset.shuffled = "1";
+					// 洗牌后按新 DOM 顺序设置依次出现的延迟
+					var cards = grid.querySelectorAll(".friend-card");
+					cards.forEach(function (card, i) {
+						card.dataset.revealDelay = String(i * 80);
+					});
+					// 用 rAF 延迟一帧恢复可见，确保洗牌后的 DOM 已 commit
+					requestAnimationFrame(function () {
+						grid.style.visibility = "";
+					});
+				}
+			});
 
 			document.querySelectorAll("[data-copy-value]").forEach(function (el) {
 				// 防重入：避免 View Transitions 后重复注册 click 监听器

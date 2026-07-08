@@ -52,7 +52,7 @@ const paginationProps = {
 ---
 
 <PageLayout meta={meta}>
-	<nav class="mb-8" aria-label="Breadcrumbs">
+	<nav class="mb-8" aria-label="Breadcrumbs" data-reveal data-reveal-delay="0">
 		<ul class="flex items-center">
 			<li class="flex items-center">
 				<a class="text-accent" href="/tags/">标签</a>
@@ -61,12 +61,12 @@ const paginationProps = {
 			<li aria-current="page" class=""><span aria-hidden="true">#</span>{tag}</li>
 		</ul>
 	</nav>
-	<h1 class="title capitalize">{tagMeta?.data.title ?? `关于 ${tag} 的文章`}</h1>
-	<div class="prose prose-sm prose-cactus mb-16 max-w-none">
+	<h1 class="title capitalize" data-reveal data-reveal-delay="80">{tagMeta?.data.title ?? `关于 ${tag} 的文章`}</h1>
+	<div class="prose prose-sm prose-cactus mb-16 max-w-none" data-reveal data-reveal-delay="160">
 		{tagMeta?.data.description && <p>{tagMeta.data.description}</p>}
 		{TagContent && <TagContent />}
 	</div>
-	<ul class="space-y-4">
+	<ul class="space-y-4" data-reveal data-reveal-delay="240">
 		{
 			page.data.map((p) => (
 				<li class="grid gap-1 sm:grid-cols-[auto_1fr]">

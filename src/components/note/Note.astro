@@ -15,6 +15,7 @@ const { Content } = await render(note);
 <article
 	class:list={[isPreview && "bg-global-text/5 inline-grid rounded-md px-4 py-3"]}
 	data-pagefind-body={isPreview ? false : true}
+	data-reveal={!isPreview}
 >
 	<Tag class="title" class:list={{ "text-base": isPreview }}>
 		{

@@ -12,7 +12,8 @@ import "../../styles/waline-custom.css";
 	const WALINE_SERVER = "https://waline.xc4h.qzz.io/";
 	// Vditor 资源从本地加载（由 scripts/copy-vditor.mjs 复制到 public/vditor/dist/）
 	// 避免从 CDN 加载时网络抖动导致 i18n/lute/icons 404 或编辑器加载失败
-	const VDITOR_CDN = "/vditor/";
+	// 注意：不带尾斜杠，Vditor 内部会拼接 "/dist/..."，避免出现双斜杠
+	const VDITOR_CDN = "/vditor";
 
 	// 运行时状态：Waline 实例、Vditor 实例、各 Observer 和事件监听器
 	let walineInstance: { destroy?: () => void } | null = null;
@@ -23,6 +24,10 @@ import "../../styles/waline-custom.css";
 	let currentTextarea: HTMLTextAreaElement | null = null;
 	let themeObserver: MutationObserver | null = null;
 	let submitListener: ((e: Event) => void) | null = null;
+	// fetch 拦截器引用（销毁时还原）
+	let nativeFetch: typeof window.fetch | null = null;
+	// emoji 字典：name → URL，供评论区 :name: → <img> 渲染使用
+	let allEmojisMap: Record<string, string> = {};
 
 	// 读取当前站点主题（light / dark）
 	function getCurrentTheme(): "light" | "dark" {
@@ -49,6 +54,11 @@ import "../../styles/waline-custom.css";
 			document.removeEventListener("click", submitListener, true);
 			submitListener = null;
 		}
+		// 还原 fetch 拦截
+		if (nativeFetch) {
+			window.fetch = nativeFetch;
+			nativeFetch = null;
+		}
 		vditorContainer = null;
 		currentTextarea = null;
 		if (walineInstance?.destroy) {
@@ -64,7 +74,7 @@ import "../../styles/waline-custom.css";
 		if (document.querySelector("link[data-vditor-css]")) return;
 		const link = document.createElement("link");
 		link.rel = "stylesheet";
-		link.href = `${VDITOR_CDN}dist/index.css`;
+		link.href = `${VDITOR_CDN}/dist/index.css`;
 		link.setAttribute("data-vditor-css", "");
 		document.head.appendChild(link);
 	}
@@ -165,11 +175,42 @@ import "../../styles/waline-custom.css";
 
 		// 加载所有表情包（B站小黄脸 + B站）
 		const allEmojis = await loadAllEmojis();
+		// 保存到模块作用域，供 processEmojis 渲染评论区 emoji 使用
+		allEmojisMap = allEmojis;
 
 		// 构建 emoji URL → :name: 的反向映射表，供 normalizeEmojiToMarkdown 使用
 		emojiUrlToName = new Map<string, string>();
 		for (const [name, url] of Object.entries(allEmojis)) {
 			emojiUrlToName.set(url, name);
+		}
+
+		// 拦截发往 Waline API 的请求，在 comment 字段中把 emoji <img> 标签
+		// 转回 :emoji_name: 格式，确保服务器存储的是纯 markdown 而非 HTML。
+		// 这是最可靠的归一化点：无论 Waline 内部状态如何，请求体在发出前必定经过此处。
+		if (!nativeFetch) {
+			nativeFetch = window.fetch;
+			window.fetch = function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+				try {
+					const url =
+						typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+					// 只拦截发往 Waline 服务器的 POST 请求（评论提交/编辑）
+					if (url.includes(WALINE_SERVER) && init?.method === "POST" && init.body) {
+						let bodyStr = typeof init.body === "string" ? init.body : "";
+						if (bodyStr) {
+							try {
+								const parsed = JSON.parse(bodyStr);
+								if (typeof parsed.comment === "string") {
+									parsed.comment = normalizeEmojiToMarkdown(parsed.comment);
+									init = { ...init, body: JSON.stringify(parsed) };
+								}
+							} catch {
+								// 非 JSON body，跳过
+							}
+						}
+					}
+				} catch {}
+				return nativeFetch!.call(this, input, init);
+			} as typeof window.fetch;
 		}
 
 		// 动态 import Vditor（约 500KB，懒加载不阻塞首屏）
@@ -404,6 +445,26 @@ import "../../styles/waline-custom.css";
 		document.addEventListener("click", submitListener, true);
 	}
 
+	// 替换 Waline 页底 .wl-rss 中的内联 SVG 为 simple-icons:rss 图标
+	// Waline JS 用自带的 SVG（与文章/笔记页 astro-icon 不一致），统一为 simple-icons:rss
+	// 图标尺寸减半（原 16px → 8px），与文字比例更协调
+	function replaceRssIcons() {
+		const rssLinks = document.querySelectorAll<HTMLAnchorElement>("#waline .wl-rss a");
+		rssLinks.forEach((a) => {
+			if (a.dataset.rssIconReplaced === "1") return;
+			const svg = a.querySelector("svg");
+			if (!svg) return;
+			// simple-icons:rss 的 path（与 astro-icon simple-icons:rss 一致）
+			svg.setAttribute("viewBox", "0 0 24 24");
+			svg.setAttribute("width", "16");
+			svg.setAttribute("height", "16");
+			svg.setAttribute("fill", "currentColor");
+			svg.innerHTML =
+				'<path fill="currentColor" d="M19.199 24C19.199 13.467 10.533 4.8 0 4.8V0c13.165 0 24 10.835 24 24zM3.291 17.415a3.3 3.3 0 0 1 3.293 3.295A3.303 3.303 0 0 1 3.283 24C1.47 24 0 22.526 0 20.71s1.475-3.294 3.291-3.295M15.909 24h-4.665c0-6.169-5.075-11.245-11.244-11.245V8.09c8.727 0 15.909 7.184 15.909 15.91"/>';
+			a.dataset.rssIconReplaced = "1";
+		});
+	}
+
 	// 等待 Waline 渲染出原生 textarea 后，用 Vditor 替换它
 	// 同时持续监听 DOM 变化，处理 Waline "回复/取消回复" 操作时 textarea 被移动的情况
 	function watchForEditor() {
@@ -416,12 +477,13 @@ import "../../styles/waline-custom.css";
 		// 1. textarea 被移动到回复位置 → Vditor 容器跟着移动
 		// 2. textarea 被销毁/重新创建 → 销毁旧 Vditor，初始化新 Vditor
 		// 3. textarea 的 display 被重置 → 重新隐藏
-		// 用 rAF 防抖，避免 Waline 频繁更新评论列表时过度触发
-		let rafId: number | null = null;
+		// 用 microtask 防抖（比 rAF 更快），切换回复对象时 Vditor 容器几乎瞬间跟随
+		let microtaskScheduled = false;
 		vditorObserver = new MutationObserver(() => {
-			if (rafId !== null) return;
-			rafId = requestAnimationFrame(() => {
-				rafId = null;
+			if (microtaskScheduled) return;
+			microtaskScheduled = true;
+			queueMicrotask(() => {
+				microtaskScheduled = false;
 				handleDomChange();
 			});
 		});
@@ -434,6 +496,68 @@ import "../../styles/waline-custom.css";
 		// 本函数统一处理两种情况：检测已有 checkbox 则加类标记，纯文本则转换。
 		// 排除 Vditor 预览区（.vditor-reset），它自带 .vditor-task 类走另一套 CSS。
 		let isProcessingTasks = false;
+
+		// 渲染评论区 :emoji_name: 为 <img>：Waline 服务端 markdown 引擎不解析
+		// 自定义 emoji 短码，评论区会原样显示 ":bmoji_smile:"。在客户端渲染后
+		// 扫描文本节点，把 :name: 替换为 <img>，与 Vditor 表现一致。
+		function processEmojis() {
+			if (Object.keys(allEmojisMap).length === 0) return;
+			const contents = document.querySelectorAll<HTMLElement>(
+				"#waline .wl-content, #waline .wl-preview",
+			);
+			contents.forEach((content) => {
+				if (content.dataset.emojiFixed === "1") return;
+				// 跳过 Vditor 预览区
+				if (content.closest(".vditor-reset")) return;
+				content.dataset.emojiFixed = "1";
+				// 匹配 :name: 且 name 在 emoji 字典中
+				const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, {
+					acceptNode(node) {
+						return /:[\w]+:/.test(node.textContent || "")
+							? NodeFilter.FILTER_ACCEPT
+							: NodeFilter.FILTER_REJECT;
+					},
+				});
+				const targets: Text[] = [];
+				let cur = walker.nextNode();
+				while (cur) {
+					targets.push(cur as Text);
+					cur = walker.nextNode();
+				}
+				targets.forEach((textNode) => {
+					const text = textNode.textContent || "";
+					const frag = document.createDocumentFragment();
+					let lastIdx = 0;
+					const regex = /:(\w+):/g;
+					let m: RegExpExecArray | null;
+					while ((m = regex.exec(text)) !== null) {
+						const name = m[1];
+						const url = allEmojisMap[name];
+						if (!url) continue;
+						// 前面的纯文本
+						if (m.index > lastIdx) {
+							frag.appendChild(document.createTextNode(text.slice(lastIdx, m.index)));
+						}
+						// emoji <img>
+						const img = document.createElement("img");
+						img.className = "wl-emoji";
+						img.src = url;
+						img.alt = name;
+						img.loading = "lazy";
+						img.decoding = "async";
+						frag.appendChild(img);
+						lastIdx = m.index + m[0].length;
+					}
+					if (lastIdx === 0) return; // 无匹配
+					// 剩余文本
+					if (lastIdx < text.length) {
+						frag.appendChild(document.createTextNode(text.slice(lastIdx)));
+					}
+					textNode.parentNode?.replaceChild(frag, textNode);
+				});
+			});
+		}
+
 		function processTaskLists() {
 			if (isProcessingTasks) return;
 			isProcessingTasks = true;
@@ -507,8 +631,10 @@ import "../../styles/waline-custom.css";
 				if (textarea) {
 					initVditor(textarea);
 				}
-				// 即使 Vditor 还未初始化，已发布评论可能已渲染出来，也处理一下 task list
+				// 即使 Vditor 还未初始化，已发布评论可能已渲染出来，也处理一下 task list 和 emoji
+				processEmojis();
 				processTaskLists();
+				replaceRssIcons();
 				return;
 			}
 
@@ -525,7 +651,9 @@ import "../../styles/waline-custom.css";
 					vditorContainer = null;
 					initVditor(newTextarea);
 				}
+				processEmojis();
 				processTaskLists();
+				replaceRssIcons();
 				return;
 			}
 
@@ -539,8 +667,10 @@ import "../../styles/waline-custom.css";
 				currentTextarea.style.display = "none";
 			}
 
-			// 情况 E：处理评论列表中的 GFM task list（分页/新评论渲染后）
+			// 情况 E：处理评论列表中的 emoji 和 GFM task list（分页/新评论渲染后）
+			processEmojis();
 			processTaskLists();
+			replaceRssIcons();
 		}
 		vditorObserver.observe(document.getElementById("waline") || document.body, {
 			childList: true,
@@ -607,11 +737,19 @@ import "../../styles/waline-custom.css";
 				if (entries.some((e) => e.isIntersecting)) {
 					lazyObserver?.disconnect();
 					lazyObserver = null;
-					// 延迟到浏览器空闲时再加载，确保页面切换动画（1.5s）完成且主线程空闲
-					// 短文章评论区在视口内，不加这个延迟会和动画一起执行导致卡顿
-					const idleCb =
-						window.requestIdleCallback || ((cb: IdleRequestCallback) => setTimeout(cb, 1600));
-					idleCb(() => walineInit(), { timeout: 3000 });
+					// 短文章评论区在视口内，IntersectionObserver 会立即触发。
+					// 需检测是否正处于 View Transition 期间：若是则等动画结束，否则立即加载。
+					// 用 requestIdleCallback 确保不阻塞首屏渲染。
+					const startInit = () => {
+						const idleCb = window.requestIdleCallback || ((cb: IdleRequestCallback) => cb());
+						idleCb(() => walineInit(), { timeout: 1000 });
+					};
+					// 检测是否在 View Transition 期间（伪元素存在说明动画进行中）
+					if (document.documentElement.getAnimations().length > 0) {
+						setTimeout(startInit, 2900);
+					} else {
+						startInit();
+					}
 				}
 			},
 			{ rootMargin: "300px" },

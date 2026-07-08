@@ -11,6 +11,8 @@
 			--bg: #fff;
 			--accent: oklch(47% 0.08 194.77);
 			--muted: oklch(60% 0.01 235);
+			--cursor-auto: url("/w11-cursor-concept-free/arrow.cur") 1 1, auto;
+			--cursor-pointer: url("/w11-cursor-concept-free/hand.cur") 9 3, pointer;
 		}
 		@media (prefers-color-scheme: dark) {
 			:root {
@@ -30,21 +32,30 @@
 			align-items: center;
 			justify-content: center;
 			transition: background 0.3s, color 0.3s;
+			cursor: var(--cursor-auto);
 		}
 		.container { text-align: center; padding: 2rem; }
 		.icon { display: block; margin: 0 auto; width: 80px; height: 80px; opacity: 0.2; color: var(--text); }
 		.label { margin-top: 1.5rem; font-size: 1.25rem; font-weight: 500; opacity: 0.7; color: var(--text); }
 		.desc { margin-top: 0.75rem; max-width: 20rem; line-height: 1.6; font-size: 0.95rem; opacity: 0.5; color: var(--text); }
+		a {
+			color: var(--accent);
+			text-decoration: underline;
+			text-underline-offset: 2px;
+			cursor: var(--cursor-pointer);
+		}
+		a:hover { text-decoration-thickness: 2px; }
 	</style>
 </head>
 <body>
 	<div class="container">
 		<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-			<path stroke-linecap="round" stroke-linejoin="round" d="M18.36 6.64a9 9 0 1 1-12.73 0" />
-			<line x1="12" y1="2" x2="12" y2="6" stroke-linecap="round" stroke-linejoin="round" />
+			<circle cx="12" cy="12" r="9" />
+			<line x1="12" y1="8" x2="12" y2="12" stroke-linecap="round" stroke-linejoin="round" />
+			<line x1="12" y1="16" x2="12" y2="16" stroke-linecap="round" stroke-linejoin="round" />
 		</svg>
 		<p class="label">您当前处于离线状态</p>
-		<p class="desc">部分已缓存的页面仍可浏览。<br />恢复网络后将自动更新。</p>
+		<p class="desc">部分已缓存的页面仍可浏览。<br />恢复网络后将自动更新。<br /><a href="javascript:location.reload()">刷新重试</a></p>
 	</div>
 </body>
 </html>

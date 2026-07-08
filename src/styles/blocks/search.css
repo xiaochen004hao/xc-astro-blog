@@ -97,13 +97,62 @@
 }
 
 /* ------------------------------------------------------------------
-   E. 光标 - 搜索输入框使用 ibeam 工字光标
+   D2. 复选框勾选标记加粗（从 1px → 2px，更清晰）
    ------------------------------------------------------------------ */
-#cactus__search .pagefind-ui__search-input,
-#cactus__search .pagefind-ui__form {
+#cactus__search .pagefind-ui__filter-value::before {
+	border: solid 2px #fff;
+	border-top: 0;
+	border-right: 0;
+}
+
+/* ------------------------------------------------------------------
+   E. 光标 - 搜索输入框使用 ibeam 工字光标
+   注意：只作用于 input 本身，不作用于 .pagefind-ui__form
+   （form 包含整个搜索结果区，否则会污染结果区的光标）
+   ------------------------------------------------------------------ */
+#cactus__search .pagefind-ui__search-input {
 	cursor:
 		url("/w11-cursor-concept-free/ibeam.cur") 12 16,
 		text !important;
+}
+
+/* ------------------------------------------------------------------
+   E2. 搜索结果缓入动画
+   Pagefind 的 .pagefind-ui--reset *:where(...) 用 all: unset 会清空
+   全局 [data-reveal] 的 opacity/transform。搜索结果在 dialog 内，
+   IntersectionObserver 可能无法正确检测可见性，
+   因此改由 JS 直接控制：见 Search.astro 的 resObserver 回调，
+   为每个结果添加 .search-result-reveal 类触发 CSS 动画。
+   ------------------------------------------------------------------ */
+/* 默认隐藏所有搜索结果（防止 Pagefind 插入 DOM 后到 JS 添加类前的一帧闪烁）。
+   一旦 JS 为结果添加 .search-result-visible，即过渡到可见。
+   .search-result-reveal 仅用于标记"已处理"，避免重复添加。 */
+#cactus__search .pagefind-ui__result:not(.search-result-visible) {
+	opacity: 0;
+	transform: translateY(16px);
+}
+#cactus__search .pagefind-ui__result.search-result-reveal {
+	transition:
+		opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+		transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: opacity, transform;
+}
+/* 父容器透明度 + 缩放（配合 JS 设置 .search-result-visible） */
+#cactus__search .pagefind-ui__result.search-result-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* ------------------------------------------------------------------
+   E3. 筛选项光标 - 复选框和标签使用手型光标
+   ------------------------------------------------------------------ */
+#cactus__search .pagefind-ui__filter-value,
+#cactus__search .pagefind-ui__filter-checkbox,
+#cactus__search .pagefind-ui__filter-label,
+#cactus__search .pagefind-ui__filter-name {
+	cursor:
+		url("/w11-cursor-concept-free/hand.cur") 9 3,
+		pointer !important;
 }
 
 /* ------------------------------------------------------------------

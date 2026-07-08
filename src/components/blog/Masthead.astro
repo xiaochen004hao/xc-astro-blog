@@ -7,11 +7,13 @@ import FormattedDate from "@/components/FormattedDate.astro";
 interface Props {
 	content: CollectionEntry<"post">;
 	readingTime: string;
+	wordCount?: number;
 }
 
 const {
 	content: { data },
 	readingTime,
+	wordCount = 0,
 } = Astro.props;
 
 const dateTimeOptions: Intl.DateTimeFormatOptions = {
@@ -21,7 +23,7 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 
 {
 	data.coverImage && (
-		<div class="mb-6 aspect-video">
+		<div class="mb-6 aspect-video" data-reveal>
 			<Image
 				alt={data.coverImage.alt}
 				loading="eager"
@@ -35,26 +37,39 @@ const dateTimeOptions: Intl.DateTimeFormatOptions = {
 	)
 }
 {data.draft ? <span class="text-base text-red-500">(Draft)</span> : null}
-<h1 id="blog-title" class="title">
+<h1 id="blog-title" class="title" data-reveal>
 	{data.title}
 </h1>
-<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
-	<p class="font-semibold">
-		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} /> /{" "}
-		{readingTime}
-	</p>
+<div
+	class="text-muted mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
+	data-reveal
+	data-reveal-delay="80"
+>
+	<span>发布于</span>
+	<span class="text-global-text font-semibold">
+		<FormattedDate date={data.publishDate} dateTimeOptions={dateTimeOptions} />
+	</span>
+	<span class="text-muted/50 select-none" aria-hidden="true">|</span>
+	<span>{readingTime}</span>
+	<span class="text-muted/50 select-none" aria-hidden="true">|</span>
+	<span>{wordCount} 字</span>
 	{
 		data.updatedDate && (
-			<span class="bg-quote/5 text-quote rounded-lg px-2 py-1">
-				更新于：
-				<FormattedDate class="ms-1" date={data.updatedDate} dateTimeOptions={dateTimeOptions} />
-			</span>
+			<>
+				<span class="text-muted/50 select-none" aria-hidden="true">
+					|
+				</span>
+				<span class="bg-quote/5 text-quote rounded-lg px-2.5 py-1 text-xs">
+					更新于：
+					<FormattedDate date={data.updatedDate} dateTimeOptions={dateTimeOptions} />
+				</span>
+			</>
 		)
 	}
 </div>
 {
 	!!data.tags?.length && (
-		<div class="mt-2">
+		<div class="mt-2" data-reveal data-reveal-delay="160">
 			<svg
 				aria-hidden="true"
 				class="inline-block h-6 w-6"

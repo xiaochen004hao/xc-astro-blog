@@ -12,8 +12,8 @@ const meta = {
 ---
 
 <PageLayout meta={meta}>
-	<h1 class="title mb-6">标签</h1>
-	<ul class="space-y-4">
+	<h1 class="title mb-6" data-reveal data-reveal-delay="0">标签</h1>
+	<ul class="space-y-4" data-reveal data-reveal-delay="80">
 		{
 			allTags.map(([tag, val]) => (
 				<li class="flex items-center gap-x-2">

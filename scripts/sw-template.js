@@ -2,7 +2,35 @@ const CACHE_VERSION = "__CACHE_VERSION__";
 const OFFLINE_PAGE = "/service-worker-offline.html";
 // pagefind 文件列表由 scripts/inject-pagefind.mjs 注入到下方占位符
 const PAGEFIND_FILES = __PAGEFIND_FILES__;
-const PRECACHE = [OFFLINE_PAGE, "/", ...PAGEFIND_FILES];
+// Vditor 编辑器资源文件列表（构建时扫描 dist/vditor/dist/ 注入）
+const VDITOR_FILES = __VDITOR_FILES__;
+// 核心静态资源：favicon、主题图标、manifest、表情包元数据、鼠标光标
+// 主题切换时 favicon 会在 icon-light.svg / icon-dark.svg 间切换，两者都要缓存
+// 光标文件离线页和主站都要用，必须预缓存
+const STATIC_ASSETS = [
+	"/favicon.ico",
+	"/icon.svg",
+	"/icon-light.svg",
+	"/icon-dark.svg",
+	"/manifest.webmanifest",
+	"/emojis/bmoji/info.json",
+	"/emojis/bilibili/info.json",
+	"/w11-cursor-concept-free/arrow.cur",
+	"/w11-cursor-concept-free/hand.cur",
+	"/w11-cursor-concept-free/ibeam.cur",
+	"/w11-cursor-concept-free/no.cur",
+	"/w11-cursor-concept-free/help.cur",
+	"/w11-cursor-concept-free/sizeall.cur",
+	"/w11-cursor-concept-free/crosshair.cur",
+	"/w11-cursor-concept-free/sizens.cur",
+	"/w11-cursor-concept-free/sizewe.cur",
+	"/w11-cursor-concept-free/sizenesw.cur",
+	"/w11-cursor-concept-free/sizenwse.cur",
+	"/w11-cursor-concept-free/person.cur",
+	"/w11-cursor-concept-free/uparrow.cur",
+	"/w11-cursor-concept-free/wait.ani",
+];
+const PRECACHE = [OFFLINE_PAGE, "/", ...STATIC_ASSETS, ...PAGEFIND_FILES, ...VDITOR_FILES];
 
 self.addEventListener("install", (evt) => {
 	console.log("[sw] install", CACHE_VERSION);
@@ -85,9 +113,8 @@ function staleWhileRevalidate(request) {
 				}
 				return networkResponse;
 			})
-			.catch(() => {});
+			.catch(() => cached || Response.error());
 		if (cached) {
-			console.log("[sw] stale: serving cache", request.url);
 			return cached;
 		}
 		return fetchPromise;

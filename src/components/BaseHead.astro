@@ -108,7 +108,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 
 <style is:global>
 	html {
-		scrollbar-color: oklch(from var(--color-accent) l c h / 0.5) var(--color-global-bg);
+		scrollbar-color: oklch(from var(--color-accent) l c h / 0.5) transparent;
 		scrollbar-width: thin;
 	}
 
@@ -117,7 +117,7 @@ const socialImageURL = new URL(ogImage ? ogImage : "/social-card.png", Astro.url
 		height: 6px;
 	}
 	::-webkit-scrollbar-track {
-		background: var(--color-global-bg);
+		background: transparent;
 	}
 	::-webkit-scrollbar-thumb {
 		background-color: oklch(from var(--color-accent) l c h / 0.5);

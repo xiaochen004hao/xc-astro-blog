@@ -15,6 +15,8 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 	class="ai-summary bg-global-text/5 relative mt-2 mb-6 rounded-lg p-4 pt-3"
 	data-summary={summary}
 	data-id={id}
+	data-reveal
+	data-reveal-delay="240"
 >
 	<div class="mb-2 flex items-center gap-2">
 		<Icon aria-hidden="true" class="text-accent-2 h-4 w-4 shrink-0" name="lucide:sparkles" />
@@ -25,10 +27,21 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 			{model}
 		</span>
 	</div>
-	<p id={`${id}-content`} class="ai-explanation text-sm leading-relaxed"></p>
+	<textarea
+		id={`${id}-content`}
+		class="ai-explanation block w-full resize-none border-0 bg-transparent text-sm leading-relaxed text-global-text outline-none"
+		rows="4"
+		readonly
+		tabindex="-1"
+		aria-label="AI 摘要内容"
+	></textarea>
 </div>
 
 <style is:global>
+	.ai-summary .ai-explanation {
+		overflow-y: auto;
+		max-height: 12rem;
+	}
 	.ai-summary .ai-explanation::after {
 		content: "";
 		display: inline-block;
@@ -40,6 +53,16 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 		animation: blink-underline 1s ease-in-out infinite;
 		position: relative;
 		bottom: 3px;
+	}
+	/* 打字完成后隐藏光标 */
+	.ai-summary .ai-explanation[data-done="true"]::after {
+		display: none;
+	}
+	/* 强制使用 W11 ibeam 光标（覆盖浏览器默认 I-beam） */
+	.ai-summary .ai-explanation {
+		cursor:
+			url("/w11-cursor-concept-free/ibeam.cur") 11 17,
+			text !important;
 	}
 
 	@keyframes blink-underline {
@@ -61,24 +84,26 @@ const id = `ai-summary-${Math.random().toString(36).slice(2)}`;
 				const id = container.getAttribute("data-id");
 				const text = container.getAttribute("data-summary");
 				if (!id || !text) return;
-				const contentEl = container.querySelector<HTMLElement>(`#${id}-content`);
+				const contentEl = container.querySelector<HTMLTextAreaElement>(`#${id}-content`);
 				if (!contentEl) return;
 
 				// 防重入：避免 init 被同时触发两次（astro:page-load + readyState 检查）
-				// 导致同一个元素被两个 setTimeout 同时打字
 				if (contentEl.dataset.typed === "true") return;
 				contentEl.dataset.typed = "true";
 
 				let index = 0;
-				const textNode = document.createTextNode("");
-				contentEl.appendChild(textNode);
-
-				function typeNext() {
-					if (text && index < text.length && textNode.nodeValue != null) {
-						textNode.nodeValue += text[index++];
+				// 直接更新 textarea.value，不重建 DOM
+				// textarea 固定高度（rows=4），内容增长不会导致滚动条变化
+				const typeNext = () => {
+					if (text && index < text.length) {
+						index++;
+						contentEl.value = text.slice(0, index);
 						setTimeout(typeNext, 50);
+					} else {
+						// 打字完成，隐藏光标
+						contentEl.dataset.done = "true";
 					}
-				}
+				};
 
 				setTimeout(typeNext, 400);
 			});
