@@ -104,8 +104,8 @@ html > *:not(head):not(body) {
 
 /* 旧页面动画期间禁用交互（避免误触），新页面立即可交互。 */
 ::view-transition {
-    pointer-events: none;
-    background-color: var(--color-global-bg);
+	pointer-events: none;
+	background-color: var(--color-global-bg);
 }
 
 /* 新页面立即可交互，不受 ::view-transition 的 pointer-events: none 影响 */
@@ -143,71 +143,75 @@ html > *:not(head):not(body) {
 
 /* 1. 旧页面：渐进扭曲 + 模糊 + 变深 + 空间吸入 */
 ::view-transition-old(root) {
-    animation: old-page-vortex 1.2s linear forwards;
-    transform-origin: var(--wave-x) var(--wave-y);
-    z-index: 2; /* 确保在最上层 */
-    will-change: transform, opacity, filter;
+	animation: old-page-vortex 1.2s linear forwards;
+	transform-origin: var(--wave-x) var(--wave-y);
+	z-index: 2; /* 确保在最上层 */
+	will-change: transform, opacity, filter;
 
-    /* 移除遮罩，让旧页面自然覆盖新页面 */
-    -webkit-mask-image: none;
-    mask-image: none;
+	/* 移除遮罩，让旧页面自然覆盖新页面 */
+	-webkit-mask-image: none;
+	mask-image: none;
 }
 
 /* 2. 新页面：圆形扩散（缓动用 ease-in-quint，先慢后快，
    前期裁剪框小、视觉变化少，后期快速填满，让收尾更利落，减少交互延迟感） */
 @keyframes new-page-reveal {
-    0% {
-        clip-path: circle(0vmax at var(--wave-x) var(--wave-y));
-    }
-    /* 
+	0% {
+		clip-path: circle(0vmax at var(--wave-x) var(--wave-y));
+	}
+	/* 
        1. 第一个“快”：0% -> 20%
        原来只有 10% 的时间，现在延长到 20%。
        这让初始的 0~15vmax 放大过程变慢了一些，变得“可见”，不再是转瞬即逝。
        速度：快（但适中）。
     */
-    20% {
-        clip-path: circle(15vmax at var(--wave-x) var(--wave-y));
-    }
-    /* 
+	20% {
+		clip-path: circle(15vmax at var(--wave-x) var(--wave-y));
+	}
+	/* 
        2. 中间的“慢”：20% -> 50%
        这段时间里，圆圈只从 15vmax 变大到 25vmax，变化很小，但花费了 30% 的时间。
        这会造成明显的视觉“减速”效果。
     */
-    50% {
-        clip-path: circle(25vmax at var(--wave-x) var(--wave-y));
-    }
-    /* 
+	50% {
+		clip-path: circle(25vmax at var(--wave-x) var(--wave-y));
+	}
+	/* 
        3. 最后的“快”：50% -> 100%
        圆圈从 25vmax 瞬间变大到 150vmax，只用了一半的时间（50%）。
        这会产生一个迅速填满全屏的爆发感。
     */
-    100% {
-        clip-path: circle(150vmax at var(--wave-x) var(--wave-y));
-    }
+	100% {
+		clip-path: circle(150vmax at var(--wave-x) var(--wave-y));
+	}
 }
 
 ::view-transition-new(root) {
-    animation: new-page-reveal 1.2s linear forwards;
-    z-index: 0; /* 确保在最下层 */
-    will-change: clip-path;
-    filter: drop-shadow(0 0 15px oklch(from var(--color-accent) l c h / 0.5)) drop-shadow(0 0 35px oklch(from var(--color-accent) l c h / 0.3)) drop-shadow(0 0 70px oklch(from var(--color-accent) l c h / 0.15));
+	animation: new-page-reveal 1.2s linear forwards;
+	z-index: 0; /* 确保在最下层 */
+	will-change: clip-path;
+	filter: drop-shadow(0 0 15px oklch(from var(--color-accent) l c h / 0.5))
+		drop-shadow(0 0 35px oklch(from var(--color-accent) l c h / 0.3))
+		drop-shadow(0 0 70px oklch(from var(--color-accent) l c h / 0.15));
 }
 
 /* 3. image-pair 静态光晕：旧页面半透明时透过显示 */
 ::view-transition-image-pair(root) {
-    z-index: 1; /* 确保在旧页面之下，新页面之上 */
-    
-    background-image:
-        radial-gradient(
-            circle 100vmax at var(--wave-x) var(--wave-y),
-            oklch(from var(--color-accent) l c h / 0.15) 0%,
-            oklch(from var(--color-accent) l c h / 0.06) 25%,
-            transparent 55%
-        ),
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='2.5 0 0 0 -0.75 0 2.5 0 0 -0.75 0 0 2.5 0 -0.75 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+	z-index: 1; /* 确保在旧页面之下，新页面之上 */
 
-    background-size: 100% 100%, 200px 200px;
-    background-blend-mode: normal, soft-light;
+	background-image:
+		radial-gradient(
+			circle 100vmax at var(--wave-x) var(--wave-y),
+			oklch(from var(--color-accent) l c h / 0.15) 0%,
+			oklch(from var(--color-accent) l c h / 0.06) 25%,
+			transparent 55%
+		),
+		url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='2.5 0 0 0 -0.75 0 2.5 0 0 -0.75 0 0 2.5 0 -0.75 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+
+	background-size:
+		100% 100%,
+		200px 200px;
+	background-blend-mode: normal, soft-light;
 }
 
 /* 移动端降级：clip-path: circle() 在部分移动浏览器可能不流畅，
@@ -219,13 +223,24 @@ html > *:not(head):not(body) {
 		filter: none;
 	}
 	@keyframes new-page-fade {
-		0% { opacity: 0; transform: scale(1.05); }
-		10% { opacity: 0.2; transform: scale(1.04); }
-		40% { opacity: 0.5; transform: scale(1.02); }
-		100% { opacity: 1; transform: scale(1); }
+		0% {
+			opacity: 0;
+			transform: scale(1.05);
+		}
+		10% {
+			opacity: 0.2;
+			transform: scale(1.04);
+		}
+		40% {
+			opacity: 0.5;
+			transform: scale(1.02);
+		}
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
 	}
 }
-
 
 /* 减少动画偏好 */
 @media (prefers-reduced-motion: reduce) {
@@ -285,12 +300,12 @@ html > *:not(head):not(body) {
 		}
 
 		&:where(
-			input[type="text"],
-			input[type="search"],
-			input:not([type]),
-			textarea,
-			[contenteditable="true"]
-		) {
+				input[type="text"],
+				input[type="search"],
+				input:not([type]),
+				textarea,
+				[contenteditable="true"]
+			) {
 			cursor:
 				url("/w11-cursor-concept-free/ibeam.cur") 11 17,
 				text !important;
@@ -493,15 +508,15 @@ html > *:not(head):not(body) {
    使用 CSS :not() 列表语法排除站内和特定组件
    ------------------------------------------------------------------ */
 a[href^="http"]:not(
-		[href*="weblog.xc4h.qzz.io"],
-		[href*="localhost"],
-		[class*="no-external-icon"],
-		[class*="pagefind-ui"] a,
-		nav a,
-		.cactus-link,
-		#waline a,
-		.friend-card
-	)::after {
+	[href*="weblog.xc4h.qzz.io"],
+	[href*="localhost"],
+	[class*="no-external-icon"],
+	[class*="pagefind-ui"] a,
+	nav a,
+	.cactus-link,
+	#waline a,
+	.friend-card
+)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
@@ -509,9 +524,11 @@ a[href^="http"]:not(
 	margin-left: 0.15em;
 	background-color: currentColor;
 	opacity: 0.45;
-	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
-	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	-webkit-mask:
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
 }
 

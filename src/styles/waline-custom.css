@@ -253,10 +253,7 @@
 
 /* 任务列表的 <ul> 不显示项目符号（覆盖 3.4 的 list-style: disc）
    覆盖范围：评论区 .wl-content、预览区 .wl-preview，以及 Vditor 预览区 */
-:is(
-	#waline ul:has(li.wl-task-item),
-	.wl-vditor-wrapper .vditor-reset ul:has(li.vditor-task)
-) {
+:is(#waline ul:has(li.wl-task-item), .wl-vditor-wrapper .vditor-reset ul:has(li.vditor-task)) {
 	list-style: none !important;
 	padding-left: 0;
 }
@@ -293,15 +290,16 @@
 	border: 1.5px solid var(--color-muted);
 	border-radius: 2px;
 	background-color: transparent;
-	transition: background-color 0.15s, border-color 0.15s;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s;
 	pointer-events: none;
 }
 
 /* 选中态：accent 色背景 + accent 色边框 */
-:is(
-	#waline li.wl-task-item,
-	.wl-vditor-wrapper .vditor-reset li.vditor-task
-):has(input:checked)::before {
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task):has(
+	input:checked
+)::before {
 	background-color: var(--color-accent);
 	border-color: var(--color-accent);
 }
@@ -322,15 +320,17 @@
 	opacity: 0;
 	transform: translate(-0.28em, 0.05em) skewX(-5deg) rotateZ(-45deg);
 	transform-origin: top left;
-	transition: width 0.1s ease-out 0.1s, height 0.1s ease-in, opacity 0.1s;
+	transition:
+		width 0.1s ease-out 0.1s,
+		height 0.1s ease-in,
+		opacity 0.1s;
 	pointer-events: none;
 }
 
 /* 选中态：显示勾并动画展开 */
-:is(
-	#waline li.wl-task-item,
-	.wl-vditor-wrapper .vditor-reset li.vditor-task
-):has(input:checked)::after {
+:is(#waline li.wl-task-item, .wl-vditor-wrapper .vditor-reset li.vditor-task):has(
+	input:checked
+)::after {
 	opacity: 1;
 	width: 0.55em;
 	height: 0.25em;

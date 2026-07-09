@@ -189,7 +189,11 @@ import "../../styles/waline-custom.css";
 		// 这是最可靠的归一化点：无论 Waline 内部状态如何，请求体在发出前必定经过此处。
 		if (!nativeFetch) {
 			nativeFetch = window.fetch;
-			window.fetch = function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+			window.fetch = function (
+				this: typeof globalThis,
+				input: RequestInfo | URL,
+				init?: RequestInit,
+			): Promise<Response> {
 				try {
 					const url =
 						typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -531,7 +535,7 @@ import "../../styles/waline-custom.css";
 					const regex = /:(\w+):/g;
 					let m: RegExpExecArray | null;
 					while ((m = regex.exec(text)) !== null) {
-						const name = m[1];
+						const name = m[1]!;
 						const url = allEmojisMap[name];
 						if (!url) continue;
 						// 前面的纯文本
@@ -741,7 +745,8 @@ import "../../styles/waline-custom.css";
 					// 需检测是否正处于 View Transition 期间：若是则等动画结束，否则立即加载。
 					// 用 requestIdleCallback 确保不阻塞首屏渲染。
 					const startInit = () => {
-						const idleCb = window.requestIdleCallback || ((cb: IdleRequestCallback) => cb());
+						const idleCb =
+							window.requestIdleCallback || ((cb: IdleRequestCallback) => cb({} as IdleDeadline));
 						idleCb(() => walineInit(), { timeout: 1000 });
 					};
 					// 检测是否在 View Transition 期间（伪元素存在说明动画进行中）
