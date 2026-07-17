@@ -17,6 +17,18 @@ html > *:not(head):not(body) {
 	display: none !important;
 }
 
+.noise {
+	z-index: 2147483647;
+	opacity: 0.16;
+	pointer-events: none;
+	mix-blend-mode: soft-light;
+	background-image: url("/noise.avif");
+	background-position: 0 0;
+	background-size: 10%;
+	position: fixed;
+	inset: 0%;
+}
+
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* ------------------------------------------------------------------
@@ -300,12 +312,12 @@ html > *:not(head):not(body) {
 		}
 
 		&:where(
-				input[type="text"],
-				input[type="search"],
-				input:not([type]),
-				textarea,
-				[contenteditable="true"]
-			) {
+			input[type="text"],
+			input[type="search"],
+			input:not([type]),
+			textarea,
+			[contenteditable="true"]
+		) {
 			cursor:
 				url("/w11-cursor-concept-free/ibeam.cur") 11 17,
 				text !important;
@@ -508,15 +520,15 @@ html > *:not(head):not(body) {
    使用 CSS :not() 列表语法排除站内和特定组件
    ------------------------------------------------------------------ */
 a[href^="http"]:not(
-	[href*="weblog.xc4h.qzz.io"],
-	[href*="localhost"],
-	[class*="no-external-icon"],
-	[class*="pagefind-ui"] a,
-	nav a,
-	.cactus-link,
-	#waline a,
-	.friend-card
-)::after {
+		[href*="weblog.xc4h.qzz.io"],
+		[href*="localhost"],
+		[class*="no-external-icon"],
+		[class*="pagefind-ui"] a,
+		nav a,
+		.cactus-link,
+		#waline a,
+		.friend-card
+	)::after {
 	content: "";
 	display: inline-block;
 	width: 0.7em;
@@ -524,11 +536,9 @@ a[href^="http"]:not(
 	margin-left: 0.15em;
 	background-color: currentColor;
 	opacity: 0.45;
-	mask:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
-	-webkit-mask:
-		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3E%3Cpath d='M7 17L17 7M7 7h10v10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
 		center / contain no-repeat;
 }
 
